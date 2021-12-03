@@ -1,6 +1,8 @@
 
 #include "allvars.h"
-#include "proto.h"
+#include "io.h"
+#include "tools.h"
+#include "qromb.h"
 
 void ReadInputFile(char *filename)
 {

@@ -1,14 +1,6 @@
 
 #include "allvars.h"
-#include "proto.h"
-
-#define EPS   1.0e-6
-#define JMAX  20
-#define JMAXP (JMAX+1)
-#define K 5
-#define FUNC(x) ((*func)(x))
-#define NR_END 1
-#define FREE_ARG char*
+#include "qromb.h"
 
 double E(double z)
 {
@@ -90,13 +82,13 @@ double trapzd(double (*func)(double), double a, double b, int n)
 	int it,j;
 
 	if (n == 1) {
-		return (s=0.5*(b-a)*(FUNC(a)+FUNC(b)));
+		return (s=0.5*(b-a)*((*func)(a)+(*func)(b)));
 	} else {
 		for (it=1,j=1;j<n-1;j++) it <<= 1;
 		tnm=it;
 		del=(b-a)/tnm;
 		x=a+0.5*del;
-		for (sum=0.0,j=1;j<=it;j++,x+=del) sum += FUNC(x);
+		for (sum=0.0,j=1;j<=it;j++,x+=del) sum += (*func)(x);
 		s=0.5*(s+(b-a)*sum/tnm);
 		return s;
 	}
@@ -195,4 +187,3 @@ void locate(double xx[], int n, double x, int *j)
   *j = jl ;
 }
 
-#undef FUNC

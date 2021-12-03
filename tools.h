@@ -1,0 +1,12 @@
+int          Index1D(int,int,int,int);
+vector <int> Index3D(int,int);
+double       PeriodicPos(double,double);
+double       PeriodicDeltaPos(double,double);
+int          PeriodicGrid(int,int);
+double       Time(clock_t, int);
+void         StatsTime();
+void         Progress(int,int);
+int          CountLines(char *);
+double       LnFactorial(int);
+double       RandomNumber(void);
+FILE*        SafeOpen(char *, const char *); 

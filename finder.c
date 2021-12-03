@@ -1,5 +1,8 @@
 #include "allvars.h"
-#include "proto.h"
+#include "finder.h"
+#include "grid.h"
+#include "qsort.h"
+#include "tools.h"
 
 void FindCenters()
 {

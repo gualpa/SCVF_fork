@@ -1,6 +1,7 @@
 
 #include "allvars.h"
-#include "proto.h"
+#include "grid.h"
+#include "tools.h"
 
 void BuildGridList(struct grid *GridList, int NumGrid, double *GridSize, int who, bool compute_neigh)
 {

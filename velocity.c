@@ -1,6 +1,8 @@
 
 #include "allvars.h"
-#include "proto.h"
+#include "velocity.h"
+#include "grid.h"
+#include "tools.h"
 
 void ComputeVelocity()
 {

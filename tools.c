@@ -1,6 +1,6 @@
 
 #include "allvars.h"
-#include "proto.h"
+#include "tools.h"
 
 int PeriodicGrid(int i, int N)
 {

@@ -1,8 +1,8 @@
 
 #include "allvars.h"
-#include "proto.h"
-
-#define MeanPartPerGrid 5000.0 
+#include "voronoi.h"
+#include "tools.h"
+#include "grid.h"
 
 void Voronoi()
 {

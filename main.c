@@ -1,6 +1,11 @@
 
 #include "allvars.h"
-#include "proto.h"
+#include "io.h"
+#include "voronoi.h" 
+#include "finder.h"
+#include "velocity.h"
+#include "profiles.h"
+#include "tools.h"
 
 int main(int argc, char **argv) 
 {
