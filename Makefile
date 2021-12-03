@@ -1,7 +1,7 @@
 #__________________________________________________________
 #                                                  Compiler
                                                   
-CC = g++
+CPP = g++
 
 #__________________________________________________________
 #                                                    voro++
@@ -25,14 +25,19 @@ OBJS = allvars.o tools.o qromb.o io.o voronoi.o grid.o finder.o \
 INCL = allvars.h tools.h qromb.h io.h voronoi.h grid.h finder.h \
        qsort.h velocity.h profiles.h Makefile
 
-CFLAGS += $(OMP) $(VORO_INC) 
+CFLAGS = $(OMP) $(VORO_INC) 
    	
 LIBS = $(VORO_LIB) -lm
 
-$(EXEC): $(OBJS) 
-	$(CC) $(OMP) $(OBJS) $(LIBS) -o $(EXEC)  
+build: $(EXEC)
 
-$(OBJS): $(INCL) 
+$(EXEC): $(OBJS) 
+	$(CPP) $(OMP) $(OBJS) $(LIBS) -o $(EXEC)  
+
+%.o: %.cc $(INCL)
+	$(CPP) $(CFLAGS) -c $< -o $@
+
+#$(OBJS): $(INCL) 
 
 clean:
 	rm -f $(OBJS) $(EXEC) *~ 
