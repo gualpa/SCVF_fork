@@ -4,53 +4,6 @@
 #include "tools.h"
 #include "grid.h"
 
-void Voronoi()
-{
-
-   if (ReadVoronoi == 1) {
-   
-      fprintf(logfile,"\n READING VORONOI TESSELLATION \n");
-
-      switch (FormatTracers) { 
-         
-	 case 0:
-         ReadVoronoi_ASCII();
-         break;
-         
-      	 case 3:
-         ReadVoronoi_MXXL();
-         break;
-
-      }
-
-   } else if (ReadVoronoi == 0) {
-      
-      fprintf(logfile,"\n COMPUTING VORONOI TESSELLATION \n");
-
-      ComputeVoronoi();
-      
-      if (WriteVoronoi == 1) {
-      
-	  fprintf(logfile,"\n WRITING VORONOI TESSELLATION \n");
-
-          switch (FormatTracers) {
-
-	     case 0:
-	     WriteVoronoi_ASCII();
-             break;
-
-             case 3:
-             WriteVoronoi_MXXL();
-             break;	     
-
-	  }		  
-
-      }      
-
-   }   
-
-}
-
 void ComputeVoronoi()
 {
    int            G,i,j,k,p,N,l,id,count,NumGrid;
@@ -65,6 +18,8 @@ void ComputeVoronoi()
    particle_order *po;
    FILE           *fd;
    clock_t        t;
+
+   fprintf(logfile,"\n COMPUTING VORONOI TESSELLATION \n");
   
    t = clock();
 
@@ -176,126 +131,3 @@ void ComputeVoronoi()
    StepTime.push_back(Time(t,OMPcores));
 
 }
-
-void ReadVoronoi_ASCII()
-{
-   FILE    *fd;
-   int     i;
-   clock_t t;
-
-   t = clock();
-
-   fd = SafeOpen(FileVoronoi,"r");
-   for (i=0; i<NumTrac; i++) 
-       fscanf(fd,"%f %f %f %f %f \n",&Tracer[i].Cen[0],&Tracer[i].Cen[1],&Tracer[i].Cen[2],
-      	                             &Tracer[i].Delta,&Tracer[i].Volume);
-   fclose(fd);
-
-   StepName.push_back("Reading Voronoi tessellation");
-   StepTime.push_back(Time(t,1));
-
-}
-
-void WriteVoronoi_ASCII()
-{
-
-   FILE    *fd;
-   int     i;
-   clock_t t;
-
-   t = clock();
-
-   fd = SafeOpen(FileVoronoi,"w");
-   for (i=0; i<NumTrac; i++)
-       fprintf(fd,"%12.6f %12.6f %12.6f %12.6f %12.6f \n",
-                  Tracer[i].Cen[0],Tracer[i].Cen[1],Tracer[i].Cen[2],
-                  Tracer[i].Delta,Tracer[i].Volume);
-   fclose(fd);
-
-   StepName.push_back("Writting Voronoi tessellation");
-   StepTime.push_back(Time(t,1));
-
-}
-
-void ReadVoronoi_MXXL()
-{
-   int     i,j,k,NumFiles,N,NumTot,id;
-   float   Vol,Pos[3],Volume;
-   FILE    *fd;
-   char    filename[MAXCHAR];
-   clock_t t;
-
-   Vol = LBox[0]*LBox[1]*LBox[2];
-
-   NumTot = 0;
-   for (j=1; j<=NumFiles; j++) { 
-
-       sprintf(filename,"%s.%02d",FileVoronoi,NumFiles);
-       fd = SafeOpen(filename,"r");
-       fread(&N,sizeof(int),1,fd);
-
-       NumTot += N;
-
-       for (i=0; i<N; i++) {
-
-           fread(&id,sizeof(int),1,fd);
-           fread(Pos,sizeof(float),3,fd);
-           fread(&Volume,sizeof(float),1,fd);
-
-           for (k=0; k<3; k++) Tracer[id].Cen[k] = (float)Pos[k];
-           Tracer[id].Volume = Volume;
-           Tracer[id].Delta = (Vol/Tracer[id].Volume)/(float)NumTrac - 1.0;
-
-       }
-       fclose(fd);
-   }
-
-   if (NumTrac != NumTot) {
-      fprintf(stdout,"Error. Missing halos in Voronoi: NumTrac = %d, NumTot = %d\n",NumTrac,NumTot);
-      fflush(stdout);
-      exit(EXIT_FAILURE);
-   }
-
-   StepTime.push_back(Time(t,1));
-
-}
-
-void WriteVoronoi_MXXL()
-{
-
-   int     N,i,j,NumTot;
-   FILE    *fd;
-   char    filename[MAXCHAR];
-   clock_t t;
-
-   t = clock();
-
-   N = (int)((double)NumTrac/(double)NumFiles);
-
-   NumTot = 0;
-
-   for (j=1; j<=NumFiles; j++) { 
-
-       sprintf(filename,"%s.%02d",FileVoronoi,NumFiles);
-       fd = SafeOpen(filename,"w");
-
-       fwrite(&N,1,sizeof(int),fd);
-
-       for (i=NumTot; i<(NumTot+N); i++) {
-	   fwrite(&i,1,sizeof(int),fd);    
-	   fwrite(Tracer[i].Cen,3,sizeof(float),fd);    
-	   fwrite(&Tracer[i].Volume,1,sizeof(float),fd);    
-       }
-       fclose(fd);
-
-       NumTot += N;
-   }
-
-   if (NumTrac != NumTot) {
-      fprintf(stdout,"Error. Missing halos in Voronoi: NumTrac = %d, NumTot = %d\n",NumTrac,NumTot);
-      fflush(stdout);
-      exit(EXIT_FAILURE);
-   }
-
-}
-

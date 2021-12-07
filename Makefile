@@ -10,6 +10,12 @@ VORO_LIB = -L/usr/local/lib -lvoro++
 VORO_INC = -I/usr/local/include/voro++
 
 #__________________________________________________________
+#                                                       GSL
+
+GSL_LIB = -L/usr/lib -lgsl -lgslcblas 
+GSL_INC = -I/usr/include/gsl
+
+#__________________________________________________________
 #                                                    OpenMP
 
 OMP = -fopenmp
@@ -25,9 +31,9 @@ OBJS = allvars.o tools.o qromb.o io.o voronoi.o grid.o finder.o \
 INCL = allvars.h tools.h qromb.h io.h voronoi.h grid.h finder.h \
        qsort.h velocity.h profiles.h Makefile
 
-CFLAGS = $(OMP) $(VORO_INC) 
+CFLAGS = $(OMP) $(VORO_INC) $(GSL_INC) 
    	
-LIBS = $(VORO_LIB) -lm
+LIBS = $(VORO_LIB) $(GSL_LIB) -lm
 
 build: $(EXEC)
 

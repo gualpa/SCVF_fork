@@ -35,7 +35,7 @@ int main(int argc, char **argv)
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing Voronoi tessellation... ");fflush(stdout);
-   Voronoi();
+   ComputeVoronoi();
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nSearching candidates... ");fflush(stdout);

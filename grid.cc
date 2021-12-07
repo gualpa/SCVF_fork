@@ -1,15 +1,15 @@
 
 #include "allvars.h"
+#include "tools.h"
 #include "grid.h"
 
-/*
-void BuildGridList(struct grid *GridList, int NumGrid, double *GridSize, int who, bool compute_neigh)
+template <class T>
+void BuildGridList(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize, bool compute_neigh)
 {
-
-  int p,i,j,k,l,N,nv,ll;
+  int p,i,j,k,l,nv,ll;
   int ii,jj,kk,it,jt,kt;
 
-  fprintf(logfile," | Creating grid-list for tracers\n");
+  fprintf(logfile," | Creating grid-list \n");
 
   for (k=0; k<3; k++) 
       GridSize[k] = LBox[k]/(double)NumGrid;    
@@ -20,25 +20,14 @@ void BuildGridList(struct grid *GridList, int NumGrid, double *GridSize, int who
   fprintf(logfile," |             z = %f [Mpc/h] \n",GridSize[2]);
   fflush(logfile);
 
-  if (who == 0) 
-     N = NumTrac;
-  else
-     N = NumVoid;
-
   for (l=0; l<NumGrid*NumGrid*NumGrid; l++)
       GridList[l].NumMem = 0;
    
-  for (p=0; p<N; p++) {
+  for (p=0; p<NumPoints; p++) {
 
-      if (who == 0) {	  
-         i = (int)(Tracer[p].Pos[0]/GridSize[0]);
-         j = (int)(Tracer[p].Pos[1]/GridSize[1]);
-         k = (int)(Tracer[p].Pos[2]/GridSize[2]);
-      } else {
-         i = (int)(Void[p].Pos[0]/GridSize[0]);
-         j = (int)(Void[p].Pos[1]/GridSize[1]);
-         k = (int)(Void[p].Pos[2]/GridSize[2]);
-      }
+      i = (int)(Points[p].Pos[0]/GridSize[0]);
+      j = (int)(Points[p].Pos[1]/GridSize[1]);
+      k = (int)(Points[p].Pos[2]/GridSize[2]);
 
       if (i == NumGrid) i--;
       if (j == NumGrid) j--;
@@ -54,17 +43,11 @@ void BuildGridList(struct grid *GridList, int NumGrid, double *GridSize, int who
       GridList[l].NumMem = 0;
   }
 
-  for (p=0; p<N; p++) {
+  for (p=0; p<NumPoints; p++) {
 
-      if (who == 0) {	  
-         i = (int)(Tracer[p].Pos[0]/GridSize[0]);
-         j = (int)(Tracer[p].Pos[1]/GridSize[1]);
-         k = (int)(Tracer[p].Pos[2]/GridSize[2]);
-      } else {
-         i = (int)(Void[p].Pos[0]/GridSize[0]);
-         j = (int)(Void[p].Pos[1]/GridSize[1]);
-         k = (int)(Void[p].Pos[2]/GridSize[2]);
-      }
+      i = (int)(Points[p].Pos[0]/GridSize[0]);
+      j = (int)(Points[p].Pos[1]/GridSize[1]);
+      k = (int)(Points[p].Pos[2]/GridSize[2]);
 
       if (i == NumGrid) i--;
       if (j == NumGrid) j--;
@@ -111,7 +94,6 @@ void BuildGridList(struct grid *GridList, int NumGrid, double *GridSize, int who
 
   return;
 }
-*/
 
 void SearchNeighbours(struct neighbour *Neigh, int *NumNeigh, double *GridSize, double MinDist, double MaxDist)
 {
@@ -164,3 +146,7 @@ void FreeNeighbours(struct neighbour *Neigh)
 
 }
 
+template void BuildGridList<struct tracers*>(struct tracers* Points, int NumPoints, struct grid *GridList, 
+		                             int NumGrid, double *GridSize, bool compute_neigh);
+template void BuildGridList<vector <voids>>(vector <voids> Points, int NumPoints, struct grid *GridList, 
+		                            int NumGrid, double *GridSize, bool compute_neigh);

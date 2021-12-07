@@ -34,9 +34,6 @@ extern int    FormatTracers;
 extern int    NumFiles;
 extern char   FileTracers[MAXCHAR];      
 extern char   FileVoids[MAXCHAR];        
-extern char   FileVoronoi[MAXCHAR];        
-extern int    WriteVoronoi;        
-extern int    ReadVoronoi;        
 extern int    OMPcores;         
 extern int    RSDist;           
 extern double Redshift;         
@@ -93,29 +90,6 @@ struct voids {
   int   Nran;
 };
 extern vector <voids> Void;
-
-// Grid-list 
-
-struct grid {
-  int NumMem;
-  int *Member;
-  int *Neighbour;
-};
-
-// Sorting
-
-struct sort {
-  int    ord;
-  float val;  
-};
-
-// Neighbours
-
-struct neighbour {
-   vector <int> i;	
-   vector <int> j;	
-   vector <int> k;
-};
 
 // Cosmologia para GDist y RSDist
 

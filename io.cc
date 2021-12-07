@@ -58,10 +58,6 @@ void ReadInputFile(char *filename)
   addr[nt] = FileVoids;
   id[nt++] = STRING;
 
-  strcpy(tag[nt],"FileVoronoi");
-  addr[nt] = FileVoronoi;
-  id[nt++] = STRING;
-
   strcpy(tag[nt],"ScalePos");
   addr[nt] = &ScalePos;
   id[nt++] = DOUBLE;
@@ -69,14 +65,6 @@ void ReadInputFile(char *filename)
   strcpy(tag[nt],"ScaleVel");
   addr[nt] = &ScaleVel;
   id[nt++] = DOUBLE;
-
-  strcpy(tag[nt],"ReadVoronoi");
-  addr[nt] = &ReadVoronoi;
-  id[nt++] = INT;
-
-  strcpy(tag[nt],"WriteVoronoi");
-  addr[nt] = &WriteVoronoi;
-  id[nt++] = INT;
 
   strcpy(tag[nt],"OMPcores");
   addr[nt] = &OMPcores;
