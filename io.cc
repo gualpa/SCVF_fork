@@ -673,18 +673,14 @@ void RedshiftSpaceDistortions()
    int    i;
    double Hubble_z;
    double RSDFactor;	
+   struct cosmology C = {OmegaMatter,(1.0 - OmegaMatter - OmegaLambda),OmegaLambda};
 
    fprintf(logfile," | Applying redshift-space distortions: LOS = z-axis, POS = xy-plane\n");
-	
-   Cosmo.OmM = OmegaMatter;     
-   Cosmo.OmL = OmegaLambda;
-   Cosmo.OmK = (1.0 - OmegaMatter - OmegaLambda);
-   Cosmo.Red = Redshift;
 
    if (Redshift == 0.0) {
      RSDFactor = 1.0/100.0;	   
    } else { 
-     Hubble_z = 100.0*E(Cosmo.Red);
+     Hubble_z = 100.0*E(Redshift,&C);
      RSDFactor = (1.0 + Redshift)/Hubble_z;
    }
 
@@ -706,31 +702,26 @@ void GeometricalDistortions()
    double Hubble_z,Distance_z;	
    double FidHubble_z,FidDistance_z;	
    double GDFactor_LOS,GDFactor_POS;
+   
+   struct cosmology C = {OmegaMatter,
+	                 OmegaLambda,
+			 1.0 - OmegaMatter - OmegaLambda,
+                         Hubble};
+   struct cosmology FC = {FidOmegaMatter,
+	                  FidOmegaLambda,
+			  1.0 - FidOmegaMatter - FidOmegaLambda,
+                          FidHubble};
 
    fprintf(logfile," | Applying fiducial cosmology distortions: LOS = z-axis, POS = xy-plane\n");
+   fprintf(logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",C.OmM,C.OmL,C.OmK,C.Hub);
 
-   Cosmo.Red = Redshift;
-   Cosmo.OmM = OmegaMatter;     
-   Cosmo.OmL = OmegaLambda;
-   Cosmo.OmK = 1.0 - Cosmo.OmM - Cosmo.OmL;
-   Cosmo.Hub = Hubble;
-
-   fprintf(logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",
-		                              Cosmo.OmM,Cosmo.OmL,Cosmo.OmK,Cosmo.Hub);
-
-   Hubble_z = Cosmo.Hub*E(Cosmo.Red);
-   Distance_z = AngularDistance(Cosmo.Red);
-
-   Cosmo.OmM = FidOmegaMatter;     
-   Cosmo.OmL = FidOmegaLambda;
-   Cosmo.OmK = 1.0 - Cosmo.OmM - Cosmo.OmL;
-   Cosmo.Hub = FidHubble;
+   Hubble_z = C.Hub*E(Redshift,&C);
+   Distance_z = AngularDistance(Redshift,&C);
    
-   fprintf(logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",
-		                                  Cosmo.OmM,Cosmo.OmL,Cosmo.OmK,Cosmo.Hub);
+   fprintf(logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
 
-   FidHubble_z = Cosmo.Hub*E(Cosmo.Red);
-   FidDistance_z = AngularDistance(Cosmo.Red);
+   FidHubble_z = FC.Hub*E(Redshift,&FC);
+   FidDistance_z = AngularDistance(Redshift,&FC);
 
    GDFactor_LOS = Hubble_z/FidHubble_z;
    GDFactor_POS = FidDistance_z/Distance_z;

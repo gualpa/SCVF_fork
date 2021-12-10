@@ -1,189 +1,68 @@
 
 #include "allvars.h"
 #include "qromb.h"
+#include "gsl_integration.h"
+#include "gsl_math.h"
 
-double E(double z)
+double E(double z, struct cosmology *C)
 {
   double q;
 
-  q = Cosmo.OmM*(1.0 + z)*(1.0 + z)*(1.0 + z)
-    + Cosmo.OmK*(1.0 + z)*(1.0 + z) 
-    + Cosmo.OmL;
+  q = C->OmM*(1.0 + z)*(1.0 + z)*(1.0 + z)
+    + C->OmK*(1.0 + z)*(1.0 + z) 
+    + C->OmL;
 
   q = sqrt(q);
 
   return(q);
 }
 
-double ComovingDistance_integ(double z) 
+double ComovingDistance_integ(double z, void *p) 
 {
   double q;
+  struct cosmology *C = (struct cosmology *)p;
 
-  q = 1.0/E(z);
-
+  q = 1.0/E(z,C);
+  
   return(q);
 }
 
-double ComovingDistance(double z)
+double ComovingDistance(double z, struct cosmology *C)
 {
-  double distance;
+  double distance,result,abserr;
+  gsl_function F;
+  gsl_integration_workspace *workspace;
 
-  distance = (CVEL/Cosmo.Hub)*qromb(ComovingDistance_integ,0.0,z);
+  workspace = gsl_integration_workspace_alloc(WORKSIZE);
+  F.function = &ComovingDistance_integ;
+  F.params = C;
+  
+  gsl_integration_qag(&F,0.0,z,0,1.0e-8,WORKSIZE,GSL_INTEG_GAUSS41,workspace,&result,&abserr);
+
+  distance = (CVEL/C->Hub)*result;
+
+  gsl_integration_workspace_free(workspace);
 
   return(distance);
 }
 
-double AngularDistance(double z)
+double AngularDistance(double z, struct cosmology *C)
 {
   double dcom,dang,dh;
 
-  dcom = ComovingDistance(z);
-  dh = CVEL/Cosmo.Hub;
+  dcom = ComovingDistance(z,C);
+  dh = CVEL/C->Hub;
 
-  if (Cosmo.OmK == 0.0) {
+  if (C->OmK == 0.0) {
      dang = dcom;
-  } else if (Cosmo.OmK > 0.0) {
-     dang = (dh/sqrt(Cosmo.OmK))*sinh(sqrt(Cosmo.OmK)*dcom/dh);	  
-  } else if (Cosmo.OmK < 0.0) {
-     dang = (dh/sqrt(fabs(Cosmo.OmK)))*sin(sqrt(fabs(Cosmo.OmK))*dcom/dh);	  
+  } else if (C->OmK > 0.0) {
+     dang = (dh/sqrt(C->OmK))*sinh(sqrt(C->OmK)*dcom/dh);	  
+  } else if (C->OmK < 0.0) {
+     dang = (dh/sqrt(fabs(C->OmK)))*sin(sqrt(fabs(C->OmK))*dcom/dh);	  
   }
 
   dang /= (1.0 + z);
 
   return(dang);  
 }	
-
-double *vec(long nl, long nh)
-/* allocate a float vector with subscript range v[nl..nh] */
-{
-	double *v;
-
-	v=(double *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(double)));
-	if (!v) {
-	   fprintf(stdout,"Numerical Recipes run-time error...\n");
-	   fprintf(stdout,"allocation failure in vec()\n");
-	   fprintf(stdout,"...now exiting to system...\n");
-	   fflush(stdout);
-	   exit(EXIT_FAILURE);
-	}
-	return v-nl+NR_END;
-}
-
-void free_vec(double *v, long nl, long nh)
-/* free a float vector allocated with vec() */
-{
-	free((FREE_ARG) (v+nl-NR_END));
-}
-
-double trapzd(double (*func)(double), double a, double b, int n)
-{
-	double x,tnm,sum,del;
-	static float s;
-	int it,j;
-
-	if (n == 1) {
-		return (s=0.5*(b-a)*((*func)(a)+(*func)(b)));
-	} else {
-		for (it=1,j=1;j<n-1;j++) it <<= 1;
-		tnm=it;
-		del=(b-a)/tnm;
-		x=a+0.5*del;
-		for (sum=0.0,j=1;j<=it;j++,x+=del) sum += (*func)(x);
-		s=0.5*(s+(b-a)*sum/tnm);
-		return s;
-	}
-}
-
-void polint(double xa[], double ya[], int n, double x, double *y, double *dy)
-{
-  int i,m,ns=1;
-  double den,dif,dift,ho,hp,w;
-  double *c,*d;
-  //printf("polint ----"); fflush(stdout);
-
-  dif=fabs(x-xa[1]);
-  c=vec(1,n);
-  d=vec(1,n);
-  for (i=1;i<=n;i++) 
-  {
-    if ( (dift=fabs(x-xa[i])) < dif) 
-    {
-      ns=i;
-      dif=dift;
-    }
-    c[i]=ya[i];
-    d[i]=ya[i];
-  }
-  *y=ya[ns--];
-  for (m=1;m<n;m++) 
-  {
-    for (i=1;i<=n-m;i++) 
-    {
-      ho=xa[i]-x;
-      hp=xa[i+m]-x;
-      w=c[i+1]-d[i];
-      if ((den=ho-hp) == 0.0) {
-	 fprintf(stdout,"Numerical Recipes run-time error...\n");
-	 fprintf(stdout,"Error in routine polint\n");
-	 fprintf(stdout,"...now exiting to system...\n");
-	 fflush(stdout);
-	 exit(EXIT_FAILURE);
-      }
-      den=w/den;
-      d[i]=hp*den;
-      c[i]=ho*den;
-    }
-    *y += (*dy=(2*ns < (n-m) ? c[ns+1] : d[ns--]));
-  }
-  free_vec(d,1,n);
-  free_vec(c,1,n);
-}
-
-double qromb(double (*func)(double), double a, double b)
-{
-  void polint(double xa[], double ya[], int n, double x, double *y, double *dy);
-  double trapzd(double (*func)(double), double a, double b, int n);
-  double ss,dss;
-  double s[JMAXP+1],h[JMAXP+1];
-  int j;
-
-  h[1]=1.0;
-  for (j=1;j<=JMAX;j++) 
-  {
-    s[j]=trapzd(func,a,b,j);
-    if (j >= K) 
-    {
-      polint(&h[j-K],&s[j-K],K,0.0,&ss,&dss);
-      if (fabs(dss) < EPS*fabs(ss)) return ss;
-    }
-    s[j+1]=s[j];
-    h[j+1]=0.25*h[j];
-  }
-
-  fprintf(stdout,"Numerical Recipes run-time error...\n");
-  fprintf(stdout,"Too many steps in routine qromb\n");
-  fprintf(stdout,"...now exiting to system...\n");
-  fflush(stdout);
-  exit(EXIT_FAILURE);
-  return 0.0;
-}
-
-void locate(double xx[], int n, double x, int *j)
-{
-  int ju,jm,jl;
-  int ascnd;
-  
-  jl = 0   ;
-  ju = n+1 ;
-  ascnd=(xx[n-1] > xx[0]);
-  while (ju-jl > 1) 
-  {
-    jm=(ju+jl) >> 1;
-    if (x > xx[jm-1] == ascnd)
-      jl = jm ;
-    else
-      ju = jm ;
-  }
-  *j = jl ;
-}
 
