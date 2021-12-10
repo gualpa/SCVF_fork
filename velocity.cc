@@ -4,7 +4,7 @@
 #include "grid.h"
 #include "tools.h"
 
-void ComputeVelocity()
+void compute_velocity()
 {
 
    int              i,j,k,ic,jc,kc,in,m,NumGrid;
@@ -22,7 +22,7 @@ void ComputeVelocity()
    NumGrid = (int)round(cbrt((double)NumTrac/100.0));
    if (NumGrid < 50) NumGrid = 50;
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   BuildGridList(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
+   build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
    GAP = 0.0;
    for (k=0; k<3; k++) 
@@ -33,7 +33,7 @@ void ComputeVelocity()
    MinDist = 0.0;
    MaxDist = OuterShellVel*MaxRadiusSearch + GAP;  	 
 
-   SearchNeighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
+   search_neighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
   
    fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumNeigh);
    fflush(logfile);
@@ -44,8 +44,6 @@ void ComputeVelocity()
    private(i,l,k,m,Radius,xc,ic,jc,kc,ii,jj,kk,next,dx,xt,dist,Counter,vt,PLUS,in)
 
    for (i=0; i<NumVoid; i++) {
-       
-       //if (omp_get_thread_num() == 0) Progress(i,NumVoid);
        
        if (!Void[i].ToF) continue;
 
@@ -65,11 +63,11 @@ void ComputeVelocity()
 
           for (in=0; in<NumNeigh; in++) {
 	    
-              ii = PeriodicGrid(Neigh.i[in] + ic,NumGrid); 
-	      jj = PeriodicGrid(Neigh.j[in] + jc,NumGrid); 
-	      kk = PeriodicGrid(Neigh.k[in] + kc,NumGrid); 	  
+              ii = periodic_grid(Neigh.i[in] + ic,NumGrid); 
+	      jj = periodic_grid(Neigh.j[in] + jc,NumGrid); 
+	      kk = periodic_grid(Neigh.k[in] + kc,NumGrid); 	  
 
-              l = Index1D(ii,jj,kk,NumGrid);
+              l = index_1d(ii,jj,kk,NumGrid);
 
               if (GridList[l].NumMem == 0) continue;
 
@@ -80,7 +78,7 @@ void ComputeVelocity()
                   for (k=0; k<3; k++) {
                       xt[k] = (double)Tracer[next].Pos[k];	 
                       vt[k] = (double)Tracer[next].Vel[k];
-                      dx[k] = PeriodicDeltaPos(xc[k] - xt[k],LBox[k]);
+                      dx[k] = periodic_delta(xc[k] - xt[k],LBox[k]);
                   }
 
                   dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
@@ -104,9 +102,9 @@ void ComputeVelocity()
        Void[i].Vel[2] /= (double)Counter; 
    }
   
-   FreeGridList(GridList,NumGrid);
-   FreeNeighbours(&Neigh);
+   free_grid_list(GridList,NumGrid);
+   free_neighbours(&Neigh);
 
    StepName.push_back("Computing velocities");
-   StepTime.push_back(Time(t,OMPcores));
+   StepTime.push_back(get_time(t,OMPcores));
 }

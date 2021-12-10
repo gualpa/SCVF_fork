@@ -2,7 +2,7 @@
 #include "allvars.h"
 #include "tools.h"
 
-int PeriodicGrid(int i, int N)
+int periodic_grid(int i, int N)
 {
   int ip;
 	
@@ -17,7 +17,7 @@ int PeriodicGrid(int i, int N)
   return ip;
 }	
 
-double PeriodicPos(double x, double l)
+double periodic_position(double x, double l)
 {
   double xp;
 	
@@ -32,7 +32,7 @@ double PeriodicPos(double x, double l)
   return xp;
 }
 
-double PeriodicDeltaPos(double dx, double l)
+double periodic_delta(double dx, double l)
 {
   double dxp;
   double halfbox = 0.5*l;
@@ -48,14 +48,14 @@ double PeriodicDeltaPos(double dx, double l)
   return dxp;
 }
 
-int Index1D(int i, int j, int k, int N)
+int index_1d(int i, int j, int k, int N)
 {
    int indx;
    indx = (k*N + j)*N + i;
    return indx;   
 }
 
-vector <int> Index3D(int l, int N)
+vector <int> index_3d(int l, int N)
 {
    int          i,j,k;
    vector <int> indx;
@@ -72,20 +72,20 @@ vector <int> Index3D(int l, int N)
    return indx;
 }
 
-int CountLines(char *filename)
+int count_lines(char *filename)
 {
   FILE *fp;
   int  count = 0;
   char string[256];
 
-  fp = SafeOpen(filename, "r");
+  fp = safe_open(filename, "r");
   while (fgets(string,256,fp)) count++;
   fclose(fp);
 
   return count; 
 }
     
-double Time(clock_t ti, int N)
+double get_time(clock_t ti, int N)
 {
   clock_t tf;
   double  tseg,tmin;
@@ -102,7 +102,7 @@ double Time(clock_t ti, int N)
   return tseg;
 }
 
-void StatsTime()
+void time_resume()
 {
   int     i;	
   double  total;
@@ -122,24 +122,14 @@ void StatsTime()
 
 }
 
-void Progress(int par, int tot)
-{
-  float prog;
-
-  prog = (float)par/(float)tot*100.0;
-  fprintf(stdout," | %4.1f %s \r",prog,"%");
-  fflush(stdout);
-
-}
-
-double RandomNumber()
+double random_number()
 {
    double x;
    x = (double)rand()/RAND_MAX;
    return x;
 }
 
-double LnFactorial(int n)
+double ln_factorial(int n)
 {
   int    i;
   double f;
@@ -155,7 +145,7 @@ double LnFactorial(int n)
   return f;
 }
 
-FILE *SafeOpen(char *fname, const char *mode)
+FILE *safe_open(char *fname, const char *mode)
 {
   FILE *f;
 

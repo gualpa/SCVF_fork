@@ -8,8 +8,8 @@ struct cosmoparam {
   double Hub;
 };
 
-double E(double, struct cosmoparam *);
-double ComovingDistance_integ(double, void *); 
-double ComovingDistance(double, struct cosmoparam *);
-double AngularDistance(double, struct cosmoparam *);
+double evolution_param(double, struct cosmoparam *);
+double comoving_distance_integ(double, void *); 
+double comoving_distance(double, struct cosmoparam *);
+double angular_distance(double, struct cosmoparam *);
 

@@ -12,11 +12,8 @@ struct neighbour {
 };
 
 template <class T>
-void BuildGridList(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize, bool compute_neigh);
-
-void SearchNeighbours(struct neighbour *Neigh, int *NumNeigh, double *GridSize, double MinDist, double MaxDist);
-
-void FreeGridList(struct grid *GridList, int NG);
-
-void FreeNeighbours(struct neighbour *Neigh);
+void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize, bool compute_neigh);
+void search_neighbours(struct neighbour *Neigh, int *NumNeigh, double *GridSize, double MinDist, double MaxDist);
+void free_grid_list(struct grid *GridList, int NG);
+void free_neighbours(struct neighbour *Neigh);
 

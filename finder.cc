@@ -4,7 +4,7 @@
 #include "qsort.h"
 #include "tools.h"
 
-void FindCenters()
+void find_void_candidates()
 {
   int     i;
   clock_t t;
@@ -33,11 +33,11 @@ void FindCenters()
   fprintf(logfile," | Void candidates = %d \n",NumVoid);
   
   StepName.push_back("Finding centers");
-  StepTime.push_back(Time(t,1));
+  StepTime.push_back(get_time(t,1));
 
 }
 
-void FindVoids() 
+void find_voids() 
 {
   struct grid    *GridList;
   int            NumCores,NumGrid;
@@ -59,7 +59,7 @@ void FindVoids()
   NumGrid = (int)round(cbrt((double)NumTrac/10.0));
   if (NumGrid < 100) NumGrid = 100;
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-  BuildGridList(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
+  build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
   GAP = 0.0;
   for (k=0; k<3; k++) 
@@ -87,7 +87,7 @@ void FindVoids()
       MinDist = MaxRadiusSearch/(double)NumShell*(double)(p  ) - GAP;  
       MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1) + GAP;  
 
-      SearchNeighbours(&Neigh[p],&NumNeigh[p],GridSize,MinDist,MaxDist);
+      search_neighbours(&Neigh[p],&NumNeigh[p],GridSize,MinDist,MaxDist);
   } 
 
   for (p=0; p<NumShell; p++) {
@@ -124,14 +124,14 @@ void FindVoids()
 
 	  } else {
 
-	     the = acos(2.0*RandomNumber() - 1.0);
-	     phi = 2.0*PI*RandomNumber();
+	     the = acos(2.0*random_number() - 1.0);
+	     phi = 2.0*PI*random_number();
 	     rad = (double)Void[iv].Rad;
 
 	     if (rad == 0.0) 
-	        rad = (double)Void[iv].Rini*RandomNumber();
+	        rad = (double)Void[iv].Rini*random_number();
 	     else  
-	        rad *= FracRadius*RandomNumber();
+	        rad *= FracRadius*random_number();
 
 	     xr[0] = rad*sin(the)*cos(phi);
 	     xr[1] = rad*sin(the)*sin(phi);
@@ -141,18 +141,18 @@ void FindVoids()
 	  if (Void[iv].Rad == 0.0) {
 
              for (k=0; k<3; k++) 
-		 xc[k] = PeriodicPos((double)Void[iv].Ini[k] + xr[k],LBox[k]);
+		 xc[k] = periodic_position((double)Void[iv].Ini[k] + xr[k],LBox[k]);
 
 	  } else {
 
              for (k=0; k<3; k++) {
-		 xc[k] = PeriodicPos((double)Void[iv].Pos[k] + xr[k],LBox[k]);
-		 dx[k] = PeriodicDeltaPos(xc[k] - (double)Void[iv].Ini[k],LBox[k]);
+		 xc[k] = periodic_position((double)Void[iv].Pos[k] + xr[k],LBox[k]);
+		 dx[k] = periodic_delta(xc[k] - (double)Void[iv].Ini[k],LBox[k]);
 	     }
 	     dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 	     if (dist > Void[iv].Rad) // avoid big migration 
 	        for (k=0; k<3; k++) 
-	            xc[k] = PeriodicPos((double)Void[iv].Ini[k] + xr[k],LBox[k]); 	  
+	            xc[k] = periodic_position((double)Void[iv].Ini[k] + xr[k],LBox[k]); 	  
 	  }
 
 	  ic = (int)(xc[0]/GridSize[0]);
@@ -169,11 +169,11 @@ void FindVoids()
 
 	     for (in=0; in<NumNeigh[p]; in++) {
 
-	         ii = PeriodicGrid(Neigh[p].i[in] + ic,NumGrid); 
-	         jj = PeriodicGrid(Neigh[p].j[in] + jc,NumGrid); 
-	         kk = PeriodicGrid(Neigh[p].k[in] + kc,NumGrid); 
+	         ii = periodic_grid(Neigh[p].i[in] + ic,NumGrid); 
+	         jj = periodic_grid(Neigh[p].j[in] + jc,NumGrid); 
+	         kk = periodic_grid(Neigh[p].k[in] + kc,NumGrid); 
 
-		 l = Index1D(ii,jj,kk,NumGrid);
+		 l = index_1d(ii,jj,kk,NumGrid);
 
 		 if (GridList[l].NumMem == 0) continue;
 
@@ -182,7 +182,7 @@ void FindVoids()
 	             next = GridList[l].Member[m];		 
 
 		     for (k=0; k<3; k++) 
-	                 dx[k] = PeriodicDeltaPos(xc[k] - (double)Tracer[next].Pos[k],LBox[k]);
+	                 dx[k] = periodic_delta(xc[k] - (double)Tracer[next].Pos[k],LBox[k]);
 
                      dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 
@@ -199,7 +199,7 @@ void FindVoids()
 	         SortArr[k].val = val[k];
                  SortArr[k].ord = k;	      
 	     }
-             QSort(SortArr,0,Nsort-1);
+             qsort(SortArr,0,Nsort-1);
 
 	     Radius = 0.5*(SortArr[Nsort-2].val + SortArr[Nsort-1].val);    
    	     Volume = (4.0/3.0)*PI*Radius*Radius*Radius;
@@ -250,22 +250,22 @@ void FindVoids()
 
       if (Void[iv].ToF) {
 	 lambda = (4.0/3.0)*PI*pow((double)Void[iv].Rad,3)*MeanNumTrac;
-         Void[iv].Poisson = (double)kappa*log(lambda) - lambda - LnFactorial(kappa); 	 
+         Void[iv].Poisson = (double)kappa*log(lambda) - lambda - ln_factorial(kappa); 	 
 	 Void[iv].Nran = TotRan;
       }    
 
   } /* Fin lazo voids */
 
   for (p=0; p<NumShell; p++) 
-      FreeNeighbours(&Neigh[p]);	  
-  FreeGridList(GridList,NumGrid);
+      free_neighbours(&Neigh[p]);	  
+  free_grid_list(GridList,NumGrid);
 
   StepName.push_back("Finding voids");
-  StepTime.push_back(Time(t,OMPcores));
+  StepTime.push_back(get_time(t,OMPcores));
 
 }
 
-void CleanVoids()
+void clean_voids()
 {
   int              p,i,j,k,l,m,indx,next,in,it;
   int              ii,jj,kk,ic,jc,kc,NumTrueVoid;
@@ -282,7 +282,7 @@ void CleanVoids()
 
   NumGrid = (int)cbrt((double)NumVoid/10.0);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid)); 
-  BuildGridList(Void,NumVoid,GridList,NumGrid,GridSize,false);
+  build_grid_list(Void,NumVoid,GridList,NumGrid,GridSize,false);
   
   NumTrueVoid = 0;
   for (i=0; i<NumVoid; i++)
@@ -304,7 +304,7 @@ void CleanVoids()
       }     
   }
 
-  QSort(SortArr,0,NumTrueVoid-1);
+  qsort(SortArr,0,NumTrueVoid-1);
 
   // Selecciono vecinos
   
@@ -317,14 +317,12 @@ void CleanVoids()
   MinDist = 0.0;
   MaxDist = 2.0*MaxRadiusSearch + GAP;  
 
-  SearchNeighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
+  search_neighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
   
   fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumNeigh);
   fflush(logfile);
 
   for (i=NumTrueVoid-1; i>=0; i--) {
-
-      //if ((NumVoid-i) % 10000 == 0) Progress(NumVoid-i,NumVoid); 
 
       indx = SortArr[i].ord;
       if (!Void[indx].ToF) continue;
@@ -341,11 +339,11 @@ void CleanVoids()
     
       for (in=0; in<NumNeigh; in++) {
 
-   	  ii = PeriodicGrid(Neigh.i[in] + ic,NumGrid); 
-	  jj = PeriodicGrid(Neigh.j[in] + jc,NumGrid); 
-	  kk = PeriodicGrid(Neigh.k[in] + kc,NumGrid); 
+   	  ii = periodic_grid(Neigh.i[in] + ic,NumGrid); 
+	  jj = periodic_grid(Neigh.j[in] + jc,NumGrid); 
+	  kk = periodic_grid(Neigh.k[in] + kc,NumGrid); 
 
-	  l = Index1D(ii,jj,kk,NumGrid);
+	  l = index_1d(ii,jj,kk,NumGrid);
 
           if (GridList[l].NumMem == 0) continue;
 
@@ -362,7 +360,7 @@ void CleanVoids()
 	         Vj = (4.0/3.0)*PI*Rj*Rj*Rj;
     
 	         for (k=0; k<3; k++) 
-	             dx[k] = PeriodicDeltaPos(xi[k] - xj[k],LBox[k]);
+	             dx[k] = periodic_delta(xi[k] - xj[k],LBox[k]);
 
                  dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 
@@ -392,11 +390,11 @@ void CleanVoids()
 		  NumTrueVoid,(double)NumTrueVoid/(double)NumVoid*100.0);
 
   free(SortArr);
-  FreeGridList(GridList,NumGrid);
-  FreeNeighbours(&Neigh);
+  free_grid_list(GridList,NumGrid);
+  free_neighbours(&Neigh);
 
   StepName.push_back("Cleaning voids"); 
-  StepTime.push_back(Time(t,1));
+  StepTime.push_back(get_time(t,1));
 
 }
 

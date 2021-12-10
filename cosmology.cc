@@ -4,54 +4,49 @@
 #include "gsl_integration.h"
 #include "gsl_math.h"
 
-double E(double z, struct cosmoparam *C)
+double evolution_param(double z, struct cosmoparam *C)
 {
-  double q;
+  double q = C->OmM*(1.0 + z)*(1.0 + z)*(1.0 + z)
+           + C->OmK*(1.0 + z)*(1.0 + z) 
+           + C->OmL;
 
-  q = C->OmM*(1.0 + z)*(1.0 + z)*(1.0 + z)
-    + C->OmK*(1.0 + z)*(1.0 + z) 
-    + C->OmL;
-
-  q = sqrt(q);
-
-  return(q);
+  return(sqrt(q));
 }
 
-double ComovingDistance_integ(double z, void *p) 
+double comoving_distance_integ(double z, void *p) 
 {
-  double q;
   struct cosmoparam *C = (struct cosmoparam *)p;
 
-  q = 1.0/E(z,C);
+  double q = 1.0/evolution_param(z,C);
   
   return(q);
 }
 
-double ComovingDistance(double z, struct cosmoparam *C)
+double comoving_distance(double z, struct cosmoparam *C)
 {
-  double distance,result,abserr;
+  double result,abserr;
   gsl_function F;
   gsl_integration_workspace *workspace;
 
   workspace = gsl_integration_workspace_alloc(WORKSIZE);
-  F.function = &ComovingDistance_integ;
+  F.function = &comoving_distance_integ;
   F.params = C;
   
   gsl_integration_qag(&F,0.0,z,0,1.0e-8,WORKSIZE,GSL_INTEG_GAUSS41,workspace,&result,&abserr);
 
-  distance = (CVEL/C->Hub)*result;
+  double distance = (CVEL/C->Hub)*result;
 
   gsl_integration_workspace_free(workspace);
 
   return(distance);
 }
 
-double AngularDistance(double z, struct cosmoparam *C)
+double angular_distance(double z, struct cosmoparam *C)
 {
-  double dcom,dang,dh;
 
-  dcom = ComovingDistance(z,C);
-  dh = CVEL/C->Hub;
+  double dcom = comoving_distance(z,C);
+  double dh = CVEL/C->Hub;
+  double dang;
 
   if (C->OmK == 0.0) {
      dang = dcom;
@@ -61,8 +56,6 @@ double AngularDistance(double z, struct cosmoparam *C)
      dang = (dh/sqrt(fabs(C->OmK)))*sin(sqrt(fabs(C->OmK))*dcom/dh);	  
   }
 
-  dang /= (1.0 + z);
-
-  return(dang);  
+  return(dang/(1.0 + z));  
 }	
 

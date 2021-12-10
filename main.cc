@@ -20,7 +20,7 @@ int main(int argc, char **argv)
        exit(EXIT_FAILURE);
    }
 
-   ReadInputFile(argv[1]);
+   read_input_file(argv[1]);
 
    if (Redshift == 0.0 && GDist == 1) {
       fprintf(stdout,"\nError. Geometrical distortions not available for z = 0\n");
@@ -31,38 +31,38 @@ int main(int argc, char **argv)
    fprintf(stdout,"\n ====>>>> Void finder runnning in %d core(s) <<<<==== \n",OMPcores);
 
    fprintf(stdout,"\nReading tracers... ");fflush(stdout);
-   ReadTracers();
+   read_tracers();
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing Voronoi tessellation... ");fflush(stdout);
-   ComputeVoronoi();
+   compute_voronoi();
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nSearching candidates... ");fflush(stdout);
-   FindCenters(); 
+   find_void_candidates(); 
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nPerforming void identification... ");fflush(stdout);
-   FindVoids();
+   find_voids();
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nCleaning void catalogue... ");fflush(stdout);
-   CleanVoids();
+   clean_voids();
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void velocities... ");fflush(stdout);
-   ComputeVelocity();
+   compute_velocity();
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void profiles... ");fflush(stdout);
-   ComputeProfiles();
+   compute_profiles();
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nWrinting void catalogue... ");fflush(stdout);
-   WriteVoids();
+   write_voids();
    fprintf(stdout,"Done.\n\n");fflush(stdout);
 
-   StatsTime();
+   time_resume();
    
    free(Tracer);
    Void.clear();

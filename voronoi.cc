@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "grid.h"
 
-void ComputeVoronoi()
+void compute_voronoi()
 {
    int            G,i,j,k,p,N,l,id,count,NumGrid;
    struct grid    *GridList;
@@ -25,7 +25,7 @@ void ComputeVoronoi()
 
    NumGrid = (int)round(cbrt((double)NumTrac/MeanPartPerGrid));
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   BuildGridList(Tracer,NumTrac,GridList,NumGrid,GridSize,true);
+   build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,true);
 
    Vol = LBox[0]*LBox[1]*LBox[2];
 
@@ -48,7 +48,7 @@ void ComputeVoronoi()
 
        G = (int)cbrt((double)N/5.0);
 
-       indx = Index3D(l,NumGrid);
+       indx = index_3d(l,NumGrid);
    
        for (k=0; k<3; k++) {
            ref[k] = (double)(indx[k]  )*GridSize[k];
@@ -108,7 +108,7 @@ void ComputeVoronoi()
           cell.centroid(xc[0],xc[1],xc[2]);
 
           for (k=0; k<3; k++)  
-     	      Tracer[IDs[i]].Cen[k] = (float)PeriodicPos(xp[k] + xc[k],LBox[k]);
+     	      Tracer[IDs[i]].Cen[k] = (float)periodic_position(xp[k] + xc[k],LBox[k]);
          
           // Volume of the cell
           Tracer[IDs[i]].Volume = (float)cell.volume(); 
@@ -125,9 +125,9 @@ void ComputeVoronoi()
        IDs.clear();
    }
 
-   FreeGridList(GridList,NumGrid);
+   free_grid_list(GridList,NumGrid);
 
    StepName.push_back("Computing Voronoi tessellation");
-   StepTime.push_back(Time(t,OMPcores));
+   StepTime.push_back(get_time(t,OMPcores));
 
 }

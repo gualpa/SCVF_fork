@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "cosmology.h"
 
-void ReadInputFile(char *filename)
+void read_input_file(char *filename)
 {
 #define DOUBLE  1
 #define STRING  2
@@ -146,10 +146,10 @@ void ReadInputFile(char *filename)
   addr[nt] = &OuterShellVel;
   id[nt++] = DOUBLE; 
 
-  fd = SafeOpen(filename,"r");
+  fd = safe_open(filename,"r");
 
   sprintf(fname,"%s.log",filename);	  
-  logfile = SafeOpen(fname,"w");
+  logfile = safe_open(fname,"w");
 
   fprintf(logfile,"\n CONFIGURATION PARAMETERS USED \n\n");
 
@@ -217,7 +217,7 @@ void ReadInputFile(char *filename)
 #undef MAXTAGS
 }
 
-void ReadTracers()
+void read_tracers()
 {
 
    int     i;
@@ -232,27 +232,27 @@ void ReadTracers()
 
       case 0: 
       fprintf(logfile," | Reading ASCII format \n");	   
-      ReadTracers_ASCII();
+      read_tracers_ascii();
       break;
 
       case 1:
       fprintf(logfile," | Reading GADGET-1 format \n");	   
-      ReadTracers_GADGET1();
+      read_tracers_gadget2_format1();
       break;
 
       case 2:
       fprintf(logfile," | Reading GADGET-2 format \n");	   
-      ReadTracers_GADGET2();
+      read_tracers_gadget2_format2();
       break;
 
       case 3:
       fprintf(logfile," | Reading MXXL format \n");	   
-      ReadTracers_MXXL();
+      read_tracers_mxxl();
       break;
 
       case 4:
       fprintf(logfile," | Reading BINARY format \n");	   
-      ReadTracers_BINARY();
+      read_tracers_binary();
 
    }
 
@@ -260,8 +260,8 @@ void ReadTracers()
    LBox[1] = BoxSize;
    LBox[2] = BoxSize;
 
-   if (RSDist == 1) RedshiftSpaceDistortions();
-   if (GDist == 1) GeometricalDistortions();
+   if (RSDist == 1) redshift_space_distortions();
+   if (GDist == 1) geometrical_distortions();
 
    Volume = LBox[0]*LBox[1]*LBox[2];
    MeanNumTrac = (double)NumTrac/Volume;
@@ -275,19 +275,19 @@ void ReadTracers()
    fprintf(logfile," | Mean separation [Mpc/h] = %e \n",MeanSeparation);
 
    StepName.push_back("Reading tracers");
-   StepTime.push_back(Time(t,1));
+   StepTime.push_back(get_time(t,1));
 
 }
 
-void ReadTracers_ASCII()
+void read_tracers_ascii()
 {
    int  i;
    FILE *fd;
 
-   NumTrac = CountLines(FileTracers);
+   NumTrac = count_lines(FileTracers);
    Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
 
-   fd = SafeOpen(FileTracers,"r");
+   fd = safe_open(FileTracers,"r");
    for (i=0; i<NumTrac; i++) {
        fscanf(fd,"%f %f %f %f %f %f \n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2],	   
                                         &Tracer[i].Vel[0],&Tracer[i].Vel[1],&Tracer[i].Vel[2]);
@@ -309,12 +309,12 @@ void ReadTracers_ASCII()
 
 }
 
-void ReadTracers_BINARY()
+void read_tracers_binary()
 {
    int   i;
    FILE  *fd;
 
-   fd = SafeOpen(FileTracers,"r");
+   fd = safe_open(FileTracers,"r");
    
    fread(&NumTrac,sizeof(int),1,fd);
    Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
@@ -333,7 +333,7 @@ void ReadTracers_BINARY()
 
 }
 
-void ReadTracers_GADGET1()
+void read_tracers_gadget2_format1()
 {
 
   struct GadgetHeader {
@@ -363,7 +363,7 @@ void ReadTracers_GADGET1()
   else 
      sprintf(snapshot,"%s.0",FileTracers);	  
 
-  f1 = SafeOpen(snapshot,"r");
+  f1 = safe_open(snapshot,"r");
 
   fread(&dummy,sizeof(int),1,f1);
   fread(&Header,sizeof(struct GadgetHeader),1,f1); 
@@ -409,9 +409,9 @@ void ReadTracers_GADGET1()
       else 
          sprintf(snapshot,"%s.%d",FileTracers,i);	  
 
-      f1 = SafeOpen(snapshot,"r"); // Pos     
-      f2 = SafeOpen(snapshot,"r"); // Vel     
-      f3 = SafeOpen(snapshot,"r"); // ID
+      f1 = safe_open(snapshot,"r"); // Pos     
+      f2 = safe_open(snapshot,"r"); // Vel     
+      f3 = safe_open(snapshot,"r"); // ID
 
       fread(&dummy,sizeof(int),1,f1);
       fread(&Header,sizeof(struct GadgetHeader),1,f1);
@@ -451,7 +451,7 @@ void ReadTracers_GADGET1()
 
 }
 
-void ReadTracers_GADGET2()
+void read_tracers_gadget2_format2()
 {
 
   struct GadgetHeader {
@@ -487,7 +487,7 @@ void ReadTracers_GADGET2()
       else 
          sprintf(snapshot,"%s.%d",FileTracers,i);	  
 
-      f1 = SafeOpen(snapshot,"r");
+      f1 = safe_open(snapshot,"r");
 
       strcpy(key,"HEAD\0");
       do {
@@ -553,8 +553,8 @@ void ReadTracers_GADGET2()
       else 
          sprintf(snapshot,"%s.%d",FileTracers,i);	  
 
-      f1 = SafeOpen(snapshot,"r"); // Pos     
-      f2 = SafeOpen(snapshot,"r"); // Vel     
+      f1 = safe_open(snapshot,"r"); // Pos     
+      f2 = safe_open(snapshot,"r"); // Vel     
 
       strcpy(key,"HEAD\0");
       do {
@@ -619,7 +619,7 @@ void ReadTracers_GADGET2()
 
 }
 
-void ReadTracers_MXXL()
+void read_tracers_mxxl()
 {
 
    int     i,j,k,NumTot,N,id;
@@ -632,7 +632,7 @@ void ReadTracers_MXXL()
 
    for (i=1; i<=NumFiles; i++) {
        sprintf(filename,"%s%02d",basename,i);
-       fd = SafeOpen(filename,"r");
+       fd = safe_open(filename,"r");
        fread(&N,sizeof(int),1,fd);
        fread(&NumTot,sizeof(int),1,fd);
        NumTrac += N;
@@ -649,7 +649,7 @@ void ReadTracers_MXXL()
 
    for (j=1; j<=NumFiles; j++) { 
        sprintf(filename,"%s%02d",basename,j);
-       fd = SafeOpen(filename,"r");
+       fd = safe_open(filename,"r");
        fread(&N,sizeof(int),1,fd);
        fread(&NumTot,sizeof(int),1,fd);
        for (i=0; i<N; i++) {
@@ -667,7 +667,7 @@ void ReadTracers_MXXL()
 
 }
 
-void RedshiftSpaceDistortions()
+void redshift_space_distortions()
 {
 
    int    i;
@@ -680,7 +680,7 @@ void RedshiftSpaceDistortions()
    if (Redshift == 0.0) {
      RSDFactor = 1.0/100.0;	   
    } else { 
-     Hubble_z = 100.0*E(Redshift,&C);
+     Hubble_z = 100.0*evolution_param(Redshift,&C);
      RSDFactor = (1.0 + Redshift)/Hubble_z;
    }
 
@@ -695,7 +695,7 @@ void RedshiftSpaceDistortions()
 
 }
 
-void GeometricalDistortions()
+void geometrical_distortions()
 {
 
    int    i;
@@ -714,13 +714,13 @@ void GeometricalDistortions()
    fprintf(logfile," | Applying fiducial cosmology distortions: LOS = z-axis, POS = xy-plane\n");
    fprintf(logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",C.OmM,C.OmL,C.OmK,C.Hub);
 
-   Hubble_z = C.Hub*E(Redshift,&C);
-   Distance_z = AngularDistance(Redshift,&C);
+   Hubble_z = C.Hub*evolution_param(Redshift,&C);
+   Distance_z = angular_distance(Redshift,&C);
    
    fprintf(logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
 
-   FidHubble_z = FC.Hub*E(Redshift,&FC);
-   FidDistance_z = AngularDistance(Redshift,&FC);
+   FidHubble_z = FC.Hub*evolution_param(Redshift,&FC);
+   FidDistance_z = angular_distance(Redshift,&FC);
 
    GDFactor_LOS = Hubble_z/FidHubble_z;
    GDFactor_POS = FidDistance_z/Distance_z;
@@ -741,7 +741,7 @@ void GeometricalDistortions()
 
 }
 
-void WriteVoids()
+void write_voids()
 {
    int     i;
    FILE    *fd;
@@ -750,7 +750,7 @@ void WriteVoids()
    fprintf(logfile,"\n WRITTING VOID CATALOGUE \n");
    t = clock();
    
-   fd = SafeOpen(FileVoids,"w");
+   fd = safe_open(FileVoids,"w");
 
    float dx[3],disp;
    int   k;
@@ -766,7 +766,7 @@ void WriteVoids()
    fclose(fd);
 
    StepName.push_back("Writting void catalogue");
-   StepTime.push_back(Time(t,1));
+   StepTime.push_back(get_time(t,1));
 
 }
 

@@ -1,7 +1,7 @@
 
 struct sort {
-  int    ord;
+  int   ord;
   float val;  
 };
 
-void QSort(struct sort *, int, int);
+void qsort(struct sort *, int, int);

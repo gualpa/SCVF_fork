@@ -1,2 +1,2 @@
 
-void ComputeVelocity(void);
+void compute_velocity(void);

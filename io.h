@@ -1,11 +1,11 @@
 
-void ReadInputFile(char *);
-void ReadTracers(void);
-void ReadTracers_ASCII(void);
-void ReadTracers_BINARY(void);
-void ReadTracers_MXXL(void);
-void ReadTracers_GADGET1(void);
-void ReadTracers_GADGET2(void);
-void WriteVoids(void);
-void GeometricalDistortions(void);
-void RedshiftSpaceDistortions(void);
+void read_input_file(char *);
+void read_tracers(void);
+void read_tracers_ascii(void);
+void read_tracers_binary(void);
+void read_tracers_mxxl(void);
+void read_tracers_gadget2_format1(void);
+void read_tracers_gadget2_format2(void);
+void write_voids(void);
+void geometrical_distortions(void);
+void redshift_space_distortions(void);

@@ -4,7 +4,7 @@
 #include "grid.h"
 
 template <class T>
-void BuildGridList(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize, bool compute_neigh)
+void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize, bool compute_neigh)
 {
   int p,i,j,k,l,nv,ll;
   int ii,jj,kk,it,jt,kt;
@@ -33,7 +33,7 @@ void BuildGridList(T Points, int NumPoints, struct grid *GridList, int NumGrid, 
       if (j == NumGrid) j--;
       if (k == NumGrid) k--;
 
-      l = Index1D(i,j,k,NumGrid);
+      l = index_1d(i,j,k,NumGrid);
 
       GridList[l].NumMem++;
   }
@@ -53,7 +53,7 @@ void BuildGridList(T Points, int NumPoints, struct grid *GridList, int NumGrid, 
       if (j == NumGrid) j--;
       if (k == NumGrid) k--;
 
-      l = Index1D(i,j,k,NumGrid);
+      l = index_1d(i,j,k,NumGrid);
 
       GridList[l].Member[GridList[l].NumMem] = p;
       GridList[l].NumMem++;
@@ -70,18 +70,18 @@ void BuildGridList(T Points, int NumPoints, struct grid *GridList, int NumGrid, 
           for (k=0; k<NumGrid; k++) {
 
 	      nv = 0;
-              l = Index1D(i,j,k,NumGrid);
+              l = index_1d(i,j,k,NumGrid);
 
 	      for (it=i-1; it<=i+1; it++) {
-		  ii = PeriodicGrid(it,NumGrid);
+		  ii = periodic_grid(it,NumGrid);
 
 	          for (jt=j-1; jt<=j+1; jt++) {
-		      jj = PeriodicGrid(jt,NumGrid);    
+		      jj = periodic_grid(jt,NumGrid);    
 
 	              for (kt=k-1; kt<=k+1; kt++) {
-		          kk = PeriodicGrid(kt,NumGrid);    
+		          kk = periodic_grid(kt,NumGrid);    
               
-			  ll = Index1D(ii,jj,kk,NumGrid);
+			  ll = index_1d(ii,jj,kk,NumGrid);
 			  GridList[l].Neighbour[nv] = ll;
 		          nv++;
 
@@ -95,7 +95,7 @@ void BuildGridList(T Points, int NumPoints, struct grid *GridList, int NumGrid, 
   return;
 }
 
-void SearchNeighbours(struct neighbour *Neigh, int *NumNeigh, double *GridSize, double MinDist, double MaxDist)
+void search_neighbours(struct neighbour *Neigh, int *NumNeigh, double *GridSize, double MinDist, double MaxDist)
 {
   int    i,j,k,NG[3];
   double dist,x,y,z;
@@ -128,7 +128,7 @@ void SearchNeighbours(struct neighbour *Neigh, int *NumNeigh, double *GridSize, 
 
 }
 
-void FreeGridList(struct grid *GridList, int NG)
+void free_grid_list(struct grid *GridList, int NG)
 {
    int i;
 
@@ -137,7 +137,7 @@ void FreeGridList(struct grid *GridList, int NG)
    free(GridList);
 }
 
-void FreeNeighbours(struct neighbour *Neigh)
+void free_neighbours(struct neighbour *Neigh)
 {
 
    (*Neigh).i.clear();
@@ -146,7 +146,7 @@ void FreeNeighbours(struct neighbour *Neigh)
 
 }
 
-template void BuildGridList<struct tracers*>(struct tracers* Points, int NumPoints, struct grid *GridList, 
+template void build_grid_list<struct tracers*>(struct tracers* Points, int NumPoints, struct grid *GridList, 
 		                             int NumGrid, double *GridSize, bool compute_neigh);
-template void BuildGridList<vector <voids>>(vector <voids> Points, int NumPoints, struct grid *GridList, 
+template void build_grid_list<vector <voids>>(vector <voids> Points, int NumPoints, struct grid *GridList, 
 		                            int NumGrid, double *GridSize, bool compute_neigh);

@@ -4,7 +4,7 @@
 #include "grid.h"
 #include "tools.h"
 
-void ComputeProfiles()
+void compute_profiles()
 {
    int              i,j,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
    double           xc[3],xt[3],dx[3],vt[3],dist,Rho,GridSize[3];
@@ -25,7 +25,7 @@ void ComputeProfiles()
    NumGrid = (int)round(cbrt((double)NumTrac/10.0));
    if (NumGrid < 100) NumGrid = 100;
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   BuildGridList(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
+   build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
    // Only for true voids
 
@@ -53,7 +53,7 @@ void ComputeProfiles()
    MinDist = 0.0;
    MaxDist = MaxDist + GAP;  	 
 
-   SearchNeighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
+   search_neighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
   
    fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumNeigh);
    fflush(logfile);
@@ -96,11 +96,11 @@ void ComputeProfiles()
 
 	   if (dist > MaxProfileDist*Radius+GAP) continue;
 
-       	   ii = PeriodicGrid(ii + ic, NumGrid); 
-	   jj = PeriodicGrid(jj + jc, NumGrid); 
-	   kk = PeriodicGrid(kk + kc, NumGrid); 	       
+       	   ii = periodic_grid(ii + ic, NumGrid); 
+	   jj = periodic_grid(jj + jc, NumGrid); 
+	   kk = periodic_grid(kk + kc, NumGrid); 	       
 	   
-	   l = Index1D(ii,jj,kk,NumGrid);
+	   l = index_1d(ii,jj,kk,NumGrid);
 
            if (GridList[l].NumMem == 0) continue;
 
@@ -111,7 +111,7 @@ void ComputeProfiles()
 	       for (k=0; k<3; k++) {
 	           xt[k] = (double)Tracer[next].Pos[k];	 
 	           vt[k] = (double)(Tracer[next].Vel[k] - Void[Indx[i]].Vel[k]);
-	           dx[k] = PeriodicDeltaPos(xt[k] - xc[k],LBox[k])/Radius;
+	           dx[k] = periodic_delta(xt[k] - xc[k],LBox[k])/Radius;
 	       }
 
                dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
@@ -141,7 +141,7 @@ void ComputeProfiles()
 
        if (WriteProfiles == 1) {
           sprintf(OutFile,"%s/void_%d.dat",PathProfiles,i);
-          fd = SafeOpen(OutFile,"w");
+          fd = safe_open(OutFile,"w");
        }
 
        DeltaMax = -1.0;
@@ -184,9 +184,9 @@ void ComputeProfiles()
    } 
 
    Indx.clear();
-   FreeNeighbours(&Neigh);
+   free_neighbours(&Neigh);
    
    StepName.push_back("Computing profiles");
-   StepTime.push_back(Time(t,OMPcores));
+   StepTime.push_back(get_time(t,OMPcores));
 
 }

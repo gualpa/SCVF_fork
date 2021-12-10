@@ -1,7 +1,7 @@
 #include "allvars.h"
 #include "qsort.h"
 
-void QSort(struct sort *a, int start, int end)
+void qsort(struct sort *a, int start, int end)
 {
   struct sort temp;
   int         left,right,marker;
@@ -41,8 +41,8 @@ void QSort(struct sort *a, int start, int end)
 
      marker = right;
 
-     QSort(a, start, marker - 1);
-     QSort(a, marker + 1, end);
+     qsort(a, start, marker - 1);
+     qsort(a, marker + 1, end);
 	  
   }
 

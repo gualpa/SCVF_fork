@@ -1,2 +1,2 @@
 
-void ComputeProfiles();
+void compute_profiles();
