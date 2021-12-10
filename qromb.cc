@@ -1,6 +1,6 @@
 
 #include "allvars.h"
-#include "qromb.h"
+#include "cosmology.h"
 #include "gsl_integration.h"
 #include "gsl_math.h"
 
