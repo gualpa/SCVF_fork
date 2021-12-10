@@ -2,7 +2,7 @@
 #include "allvars.h"
 #include "io.h"
 #include "tools.h"
-#include "qromb.h"
+#include "cosmology.h"
 
 void ReadInputFile(char *filename)
 {
@@ -673,7 +673,7 @@ void RedshiftSpaceDistortions()
    int    i;
    double Hubble_z;
    double RSDFactor;	
-   struct cosmology C = {OmegaMatter,(1.0 - OmegaMatter - OmegaLambda),OmegaLambda};
+   struct cosmoparam C = {OmegaMatter,OmegaLambda,(1.0 - OmegaMatter - OmegaLambda),Hubble};
 
    fprintf(logfile," | Applying redshift-space distortions: LOS = z-axis, POS = xy-plane\n");
 
@@ -702,12 +702,11 @@ void GeometricalDistortions()
    double Hubble_z,Distance_z;	
    double FidHubble_z,FidDistance_z;	
    double GDFactor_LOS,GDFactor_POS;
-   
-   struct cosmology C = {OmegaMatter,
-	                 OmegaLambda,
+   struct cosmoparam C = {OmegaMatter,
+                         OmegaLambda,
 			 1.0 - OmegaMatter - OmegaLambda,
                          Hubble};
-   struct cosmology FC = {FidOmegaMatter,
+   struct cosmoparam FC = {FidOmegaMatter,
 	                  FidOmegaLambda,
 			  1.0 - FidOmegaMatter - FidOmegaLambda,
                           FidHubble};

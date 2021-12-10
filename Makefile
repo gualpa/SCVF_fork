@@ -25,10 +25,10 @@ OMP = -fopenmp
 
 EXEC = main.x
 
-OBJS = allvars.o tools.o qromb.o io.o voronoi.o grid.o finder.o \
+OBJS = allvars.o tools.o cosmology.o io.o voronoi.o grid.o finder.o \
        qsort.o velocity.o profiles.o main.o
 
-INCL = allvars.h tools.h qromb.h io.h voronoi.h grid.h finder.h \
+INCL = allvars.h tools.h cosmology.h io.h voronoi.h grid.h finder.h \
        qsort.h velocity.h profiles.h Makefile
 
 CFLAGS = $(OMP) $(VORO_INC) $(GSL_INC) 

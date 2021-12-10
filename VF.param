@@ -17,18 +17,11 @@ FormatTracers     0                                                             
                                                                                                 % 3 = MXXL
                                                                                                 % 4 = BINARY
 NumFiles          32                                                                            % Ignored if format = 0,4
-FileTracers       /big/BigData/Simulaciones/MultiDark/Voids/halos_M200_12.dat      % File with tracers
-FileVoids         /big/BigData/Simulaciones/MultiDark/Voids/voids_M200_12.dat      % File for void catalogue
+FileTracers       data/galaxies.dat      % File with tracers
+FileVoids         data/voids_2.dat         % File for void catalogue
 
 ScalePos          1.0        % Convert positions to Mpc/h
 ScaleVel          1.0        % Convert velocities to km/s
-
-%_________________________________________________________________________________________
-%                                                                     VORONOI TESSELLATION
-
-ReadVoronoi       0                           % Read Voronoi tessellation (0/1 - No/Yes)
-WriteVoronoi      0                           % Write Voronoi tessellation (0/1 - No/Yes)
-FileVoronoi       data/scorpio_voro.dat       % File with/for Voronoi tessellation 
 
 %_________________________________________________________________________________________
 %                                                                                CENTERING
@@ -50,10 +43,10 @@ Hubble            0.73
 %_________________________________________________________________________________________
 %                                                                  GEOMETRICAL DISTORTIONS
 
-GDist             0
+GDist             1
 FidOmegaMatter    0.2  
 FidOmegaLambda    0.8 
-FidHubble         0.73
+FidHubble         0.7
 
 %_________________________________________________________________________________________
 %                                                                            VOID PROFILES
