@@ -6,12 +6,10 @@
 template <class T>
 void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize, bool compute_neigh)
 {
-  int p,i,j,k,l,nv,ll;
-  int ii,jj,kk,it,jt,kt;
 
   fprintf(logfile," | Creating grid-list \n");
 
-  for (k=0; k<3; k++) 
+  for (int k=0; k<3; k++) 
       GridSize[k] = LBox[k]/(double)NumGrid;    
 
   fprintf(logfile," | Number of grids = %d \n",NumGrid);
@@ -20,40 +18,40 @@ void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid
   fprintf(logfile," |             z = %f [Mpc/h] \n",GridSize[2]);
   fflush(logfile);
 
-  for (l=0; l<NumGrid*NumGrid*NumGrid; l++)
+  for (int l=0; l<NumGrid*NumGrid*NumGrid; l++)
       GridList[l].NumMem = 0;
    
-  for (p=0; p<NumPoints; p++) {
+  for (int p=0; p<NumPoints; p++) {
 
-      i = (int)(Points[p].Pos[0]/GridSize[0]);
-      j = (int)(Points[p].Pos[1]/GridSize[1]);
-      k = (int)(Points[p].Pos[2]/GridSize[2]);
+      int i = (int)(Points[p].Pos[0]/GridSize[0]);
+      int j = (int)(Points[p].Pos[1]/GridSize[1]);
+      int k = (int)(Points[p].Pos[2]/GridSize[2]);
 
       if (i == NumGrid) i--;
       if (j == NumGrid) j--;
       if (k == NumGrid) k--;
 
-      l = index_1d(i,j,k,NumGrid);
+      int l = index_1d(i,j,k,NumGrid);
 
       GridList[l].NumMem++;
   }
 
-  for (l=0; l<NumGrid*NumGrid*NumGrid; l++) {
+  for (int l=0; l<NumGrid*NumGrid*NumGrid; l++) {
       GridList[l].Member = (int *) malloc(GridList[l].NumMem*sizeof(int));	  
       GridList[l].NumMem = 0;
   }
 
-  for (p=0; p<NumPoints; p++) {
+  for (int p=0; p<NumPoints; p++) {
 
-      i = (int)(Points[p].Pos[0]/GridSize[0]);
-      j = (int)(Points[p].Pos[1]/GridSize[1]);
-      k = (int)(Points[p].Pos[2]/GridSize[2]);
+      int i = (int)(Points[p].Pos[0]/GridSize[0]);
+      int j = (int)(Points[p].Pos[1]/GridSize[1]);
+      int k = (int)(Points[p].Pos[2]/GridSize[2]);
 
       if (i == NumGrid) i--;
       if (j == NumGrid) j--;
       if (k == NumGrid) k--;
 
-      l = index_1d(i,j,k,NumGrid);
+      int l = index_1d(i,j,k,NumGrid);
 
       GridList[l].Member[GridList[l].NumMem] = p;
       GridList[l].NumMem++;
@@ -62,26 +60,28 @@ void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid
 
   if (!compute_neigh) return;
 
-  for (l=0; l<NumGrid*NumGrid*NumGrid; l++) 
+  int nv;
+
+  for (int l=0; l<NumGrid*NumGrid*NumGrid; l++) 
       GridList[l].Neighbour = (int *) malloc(27*sizeof(int));	  
 
-  for (i=0; i<NumGrid; i++) {
-      for (j=0; j<NumGrid; j++) {
-          for (k=0; k<NumGrid; k++) {
+  for (int i=0; i<NumGrid; i++) {
+      for (int j=0; j<NumGrid; j++) {
+          for (int k=0; k<NumGrid; k++) {
 
 	      nv = 0;
-              l = index_1d(i,j,k,NumGrid);
+              int l = index_1d(i,j,k,NumGrid);
 
-	      for (it=i-1; it<=i+1; it++) {
-		  ii = periodic_grid(it,NumGrid);
+	      for (int it=i-1; it<=i+1; it++) {
+		  int ii = periodic_grid(it,NumGrid);
 
-	          for (jt=j-1; jt<=j+1; jt++) {
-		      jj = periodic_grid(jt,NumGrid);    
+	          for (int jt=j-1; jt<=j+1; jt++) {
+		      int jj = periodic_grid(jt,NumGrid);    
 
-	              for (kt=k-1; kt<=k+1; kt++) {
-		          kk = periodic_grid(kt,NumGrid);    
+	              for (int kt=k-1; kt<=k+1; kt++) {
+		          int kk = periodic_grid(kt,NumGrid);    
               
-			  ll = index_1d(ii,jj,kk,NumGrid);
+			  int ll = index_1d(ii,jj,kk,NumGrid);
 			  GridList[l].Neighbour[nv] = ll;
 		          nv++;
 
