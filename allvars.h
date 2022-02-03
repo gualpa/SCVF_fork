@@ -91,14 +91,3 @@ struct voids {
 };
 extern vector <voids> Void;
 
-// Cosmologia para GDist y RSDist
-
-struct params {
-   double OmM;
-   double OmL;
-   double OmK;
-   double Hub;
-   double Red;
-};
-extern struct params Cosmo;
-

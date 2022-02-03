@@ -45,5 +45,4 @@ FILE   *logfile;
 
 struct tracers *Tracer;
 vector <voids> Void;
-struct params  Cosmo;
 
