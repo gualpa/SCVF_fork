@@ -6,15 +6,14 @@
 
 void compute_velocity()
 {
-
-   int              i,j,k,ic,jc,kc,in,m,NumGrid;
-   int              ii,jj,kk,l,next,Counter,NG[3];
-   double           xc[3],xt[3],dx[3],vt[3],GAP,GridSize[3];
-   double           dist,Radius,PLUS,MaxDist,MinDist;
-   struct grid      *GridList;
-   int              NumNeigh;
-   struct neighbour Neigh;
-   clock_t          t;
+   int          i,j,k,ic,jc,kc,in,m,NumGrid;
+   int          ii,jj,kk,l,next,Counter,NG[3];
+   double       xc[3],xt[3],dx[3],vt[3],GridSize[3];
+   double       dist,Radius,PLUS,MaxDist,MinDist,GAP;
+   struct grid  *GridList;
+   int          NumQuery;
+   struct query Query;
+   clock_t      t;
 
    fprintf(logfile,"\n COMPUTING VOID BULK VELOCITIES \n");
    t = clock();
@@ -24,24 +23,27 @@ void compute_velocity()
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
    build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
-   GAP = 0.0;
-   for (k=0; k<3; k++) 
-       if (GridSize[k] > GAP) 
-          GAP = GridSize[k];	  
-   GAP *= sqrt(3.0);
+   // Selecciono grides
 
    MinDist = 0.0;
-   MaxDist = OuterShellVel*MaxRadiusSearch + GAP;  	 
-
-   search_neighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
+   MaxDist = 0.0;
+   for (i=0; i<NumVoid; i++) {
+       if (!Void[i].ToF) continue;
+       if (Void[i].Rad > MaxDist) MaxDist = Void[i].Rad;
+   }
+   MaxDist *= 1.5;
+   query_grid(&Query,GridSize,MinDist,MaxDist);
+   NumQuery = Query.i.size();
+   GAP = 0.5*sqrt(3.0)*max_grid_size(GridSize);
   
-   fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumNeigh);
+   fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
    fflush(logfile);
 
-   #pragma omp parallel for default(none) schedule(dynamic)                    \
-    shared(NumVoid,Void,Tracer,NumNeigh,Neigh,LBox,InnerShellVel,OuterShellVel,\
-           NumGrid,GridSize,GridList)                                          \
-   private(i,l,k,m,Radius,xc,ic,jc,kc,ii,jj,kk,next,dx,xt,dist,Counter,vt,PLUS,in)
+   #pragma omp parallel for default(none) schedule(dynamic)      \
+    shared(NumVoid,Void,Tracer,NumQuery,Query,LBox,InnerShellVel,\
+           OuterShellVel,NumGrid,GridSize,GridList,GAP)          \
+   private(i,l,k,m,Radius,xc,ic,jc,kc,ii,jj,kk,next,dx,xt,dist,  \
+           Counter,vt,PLUS,in)
 
    for (i=0; i<NumVoid; i++) {
        
@@ -61,11 +63,22 @@ void compute_velocity()
 
        do {
 
-          for (in=0; in<NumNeigh; in++) {
+          for (in=0; in<NumQuery; in++) {
 	    
-              ii = periodic_grid(Neigh.i[in] + ic,NumGrid); 
-	      jj = periodic_grid(Neigh.j[in] + jc,NumGrid); 
-	      kk = periodic_grid(Neigh.k[in] + kc,NumGrid); 	  
+	      ii = Query.i[in]; 
+	      jj = Query.j[in]; 
+	      kk = Query.k[in]; 
+
+	      dist = (double)(ii*ii)*(GridSize[0]*GridSize[0])
+	           + (double)(jj*jj)*(GridSize[1]*GridSize[1])
+	           + (double)(kk*kk)*(GridSize[2]*GridSize[2]);
+	      dist = sqrt(dist);
+
+	      if (dist > 1.5*Radius+GAP) continue;
+
+              ii = periodic_grid(ii + ic,NumGrid); 
+	      jj = periodic_grid(jj + jc,NumGrid); 
+	      kk = periodic_grid(kk + kc,NumGrid); 	  
 
               l = index_1d(ii,jj,kk,NumGrid);
 
@@ -103,7 +116,7 @@ void compute_velocity()
    }
   
    free_grid_list(GridList,NumGrid);
-   free_neighbours(&Neigh);
+   free_query_grid(&Query);
 
    StepName.push_back("Computing velocities");
    StepTime.push_back(get_time(t,OMPcores));

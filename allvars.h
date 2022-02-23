@@ -26,6 +26,7 @@ extern double RadIncrement;
 extern int    NumRanWalk;
 extern double BoxSize;          
 extern double MaxRadiusSearch;  
+extern double ProxyGridSize;  
 extern double FracRadius;       
 extern double DeltaThreshold;   
 extern double DeltaSeed;        

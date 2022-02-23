@@ -6,26 +6,22 @@
 OMPcores           8        % Number of cores for OpenMP sections
 
 BoxSize          1000       % Boxsize in Mpc/h
-MaxRadiusSearch  40.0       % Maximum void radius en Mpc/h
+MaxRadiusSearch  40.0       % Maximum void radius in Mpc/h
+ProxyGridSize     5.0       % Proxy for the size of the grid in Mpc/h   
 DeltaThreshold   -0.9       % Integrated density contrast threshold
-DeltaSeed        -0.7      % Integrated density contrast for seed Voronoi cells 
+DeltaSeed        -0.7       % Integrated density contrast for seed Voronoi cells 
 OverlapTol        0.0       % Overlap tolerance
 
-FormatTracers     0                                                                             % 0 = ASCII
-                                                                                                % 1 = GADGET-1
-                                                                                                % 2 = GADGET-2
-                                                                                                % 3 = MXXL
-                                                                                                % 4 = BINARY
-NumFiles          32                                                                            % Ignored if format = 0,4
+FormatTracers     0                      % 0 = ASCII | 1 = GADGET-1 | 2 = GADGET-2 | 3 = MXXL | 4 = BINARY
+NumFiles          32                     % Ignored if format = 0,4
 FileTracers       data/galaxies.dat      % File with tracers
-FileVoids         data/voids_2.dat         % File for void catalogue
+FileVoids         data/test.dat          % File for void catalogue
 
 ScalePos          1.0        % Convert positions to Mpc/h
 ScaleVel          1.0        % Convert velocities to km/s
 
 %_________________________________________________________________________________________
 %                                                                                CENTERING
-
 
 FracRadius       0.5        % Radius fraction for random sampling 
 NumRanWalk        75        % Number of steps without any increment bigger than RadIncrement
@@ -43,7 +39,7 @@ Hubble            0.73
 %_________________________________________________________________________________________
 %                                                                  GEOMETRICAL DISTORTIONS
 
-GDist             1
+GDist             0
 FidOmegaMatter    0.2  
 FidOmegaLambda    0.8 
 FidHubble         0.7

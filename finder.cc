@@ -42,10 +42,10 @@ void find_voids()
   struct grid    *GridList;
   int            NumCores,NumGrid;
   int            iv,CheckRan,TotRan,ir,next,l,NC,kappa,p,in;
-  int            ic,jc,kc,ii,jj,kk,i,j,k,Nsort,m,NN;
+  int            ic,jc,kc,ii,jj,kk,i,j,k,Nsort,m;
   double         Radius,BiggestRadius,lambda,MinDist,MaxDist;
   double         dx[3],xr[3],xc[3],dist,x,y,z,GridSize[3];
-  double         the,phi,rad,Volume,Delta,GAP;
+  double         the,phi,rad,Volume,Delta;
   vector <float> val;
   struct sort    *SortArr;
   bool           done;
@@ -56,20 +56,13 @@ void find_voids()
 
   srand(time(NULL));
   
-  NumGrid = (int)round(cbrt((double)NumTrac/10.0));
-  if (NumGrid < 100) NumGrid = 100;
+  NumGrid = (int)(BoxSize/ProxyGridSize);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
   build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
-  GAP = 0.0;
-  for (k=0; k<3; k++) 
-      if (GridSize[k] > GAP) 
-	 GAP = GridSize[k];	  
-  GAP *= sqrt(3.0);
-  
-  int              NumShell = (int)round(MaxRadiusSearch/0.5/GAP);
-  int              NumNeigh[NumShell];
-  struct neighbour Neigh[NumShell];
+  int          NumShell = (int)round(0.5*MaxRadiusSearch/max_grid_size(GridSize));
+  int          NumQuery[NumShell];
+  struct query Query[NumShell];
 
   // Selecciono vecinos
 
@@ -78,30 +71,29 @@ void find_voids()
   else
      NumCores = OMPcores;	
 
-  #pragma omp parallel for default(none) num_threads(NumCores)        \
-   shared(NumShell,NumNeigh,Neigh,GridSize,stdout,GAP,MaxRadiusSearch)\
-   private(p,MinDist,MaxDist,NN)
+  #pragma omp parallel for default(none) num_threads(NumCores)    \
+   shared(NumShell,NumQuery,Query,GridSize,stdout,MaxRadiusSearch)\
+   private(p,MinDist,MaxDist)
 
   for (p=0; p<NumShell; p++) {
-
-      MinDist = MaxRadiusSearch/(double)NumShell*(double)(p  ) - GAP;  
-      MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1) + GAP;  
-
-      search_neighbours(&Neigh[p],&NumNeigh[p],GridSize,MinDist,MaxDist);
+      MinDist = MaxRadiusSearch/(double)NumShell*(double)p;  
+      MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1);  
+      query_grid(&Query[p],GridSize,MinDist,MaxDist);
+      NumQuery[p] = Query[p].i.size();
   } 
 
   for (p=0; p<NumShell; p++) {
-      MinDist = MaxRadiusSearch/(double)NumShell*(double)(p  ) - GAP;  
-      MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1) + GAP; 
-      fprintf(logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids \n",
-		      p,MinDist,MaxDist,NumNeigh[p]);
+      MinDist = MaxRadiusSearch/(double)NumShell*(double)p;  
+      MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1); 
+      fprintf(logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids (Overlap = %f) \n",
+		      p,MinDist,MaxDist,NumQuery[p],0.5*sqrt(3.0)*max_grid_size(GridSize));
   }
   fflush(logfile);
 
   #pragma omp parallel for default(none) schedule(static)                     \
-   shared(NumVoid,MeanNumTrac,Void,Tracer,Neigh,NumNeigh,NumShell,LBox,stdout,\
+   shared(NumVoid,MeanNumTrac,Void,Tracer,Query,NumQuery,NumShell,LBox,stdout,\
           MaxRadiusSearch,FracRadius,DeltaThreshold,NumGrid,GridSize,GridList,\
-	  OMPcores,RadIncrement,NumRanWalk,GAP)                               \
+	  OMPcores,RadIncrement,NumRanWalk)                                   \
    private(iv,ir,ic,jc,kc,ii,jj,kk,xc,xr,dx,l,Radius,BiggestRadius,next,k,    \
            dist,val,kappa,SortArr,Nsort,the,phi,rad,Volume,Delta,lambda,p,m,  \
 	   MinDist,MaxDist,done,in,CheckRan,TotRan)
@@ -146,8 +138,8 @@ void find_voids()
 	  } else {
 
              for (k=0; k<3; k++) {
-		 xc[k] = periodic_position((double)Void[iv].Pos[k] + xr[k],LBox[k]);
-		 dx[k] = periodic_delta(xc[k] - (double)Void[iv].Ini[k],LBox[k]);
+	         xc[k] = periodic_position((double)Void[iv].Pos[k] + xr[k],LBox[k]);
+	         dx[k] = periodic_delta(xc[k] - (double)Void[iv].Ini[k],LBox[k]);
 	     }
 	     dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 	     if (dist > Void[iv].Rad) // avoid big migration 
@@ -164,14 +156,14 @@ void find_voids()
 
 	  do {
 
-             MinDist = MaxRadiusSearch/(double)NumShell*(double)(p  );		  
+             MinDist = MaxRadiusSearch/(double)NumShell*(double)p;		  
              MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1);		  
 
-	     for (in=0; in<NumNeigh[p]; in++) {
+	     for (in=0; in<NumQuery[p]; in++) {
 
-	         ii = periodic_grid(Neigh[p].i[in] + ic,NumGrid); 
-	         jj = periodic_grid(Neigh[p].j[in] + jc,NumGrid); 
-	         kk = periodic_grid(Neigh[p].k[in] + kc,NumGrid); 
+	         ii = periodic_grid(Query[p].i[in] + ic,NumGrid); 
+	         jj = periodic_grid(Query[p].j[in] + jc,NumGrid); 
+	         kk = periodic_grid(Query[p].k[in] + kc,NumGrid); 
 
 		 l = index_1d(ii,jj,kk,NumGrid);
 
@@ -257,7 +249,7 @@ void find_voids()
   } /* Fin lazo voids */
 
   for (p=0; p<NumShell; p++) 
-      free_neighbours(&Neigh[p]);	  
+      free_query_grid(&Query[p]);	  
   free_grid_list(GridList,NumGrid);
 
   StepName.push_back("Finding voids");
@@ -267,15 +259,15 @@ void find_voids()
 
 void clean_voids()
 {
-  int              p,i,j,k,l,m,indx,next,in,it;
-  int              ii,jj,kk,ic,jc,kc,NumTrueVoid;
-  int              NumNeigh,NumGrid;
-  double           dist,Ri,Rj,Vi,Vj,Vij,MinDist,MaxDist;
-  double           xi[3],xj[3],dx[3],GridSize[3],GAP;
-  struct neighbour Neigh;
-  struct sort      *SortArr; 
-  struct grid      *GridList;
-  clock_t          t;
+  int          p,i,j,k,l,m,indx,next,in,it;
+  int          ii,jj,kk,ic,jc,kc,NumTrueVoid;
+  int          NumQuery,NumGrid;
+  double       dist,Ri,Rj,Vi,Vj,Vij,MinDist,MaxDist;
+  double       xi[3],xj[3],dx[3],GridSize[3];
+  struct query Query;
+  struct sort  *SortArr; 
+  struct grid  *GridList;
+  clock_t      t;
 
   fprintf(logfile,"\n CLEANING VOID CATALOGUE BY OVERLAP (TOL = %4.2f) \n",OverlapTol);
   t = clock();
@@ -308,18 +300,13 @@ void clean_voids()
 
   // Selecciono vecinos
   
-  GAP = 0.0;
-  for (k=0; k<3; k++) 
-      if (GridSize[k] > GAP) 
-	 GAP = GridSize[k];	  
-  GAP *= sqrt(3.0);
-
   MinDist = 0.0;
-  MaxDist = 2.0*MaxRadiusSearch + GAP;  
+  MaxDist = 2.0*MaxRadiusSearch;  
 
-  search_neighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
+  query_grid(&Query,GridSize,MinDist,MaxDist);
+  NumQuery = Query.i.size();
   
-  fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumNeigh);
+  fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
   fflush(logfile);
 
   for (i=NumTrueVoid-1; i>=0; i--) {
@@ -337,11 +324,11 @@ void clean_voids()
       jc = (int)(xi[1]/GridSize[1]);
       kc = (int)(xi[2]/GridSize[2]);
     
-      for (in=0; in<NumNeigh; in++) {
+      for (in=0; in<NumQuery; in++) {
 
-   	  ii = periodic_grid(Neigh.i[in] + ic,NumGrid); 
-	  jj = periodic_grid(Neigh.j[in] + jc,NumGrid); 
-	  kk = periodic_grid(Neigh.k[in] + kc,NumGrid); 
+   	  ii = periodic_grid(Query.i[in] + ic,NumGrid); 
+	  jj = periodic_grid(Query.j[in] + jc,NumGrid); 
+	  kk = periodic_grid(Query.k[in] + kc,NumGrid); 
 
 	  l = index_1d(ii,jj,kk,NumGrid);
 
@@ -391,7 +378,7 @@ void clean_voids()
 
   free(SortArr);
   free_grid_list(GridList,NumGrid);
-  free_neighbours(&Neigh);
+  free_query_grid(&Query);
 
   StepName.push_back("Cleaning voids"); 
   StepTime.push_back(get_time(t,1));

@@ -5,6 +5,7 @@ double RadIncrement;
 int    NumRanWalk;
 double BoxSize;          
 double MaxRadiusSearch;  
+double ProxyGridSize;  
 double FracRadius;       
 double DeltaThreshold;   
 double DeltaSeed;        

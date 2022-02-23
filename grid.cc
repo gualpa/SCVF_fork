@@ -95,32 +95,50 @@ void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid
   return;
 }
 
-void search_neighbours(struct neighbour *Neigh, int *NumNeigh, double *GridSize, double MinDist, double MaxDist)
+void query_grid(struct query *Query, double *GridSize, double R1, double R2)
 {
   int    i,j,k,NG[3];
-  double dist,x,y,z;
+  int    i1,i2,j1,j2,k1,k2;
+  double x1,x2,y1,y2,z1,z2;
+  double MinDist,MaxDist,GAP,d1,d2;
 
-  (*NumNeigh) = 0;
+  GAP = 0.5*sqrt(3.0)*max_grid_size(GridSize);  
+  MinDist = R1 - GAP;
+  MaxDist = R2 + GAP;
+  if (MinDist < 0.0) MinDist = 0.0;
 
   for (k=0; k<3; k++)
-      NG[k] = (int)ceil(MaxDist/GridSize[k]);	
+      NG[k] = (int)ceil(MaxDist/GridSize[k]);  
 
-  for (i=-NG[0]; i<NG[0]; i++) {
-      x = (double)i*GridSize[0];	 
+  for (i=-NG[0]; i<=NG[0]; i++) {
 
-      for (j=-NG[1]; j<NG[1]; j++) {
-          y = (double)j*GridSize[1];	  
+      i1 = i2 = i; 
+      i >= 0 ? i1++ : i2++;
 
-          for (k=-NG[2]; k<NG[2]; k++) {
-              z = (double)k*GridSize[2];	  
+      for (j=-NG[1]; j<=NG[1]; j++) {
+     
+          j1 = j2 = j;
+          j >= 0 ? j1++ : j2++;
 
-              dist = sqrt(x*x + y*y + z*z); 	 
+	  for (k=-NG[2]; k<=NG[2]; k++) {
 
-              if (dist >= MinDist && dist <= MaxDist) {
-            	 (*Neigh).i.push_back(i);     
-           	 (*Neigh).j.push_back(j);     
-           	 (*Neigh).k.push_back(k);
-                 (*NumNeigh)++;	 
+	      k1 = k2 = k;
+              k >= 0 ? k1++ : k2++;	      
+     
+	      x1 = ((double)i1 - 0.5)*GridSize[0];
+	      x2 = ((double)i2 - 0.5)*GridSize[0];
+	      y1 = ((double)j1 - 0.5)*GridSize[1];
+	      y2 = ((double)j2 - 0.5)*GridSize[1];
+	      z1 = ((double)k1 - 0.5)*GridSize[2];
+	      z2 = ((double)k2 - 0.5)*GridSize[2];
+
+	      d1 = sqrt(x1*x1 + y1*y1 + z1*z1);
+	      d2 = sqrt(x2*x2 + y2*y2 + z2*z2);
+	      
+              if ((d1 > MinDist && d1 < MaxDist) || (d2 > MinDist && d2 < MaxDist)) {
+                 (*Query).i.push_back(i);     
+                 (*Query).j.push_back(j);     
+                 (*Query).k.push_back(k);     
               }
           }
       }
@@ -137,13 +155,23 @@ void free_grid_list(struct grid *GridList, int NG)
    free(GridList);
 }
 
-void free_neighbours(struct neighbour *Neigh)
+void free_query_grid(struct query *Query)
 {
+   (*Query).i.clear();     
+   (*Query).j.clear();     
+   (*Query).k.clear();
+}
 
-   (*Neigh).i.clear();
-   (*Neigh).j.clear();
-   (*Neigh).k.clear();
+double max_grid_size(double *GridSize)
+{
+  double max = 0.0;
+  int    k;
 
+  for (k=0; k<3; k++) 
+      if (GridSize[k] > max) 
+	 max = GridSize[k];	
+  
+  return max;  
 }
 
 template void build_grid_list<struct tracers*>(struct tracers* Points, int NumPoints, struct grid *GridList, 

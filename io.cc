@@ -30,6 +30,10 @@ void read_input_file(char *filename)
   addr[nt] = &MaxRadiusSearch;
   id[nt++] = DOUBLE;
 
+  strcpy(tag[nt],"ProxyGridSize");
+  addr[nt] = &ProxyGridSize;
+  id[nt++] = DOUBLE;
+
   strcpy(tag[nt],"DeltaThreshold");
   addr[nt] = &DeltaThreshold;
   id[nt++] = DOUBLE;

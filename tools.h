@@ -1,3 +1,4 @@
+
 int          index_1d(int,int,int,int);
 vector <int> index_3d(int,int);
 double       periodic_position(double,double);
@@ -8,4 +9,4 @@ void         time_resume(void);
 int          count_lines(char *);
 double       ln_factorial(int);
 double       random_number(void);
-FILE*        safe_open(char *, const char *); 
+FILE*        safe_open(char *, const char *);

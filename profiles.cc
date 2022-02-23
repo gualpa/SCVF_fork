@@ -6,24 +6,25 @@
 
 void compute_profiles()
 {
-   int              i,j,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
-   double           xc[3],xt[3],dx[3],vt[3],dist,Rho,GridSize[3];
-   double           dR,DeltaDiff,DeltaCum,MinDist,MaxDist,GAP;
-   double           CGal[NumProfileBins],Suma[NumProfileBins],CVel[NumProfileBins];
-   double           VRad,rm,ri,rs,Vol,DeltaMax,Radius;
-   vector <int>     Indx; 
-   char             OutFile[MAXCHAR];
-   int              NumNeigh;
-   struct neighbour Neigh;
-   struct grid      *GridList;
-   FILE             *fd;
-   clock_t          t;
+   int          i,j,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
+   double       xc[3],xt[3],dx[3],vt[3],dist,Rho,GridSize[3];
+   double       dR,DeltaDiff,DeltaCum,MinDist,MaxDist,GAP;
+   double       CGal[NumProfileBins],Suma[NumProfileBins],CVel[NumProfileBins];
+   double       VRad,rm,ri,rs,Vol,DeltaMax,Radius;
+   vector <int> Indx; 
+   char         OutFile[MAXCHAR];
+   int          NumQuery;
+   struct query Query;
+   struct grid  *GridList;
+   FILE         *fd;
+   clock_t      t;
 
    fprintf(logfile,"\n COMPUTING VOID PROFILES \n");
    t = clock();
 
-   NumGrid = (int)round(cbrt((double)NumTrac/10.0));
-   if (NumGrid < 100) NumGrid = 100;
+   //NumGrid = (int)round(cbrt((double)NumTrac/10.0));
+   //if (NumGrid < 100) NumGrid = 100;
+   NumGrid = (int)(BoxSize/ProxyGridSize);
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
    build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
@@ -35,31 +36,24 @@ void compute_profiles()
 
    dR = (log10(MaxProfileDist)-log10(MinProfileDist))/(double)NumProfileBins;
    
-   // Selecciono vecinos
+   // Selecciono grides
 
+   MinDist = 0.0;
    MaxDist = 0.0;
    for (i=0; i<NumVoid; i++) {
        if (!Void[i].ToF) continue;
        if (Void[i].Rad > MaxDist) MaxDist = Void[i].Rad;
    }
    MaxDist *= MaxProfileDist;
-
-   GAP = 0.0;
-   for (k=0; k<3; k++) 
-       if (GridSize[k] > GAP) 
-          GAP = GridSize[k];	  
-   GAP *= sqrt(3.0);
-
-   MinDist = 0.0;
-   MaxDist = MaxDist + GAP;  	 
-
-   search_neighbours(&Neigh,&NumNeigh,GridSize,MinDist,MaxDist);
-  
-   fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumNeigh);
+   query_grid(&Query,GridSize,MinDist,MaxDist);
+   NumQuery = Query.i.size();
+   GAP = 0.5*sqrt(3.0)*max_grid_size(GridSize);
+   
+   fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
    fflush(logfile);
 
    #pragma omp parallel for default(none) schedule(dynamic)                   \
-    shared(NumVoid,Void,Tracer,NumNeigh,Neigh,dR,NumGrid,GridSize,GridList,   \
+    shared(NumVoid,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
            Indx,MeanNumTrac,LBox,NumProfileBins,MinProfileDist,MaxProfileDist,\
 	   WriteProfiles,PathProfiles,GAP)                                    \
     private(i,m,k,ii,jj,kk,l,Radius,ic,jc,kc,CVel,CGal,Suma,xc,xt,dx,vt,next, \
@@ -83,11 +77,11 @@ void compute_profiles()
        jc = (int)(xc[1]/GridSize[1]);
        kc = (int)(xc[2]/GridSize[2]);
 
-       for (in=0; in<NumNeigh; in++) {
+       for (in=0; in<NumQuery; in++) {
 
-       	   ii = Neigh.i[in]; 
-	   jj = Neigh.j[in]; 
-	   kk = Neigh.k[in]; 
+       	   ii = Query.i[in]; 
+	   jj = Query.j[in]; 
+	   kk = Query.k[in]; 
 
 	   dist = (double)(ii*ii)*(GridSize[0]*GridSize[0])
 	        + (double)(jj*jj)*(GridSize[1]*GridSize[1])
@@ -184,7 +178,7 @@ void compute_profiles()
    } 
 
    Indx.clear();
-   free_neighbours(&Neigh);
+   free_query_grid(&Query);
    
    StepName.push_back("Computing profiles");
    StepTime.push_back(get_time(t,OMPcores));
