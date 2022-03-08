@@ -60,7 +60,8 @@ void find_voids()
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
   build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
-  int          NumShell = (int)round(0.5*MaxRadiusSearch/max_grid_size(GridSize));
+// int          NumShell = (int)round(0.5*MaxRadiusSearch/max_grid_size(GridSize));
+  int          NumShell = (int)round(MaxRadiusSearch/max_grid_size(GridSize));
   int          NumQuery[NumShell];
   struct query Query[NumShell];
 

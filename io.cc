@@ -224,13 +224,8 @@ void read_input_file(char *filename)
 void read_tracers()
 {
 
-   int     i;
-   FILE    *fd;
-   double   Volume;
-   clock_t t;
-
    fprintf(logfile,"\n READING TRACERS \n");
-   t = clock();
+   clock_t t = clock();
 
    switch (FormatTracers) {
 
@@ -240,12 +235,12 @@ void read_tracers()
       break;
 
       case 1:
-      fprintf(logfile," | Reading GADGET-1 format \n");	   
+      fprintf(logfile," | Reading GADGET-2 format 1 \n");	   
       read_tracers_gadget2_format1();
       break;
 
       case 2:
-      fprintf(logfile," | Reading GADGET-2 format \n");	   
+      fprintf(logfile," | Reading GADGET-2 format 2 \n");	   
       read_tracers_gadget2_format2();
       break;
 
@@ -267,7 +262,7 @@ void read_tracers()
    if (RSDist == 1) redshift_space_distortions();
    if (GDist == 1) geometrical_distortions();
 
-   Volume = LBox[0]*LBox[1]*LBox[2];
+   double Volume = LBox[0]*LBox[1]*LBox[2];
    MeanNumTrac = (double)NumTrac/Volume;
    MeanSeparation = cbrt(Volume/(double)NumTrac);
  
@@ -285,14 +280,12 @@ void read_tracers()
 
 void read_tracers_ascii()
 {
-   int  i;
-   FILE *fd;
-
+   
    NumTrac = count_lines(FileTracers);
    Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
 
-   fd = safe_open(FileTracers,"r");
-   for (i=0; i<NumTrac; i++) {
+   FILE *fd = safe_open(FileTracers,"r");
+   for (int i=0; i<NumTrac; i++) {
        fscanf(fd,"%f %f %f %f %f %f \n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2],	   
                                         &Tracer[i].Vel[0],&Tracer[i].Vel[1],&Tracer[i].Vel[2]);
        Tracer[i].Pos[0] *= ScalePos;
@@ -315,15 +308,12 @@ void read_tracers_ascii()
 
 void read_tracers_binary()
 {
-   int   i;
-   FILE  *fd;
-
-   fd = safe_open(FileTracers,"r");
+   FILE *fd = safe_open(FileTracers,"r");
    
    fread(&NumTrac,sizeof(int),1,fd);
    Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
 
-   for (i=0; i<NumTrac; i++) {
+   for (int i=0; i<NumTrac; i++) {
        fread(&Tracer[i].Pos[0],sizeof(float),3,fd);
        fread(&Tracer[i].Vel[0],sizeof(float),3,fd);
        Tracer[i].Pos[0] *= ScalePos;
@@ -755,9 +745,6 @@ void write_voids()
    t = clock();
    
    fd = safe_open(FileVoids,"w");
-
-   float dx[3],disp;
-   int   k;
 
    for (i=0; i<NumVoid; i++) {
        if (Void[i].ToF) {

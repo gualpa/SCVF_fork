@@ -17,10 +17,8 @@ using namespace voro;
 
 // Some constants
 
-#define PI     3.141592654
-#define TWOPI  (2.0*PI)
-#define HALFPI (0.5*PI)
-#define CVEL   299792.469 
+#define PI   3.141592653589793238
+#define CVEL  299792.469 
 
 extern double RadIncrement;
 extern int    NumRanWalk;
