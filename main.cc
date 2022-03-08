@@ -9,10 +9,8 @@
 
 int main(int argc, char **argv) 
 {
- 
-   clock_t t;
-
-   t = clock();   
+   
+   clock_t t = clock();   
 
    if (argc < 2) {
        fprintf(stdout, "\n Error. Missing input file.\n");
