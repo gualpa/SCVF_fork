@@ -13,7 +13,7 @@
 using namespace std;
 using namespace voro;
 
-#define MAXCHAR 200
+#define MAXCHAR 500
 
 // Some constants
 
@@ -72,7 +72,7 @@ struct tracers {
   float Delta;
   float Volume;
 }; 
-extern struct tracers *Tracer;
+extern vector <tracers> Tracer;
 
 // Voids
 

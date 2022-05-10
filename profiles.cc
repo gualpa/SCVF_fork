@@ -6,7 +6,7 @@
 
 void compute_profiles()
 {
-   int          i,j,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
+   int          i,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
    double       xc[3],xt[3],dx[3],vt[3],dist,Rho,GridSize[3];
    double       dR,DeltaDiff,DeltaCum,MinDist,MaxDist,GAP;
    double       CGal[NumProfileBins],Suma[NumProfileBins],CVel[NumProfileBins];
@@ -22,8 +22,6 @@ void compute_profiles()
    fprintf(logfile,"\n COMPUTING VOID PROFILES \n");
    t = clock();
 
-   //NumGrid = (int)round(cbrt((double)NumTrac/10.0));
-   //if (NumGrid < 100) NumGrid = 100;
    NumGrid = (int)(BoxSize/ProxyGridSize);
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
    build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
@@ -60,7 +58,7 @@ void compute_profiles()
 	    dist,VRad,ibin,DeltaMax,ri,rm,rs,Rho,Vol,DeltaDiff,DeltaCum,fd,in,\
 	    OutFile)
 
-   for (i=0; i<Indx.size(); i++) {
+   for (i=0; i<(int)Indx.size(); i++) {
        
        for (k=0; k<NumProfileBins; k++) {
            CVel[k] = 0.0;

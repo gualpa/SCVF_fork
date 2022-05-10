@@ -281,26 +281,23 @@ void read_tracers()
 void read_tracers_ascii()
 {
    
-   NumTrac = count_lines(FileTracers);
-   Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
-
+   NumTrac = 0;	
+   int NumTot = count_lines(FileTracers);
    FILE *fd = safe_open(FileTracers,"r");
-   for (int i=0; i<NumTrac; i++) {
+
+   for (int i=0; i<NumTot; i++) {
+
+       Tracer.push_back(tracers());
+
        fscanf(fd,"%f %f %f %f %f %f \n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2],	   
                                         &Tracer[i].Vel[0],&Tracer[i].Vel[1],&Tracer[i].Vel[2]);
-       Tracer[i].Pos[0] *= ScalePos;
-       Tracer[i].Pos[1] *= ScalePos;
-       Tracer[i].Pos[2] *= ScalePos;
-       Tracer[i].Vel[0] *= ScaleVel;
-       Tracer[i].Vel[1] *= ScaleVel;
-       Tracer[i].Vel[2] *= ScaleVel;
-       //fscanf(fd,"%f %f %f \n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2]);	   
-       //Tracer[i].Pos[0] *= ScalePos;
-       //Tracer[i].Pos[1] *= ScalePos;
-       //Tracer[i].Pos[2] *= ScalePos;
-       //Tracer[i].Vel[0] = 0.0;
-       //Tracer[i].Vel[1] = 0.0;
-       //Tracer[i].Vel[2] = 0.0;
+       Tracer[NumTrac].Pos[0] *= ScalePos;
+       Tracer[NumTrac].Pos[1] *= ScalePos;
+       Tracer[NumTrac].Pos[2] *= ScalePos;
+       Tracer[NumTrac].Vel[0] *= ScaleVel;
+       Tracer[NumTrac].Vel[1] *= ScaleVel;
+       Tracer[NumTrac].Vel[2] *= ScaleVel;
+       NumTrac++;
    }
    fclose(fd);
 
@@ -309,19 +306,24 @@ void read_tracers_ascii()
 void read_tracers_binary()
 {
    FILE *fd = safe_open(FileTracers,"r");
-   
-   fread(&NumTrac,sizeof(int),1,fd);
-   Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
+   int NumTot;
 
-   for (int i=0; i<NumTrac; i++) {
-       fread(&Tracer[i].Pos[0],sizeof(float),3,fd);
-       fread(&Tracer[i].Vel[0],sizeof(float),3,fd);
-       Tracer[i].Pos[0] *= ScalePos;
-       Tracer[i].Pos[1] *= ScalePos;
-       Tracer[i].Pos[2] *= ScalePos;
-       Tracer[i].Vel[0] *= ScaleVel;
-       Tracer[i].Vel[1] *= ScaleVel;
-       Tracer[i].Vel[2] *= ScaleVel;
+   NumTrac = 0;
+   fread(&NumTot,sizeof(int),1,fd);
+
+   for (int i=0; i<NumTot; i++) {
+       Tracer.push_back(tracers());
+
+       fread(&Tracer[NumTrac].Pos[0],sizeof(float),3,fd);
+       fread(&Tracer[NumTrac].Vel[0],sizeof(float),3,fd);
+       
+       Tracer[NumTrac].Pos[0] *= ScalePos;
+       Tracer[NumTrac].Pos[1] *= ScalePos;
+       Tracer[NumTrac].Pos[2] *= ScalePos;
+       Tracer[NumTrac].Vel[0] *= ScaleVel;
+       Tracer[NumTrac].Vel[1] *= ScaleVel;
+       Tracer[NumTrac].Vel[2] *= ScaleVel;
+       NumTrac++;
    }
    fclose(fd);
 
@@ -363,8 +365,6 @@ void read_tracers_gadget2_format1()
   fread(&Header,sizeof(struct GadgetHeader),1,f1); 
   fclose(f1);
 
-  NumTrac = Header.NpartTotal[1];
-  
   if (Header.BoxSize*ScalePos != BoxSize || Header.NumFiles != NumFiles) {
      fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
      fprintf(stdout,"BoxSize = %f (%f in inputfile)\n",Header.BoxSize*ScalePos,BoxSize);
@@ -384,8 +384,9 @@ void read_tracers_gadget2_format1()
      fflush(stdout);
      exit(EXIT_FAILURE);
   }
-  
-  Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
+
+  NumTrac = Header.NpartTotal[1];
+  for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
  
   if (NumFiles < OMPcores)
      NC = NumFiles;
@@ -499,8 +500,6 @@ void read_tracers_gadget2_format2()
       NpFile[i] = Header.Npart[1];
   }
 
-  NumTrac = Header.NpartTotal[1];
-  
   if (Header.BoxSize*ScalePos != BoxSize || Header.NumFiles != NumFiles) {
      fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
      fprintf(stdout,"BoxSize = %f (%f in inputfile)\n",Header.BoxSize*ScalePos,BoxSize);
@@ -521,7 +520,8 @@ void read_tracers_gadget2_format2()
      exit(EXIT_FAILURE);
   }
   
-  Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
+  NumTrac = Header.NpartTotal[1];
+  for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
  
   for (i=0; i<NumFiles; i++) {
       Nstart[i] = 0;
@@ -639,7 +639,7 @@ void read_tracers_mxxl()
       exit(EXIT_FAILURE);
    }
 
-   Tracer = (struct tracers *) malloc(NumTrac*sizeof(struct tracers));
+   for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
 
    for (j=1; j<=NumFiles; j++) { 
        sprintf(filename,"%s%02d",basename,j);

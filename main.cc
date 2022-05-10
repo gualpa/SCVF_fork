@@ -10,8 +10,6 @@
 int main(int argc, char **argv) 
 {
    
-   clock_t t = clock();   
-
    if (argc < 2) {
        fprintf(stdout, "\n Error. Missing input file.\n");
        fprintf(stdout, "./main.x <input_param>\n\n");
@@ -62,7 +60,7 @@ int main(int argc, char **argv)
 
    time_resume();
    
-   free(Tracer);
+   Tracer.clear();
    Void.clear();
    fclose(logfile);
 

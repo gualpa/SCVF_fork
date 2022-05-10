@@ -41,10 +41,10 @@ void find_voids()
 {
   struct grid    *GridList;
   int            NumCores,NumGrid;
-  int            iv,CheckRan,TotRan,ir,next,l,NC,kappa,p,in;
-  int            ic,jc,kc,ii,jj,kk,i,j,k,Nsort,m;
+  int            iv,CheckRan,TotRan,ir,next,l,kappa,p,in;
+  int            ic,jc,kc,ii,jj,kk,k,Nsort,m;
   double         Radius,BiggestRadius,lambda,MinDist,MaxDist;
-  double         dx[3],xr[3],xc[3],dist,x,y,z,GridSize[3];
+  double         dx[3],xr[3],xc[3],dist,GridSize[3];
   double         the,phi,rad,Volume,Delta;
   vector <float> val;
   struct sort    *SortArr;
@@ -260,7 +260,7 @@ void find_voids()
 
 void clean_voids()
 {
-  int          p,i,j,k,l,m,indx,next,in,it;
+  int          i,k,l,m,indx,next,in,it;
   int          ii,jj,kk,ic,jc,kc,NumTrueVoid;
   int          NumQuery,NumGrid;
   double       dist,Ri,Rj,Vi,Vj,Vij,MinDist,MaxDist;

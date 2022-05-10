@@ -6,8 +6,8 @@
 
 void compute_velocity()
 {
-   int          i,j,k,ic,jc,kc,in,m,NumGrid;
-   int          ii,jj,kk,l,next,Counter,NG[3];
+   int          i,k,ic,jc,kc,in,m,NumGrid;
+   int          ii,jj,kk,l,next,Counter;
    double       xc[3],xt[3],dx[3],vt[3],GridSize[3];
    double       dist,Radius,PLUS,MaxDist,MinDist,GAP;
    struct grid  *GridList;

@@ -174,7 +174,7 @@ double max_grid_size(double *GridSize)
   return max;  
 }
 
-template void build_grid_list<struct tracers*>(struct tracers* Points, int NumPoints, struct grid *GridList, 
+template void build_grid_list<vector <tracers>>(vector <tracers> Points, int NumPoints, struct grid *GridList, 
 		                             int NumGrid, double *GridSize, bool compute_neigh);
 template void build_grid_list<vector <voids>>(vector <voids> Points, int NumPoints, struct grid *GridList, 
 		                            int NumGrid, double *GridSize, bool compute_neigh);

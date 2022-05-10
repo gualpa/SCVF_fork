@@ -44,6 +44,7 @@ int    NumVoid;
 double LBox[3];
 FILE   *logfile;
 
-struct tracers *Tracer;
+//struct tracers *Tracer;
+vector <tracers> Tracer;
 vector <voids> Void;
 
