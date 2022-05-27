@@ -1,8 +1,8 @@
 
 #include "allvars.h"
-#include "profiles.h"
 #include "grid.h"
 #include "tools.h"
+#include "profiles.h"
 
 void compute_profiles()
 {
@@ -177,6 +177,7 @@ void compute_profiles()
 
    Indx.clear();
    free_query_grid(&Query);
+   free_grid_list(GridList,NumGrid);
    
    StepName.push_back("Computing profiles");
    StepTime.push_back(get_time(t,OMPcores));
