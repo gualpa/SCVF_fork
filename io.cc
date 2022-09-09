@@ -235,13 +235,13 @@ void read_tracers()
       break;
 
       case 1:
-      fprintf(logfile," | Reading GADGET-2 format 1 \n");	   
-      read_tracers_gadget2_format1();
+      fprintf(logfile," | Reading GADGET-2 \n");	   
+      read_tracers_gadget2();
       break;
 
       case 2:
-      fprintf(logfile," | Reading GADGET-2 format 2 \n");	   
-      read_tracers_gadget2_format2();
+      fprintf(logfile," | Reading GADGET-4 \n");	   
+      read_tracers_gadget4();
       break;
 
       case 3:
@@ -329,9 +329,9 @@ void read_tracers_binary()
 
 }
 
-void read_tracers_gadget2_format1()
+void read_tracers_gadget2()
 {
-
+#define SKIP fread(&dummy,sizeof(int),1,f1)
   struct GadgetHeader {
     int      Npart[6];
     double   Mass[6];
@@ -349,9 +349,10 @@ void read_tracers_gadget2_format1()
     char     fill[96];  
   } Header;
 
-  int   i,j,k,SkipBlock,dummy,Np,id,NC;
-  float pos[3],vel[3];
-  FILE  *f1,*f2,*f3;
+  int   i,j,k,SkipBlock,dummy,Np,NC;
+  int   *id;
+  float *pos,*vel;
+  FILE  *f1;
   char  snapshot[MAXCHAR];
 
   if (NumFiles == 1) 
@@ -361,8 +362,7 @@ void read_tracers_gadget2_format1()
 
   f1 = safe_open(snapshot,"r");
 
-  fread(&dummy,sizeof(int),1,f1);
-  fread(&Header,sizeof(struct GadgetHeader),1,f1); 
+  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); 
   fclose(f1);
 
   if (Header.BoxSize*ScalePos != BoxSize || Header.NumFiles != NumFiles) {
@@ -373,13 +373,8 @@ void read_tracers_gadget2_format1()
      exit(EXIT_FAILURE);
   }
 
-  if ((RSDist == 1 || GDist == 1) && (Header.Omega0 != OmegaMatter || 
-       Header.OmegaLambda != OmegaLambda || Header.Redshift != Redshift || 
-       Header.HubbleParam*100.0 != Hubble)) { 
+  if ((RSDist == 1 || GDist == 1) || Header.Redshift != Redshift) { 
      fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
-     fprintf(stdout,"OmegaMatter = %f (%f in inputfile)\n",Header.Omega0,OmegaMatter);
-     fprintf(stdout,"OmegaLambda = %f (%f in inputfile)\n",Header.OmegaLambda,OmegaLambda);
-     fprintf(stdout,"Hubble = %f (%f in inputfile)\n",Header.HubbleParam*100.0,Hubble);
      fprintf(stdout,"Redshift = %f (%f in inputfile)\n",Header.Redshift,Redshift);
      fflush(stdout);
      exit(EXIT_FAILURE);
@@ -394,7 +389,7 @@ void read_tracers_gadget2_format1()
      NC = OMPcores;  
 
   #pragma omp parallel for default(none) schedule(static) num_threads(NC) \
-   private(i,snapshot,f1,f2,f3,Np,Header,SkipBlock,pos,vel,id,j,k,dummy)  \
+   private(i,snapshot,f1,Np,Header,pos,vel,id,j,k,dummy)  \
    shared(Tracer,ScalePos,ScaleVel,stdout,NumFiles,FileTracers)  
   
   for (i=0; i<NumFiles; i++) {
@@ -404,48 +399,278 @@ void read_tracers_gadget2_format1()
       else 
          sprintf(snapshot,"%s.%d",FileTracers,i);	  
 
-      f1 = safe_open(snapshot,"r"); // Pos     
-      f2 = safe_open(snapshot,"r"); // Vel     
-      f3 = safe_open(snapshot,"r"); // ID
+      f1 = safe_open(snapshot,"r");     
 
-      fread(&dummy,sizeof(int),1,f1);
-      fread(&Header,sizeof(struct GadgetHeader),1,f1);
-      fread(&dummy,sizeof(int),1,f1);
-      fread(&dummy,sizeof(int),1,f1);
+      SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;  
 
       Np = Header.Npart[1];
+      pos = (float *) malloc(3*Np*sizeof(float));
+      vel = (float *) malloc(3*Np*sizeof(float));
+      id = (int *) malloc(Np*sizeof(int));
 
-      SkipBlock = sizeof(int) + sizeof(struct GadgetHeader) + sizeof(int) 
-                + sizeof(int) + 3*sizeof(float)*Np + 2*sizeof(int);
-      fseek(f2,SkipBlock,SEEK_CUR);     
-
-      SkipBlock = sizeof(int) + sizeof(struct GadgetHeader) + sizeof(int) 
-                + sizeof(int) + 3*sizeof(float)*Np + sizeof(int)
-                + sizeof(int) + 3*sizeof(float)*Np + 2*sizeof(int);
-      fseek(f3,SkipBlock,SEEK_CUR);   
-
-      for (j=0; j<Np; j++) {
-
-	  fread(pos,sizeof(float),3,f1);    
-	  fread(vel,sizeof(float),3,f2);    
-	  fread(&id,sizeof(float),1,f3);  
-	  id--;
-
-	  for (k=0; k<3; k++) {
-	      Tracer[id].Pos[k] = pos[k]*ScalePos; 
-	      Tracer[id].Vel[k] = vel[k]*sqrt(Header.Time)*ScaleVel;
-	  }
-
-      }
+      SKIP; fread(pos,sizeof(float),3*Np,f1); SKIP;
+      SKIP; fread(vel,sizeof(float),3*Np,f1); SKIP;
+      SKIP; fread(id,sizeof(int),Np,f1); SKIP;
 
       fclose(f1);
-      fclose(f2);
-      fclose(f3);
+
+      for (j=0; j<Np; j++) {
+	  for (k=0; k<3; k++) {
+	      Tracer[id[j]-1].Pos[k] = pos[3*j+k]*ScalePos; 
+	      Tracer[id[j]-1].Vel[k] = vel[3*j+k]*sqrt(Header.Time)*ScaleVel;
+	  }
+      }
+
+      free(pos);
+      free(vel);
+      free(id);
   }
+#undef SKIP 
+}
+
+void read_tracers_gadget4()
+{
+#define SKIP fread(&dummy,sizeof(int),1,f1)
+  struct GadgetHeader {
+    long long Npart[2];
+    long long NpartTotal[2];
+    double    Mass[2];
+    double    Time;
+    double    Redshift;
+    double    BoxSize;
+    int       NumFiles;
+    long long Ntrees;
+    long long NtreesTot;
+  } Header;
+
+  int       i,j,k,SkipBlock,dummy,Np,NC;
+  long long *id;
+  float     *pos,*vel;
+  FILE      *f1;
+  char      snapshot[MAXCHAR];
+
+  if (NumFiles == 1) 
+     sprintf(snapshot,"%s",FileTracers);	  
+  else 
+     sprintf(snapshot,"%s.0",FileTracers);	  
+
+  f1 = safe_open(snapshot,"r");
+
+  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); 
+  fclose(f1);
+
+  if (Header.BoxSize*ScalePos != BoxSize || Header.NumFiles != NumFiles) {
+     fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
+     fprintf(stdout,"BoxSize = %f (%f in inputfile)\n",Header.BoxSize*ScalePos,BoxSize);
+     fprintf(stdout,"NumFiles = %d (%d in inputfile)\n",Header.NumFiles,NumFiles);
+     fflush(stdout);
+     exit(EXIT_FAILURE);
+  }
+
+  if ((RSDist == 1 || GDist == 1) || Header.Redshift != Redshift) { 
+     fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
+     fprintf(stdout,"Redshift = %f (%f in inputfile)\n",Header.Redshift,Redshift);
+     fflush(stdout);
+     exit(EXIT_FAILURE);
+  }
+
+  NumTrac = Header.NpartTotal[1];
+  for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
+ 
+  if (NumFiles < OMPcores)
+     NC = NumFiles;
+  else
+     NC = OMPcores;  
+
+  #pragma omp parallel for default(none) schedule(static) num_threads(NC) \
+   private(i,snapshot,f1,Np,Header,pos,vel,id,j,k,dummy)  \
+   shared(Tracer,ScalePos,ScaleVel,stdout,NumFiles,FileTracers)  
   
+  for (i=0; i<NumFiles; i++) {
+
+      if (NumFiles == 1) 
+         sprintf(snapshot,"%s",FileTracers);	  
+      else 
+         sprintf(snapshot,"%s.%d",FileTracers,i);	  
+
+      f1 = safe_open(snapshot,"r");     
+
+      SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;  
+
+      Np = Header.Npart[1];
+      pos = (float *) malloc(3*Np*sizeof(float));
+      vel = (float *) malloc(3*Np*sizeof(float));
+      id = (long long *) malloc(Np*sizeof(long long));
+
+      SKIP; fread(pos,sizeof(float),3*Np,f1); SKIP;
+      SKIP; fread(vel,sizeof(float),3*Np,f1); SKIP;
+      SKIP; fread(id,sizeof(long long),Np,f1); SKIP;
+
+      fclose(f1);
+
+      for (j=0; j<Np; j++) {
+	  for (k=0; k<3; k++) {
+	      Tracer[id[j]-1].Pos[k] = pos[3*j+k]*ScalePos; 
+	      Tracer[id[j]-1].Vel[k] = vel[3*j+k]*sqrt(Header.Time)*ScaleVel;
+	  }
+      }
+
+      free(pos);
+      free(vel);
+      free(id);
+  }
+#undef SKIP 
+}
+
+void read_tracers_mxxl()
+{
+
+   int     i,j,k,NumTot,N,id;
+   float   Pos[3],Vel[3];
+   char    filename[MAXCHAR],basename[MAXCHAR];
+   FILE    *fd;
+	
+   sprintf(basename,"%s/z%4.2f/halos_z%4.2f_part",FileTracers,Redshift,Redshift);
+   fprintf(logfile," | Files = %s (%d files) \n",basename,NumFiles);
+
+   for (i=1; i<=NumFiles; i++) {
+       sprintf(filename,"%s%02d",basename,i);
+       fd = safe_open(filename,"r");
+       fread(&N,sizeof(int),1,fd);
+       fread(&NumTot,sizeof(int),1,fd);
+       NumTrac += N;
+       fclose(fd);
+   }
+
+   if (NumTrac != NumTot) {
+      fprintf(stdout,"Error. Missing halos: NumTrac = %d, NumTot = %d\n",NumTrac,NumTot);
+      fflush(stdout);
+      exit(EXIT_FAILURE);
+   }
+
+   for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
+
+   for (j=1; j<=NumFiles; j++) { 
+       sprintf(filename,"%s%02d",basename,j);
+       fd = safe_open(filename,"r");
+       fread(&N,sizeof(int),1,fd);
+       fread(&NumTot,sizeof(int),1,fd);
+       for (i=0; i<N; i++) {
+	   fread(&id,sizeof(int),1,fd);
+	   fread(Pos,sizeof(float),3,fd);
+	   fread(Vel,sizeof(float),3,fd);
+
+	   for (k=0; k<3; k++) {
+	       Tracer[id].Pos[k] = Pos[k]*ScalePos;
+	       Tracer[id].Vel[k] = Vel[k]*ScaleVel;
+	   }
+       }
+       fclose(fd);
+   }
 
 }
 
+void redshift_space_distortions()
+{
+
+   int    i;
+   double Hubble_z;
+   double RSDFactor;	
+   struct cosmoparam C = {OmegaMatter,OmegaLambda,(1.0 - OmegaMatter - OmegaLambda),Hubble};
+
+   fprintf(logfile," | Applying redshift-space distortions: LOS = z-axis, POS = xy-plane\n");
+
+   if (Redshift == 0.0) {
+     RSDFactor = 1.0/100.0;	   
+   } else { 
+     Hubble_z = 100.0*evolution_param(Redshift,&C);
+     RSDFactor = (1.0 + Redshift)/Hubble_z;
+   }
+
+   fprintf(logfile," | RSD factor = (1+z)/H(z) = %f [h⁻¹Mpc/(km/s)]\n",RSDFactor);
+   fflush(logfile);
+
+   for (i=0; i<NumTrac; i++) { 
+       Tracer[i].Pos[2] += Tracer[i].Vel[2]*RSDFactor;
+       if (Tracer[i].Pos[2] < 0.0    ) Tracer[i].Pos[2] += LBox[2];
+       if (Tracer[i].Pos[2] > LBox[2]) Tracer[i].Pos[2] -= LBox[2];        
+   }	       
+
+}
+
+void geometrical_distortions()
+{
+
+   int    i;
+   double Hubble_z,Distance_z;	
+   double FidHubble_z,FidDistance_z;	
+   double GDFactor_LOS,GDFactor_POS;
+   struct cosmoparam C = {OmegaMatter,
+                         OmegaLambda,
+			 1.0 - OmegaMatter - OmegaLambda,
+                         Hubble};
+   struct cosmoparam FC = {FidOmegaMatter,
+	                  FidOmegaLambda,
+			  1.0 - FidOmegaMatter - FidOmegaLambda,
+                          FidHubble};
+
+   fprintf(logfile," | Applying fiducial cosmology distortions: LOS = z-axis, POS = xy-plane\n");
+   fprintf(logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",C.OmM,C.OmL,C.OmK,C.Hub);
+
+   Hubble_z = C.Hub*evolution_param(Redshift,&C);
+   Distance_z = angular_distance(Redshift,&C);
+   
+   fprintf(logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
+
+   FidHubble_z = FC.Hub*evolution_param(Redshift,&FC);
+   FidDistance_z = angular_distance(Redshift,&FC);
+
+   GDFactor_LOS = Hubble_z/FidHubble_z;
+   GDFactor_POS = FidDistance_z/Distance_z;
+
+   fprintf(logfile," | GD factor: LOS = H(z)/FidH(z) = %f \n",GDFactor_LOS);
+   fprintf(logfile," |            POS = FidD(z)/D(z) = %f \n",GDFactor_POS);
+   fflush(logfile);
+
+   LBox[0] *= GDFactor_POS;
+   LBox[1] *= GDFactor_POS;
+   LBox[2] *= GDFactor_LOS;
+
+   for (i=0; i<NumTrac; i++) { 
+       Tracer[i].Pos[0] *= GDFactor_POS;
+       Tracer[i].Pos[1] *= GDFactor_POS;
+       Tracer[i].Pos[2] *= GDFactor_LOS;
+   }	
+
+}
+
+void write_voids()
+{
+   int     i;
+   FILE    *fd;
+   clock_t t;
+
+   fprintf(logfile,"\n WRITTING VOID CATALOGUE \n");
+   t = clock();
+   
+   fd = safe_open(FileVoids,"w");
+
+   for (i=0; i<NumVoid; i++) {
+       if (Void[i].ToF) {
+
+          fprintf(fd," %8.5f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %5d\n",
+	  	       Void[i].Rad,Void[i].Pos[0],Void[i].Pos[1],Void[i].Pos[2],Void[i].Vel[0],Void[i].Vel[1],
+	  	       Void[i].Vel[2],Void[i].Delta,Void[i].Dtype,Void[i].Poisson,Void[i].Nran);   
+       }
+   }
+   fclose(fd);
+
+   StepName.push_back("Writting void catalogue");
+   StepTime.push_back(get_time(t,1));
+
+}
+
+/*
 void read_tracers_gadget2_format2()
 {
 
@@ -612,152 +837,4 @@ void read_tracers_gadget2_format2()
   free(NpFile);
 
 }
-
-void read_tracers_mxxl()
-{
-
-   int     i,j,k,NumTot,N,id;
-   float   Pos[3],Vel[3];
-   char    filename[MAXCHAR],basename[MAXCHAR];
-   FILE    *fd;
-	
-   sprintf(basename,"%s/z%4.2f/halos_z%4.2f_part",FileTracers,Redshift,Redshift);
-   fprintf(logfile," | Files = %s (%d files) \n",basename,NumFiles);
-
-   for (i=1; i<=NumFiles; i++) {
-       sprintf(filename,"%s%02d",basename,i);
-       fd = safe_open(filename,"r");
-       fread(&N,sizeof(int),1,fd);
-       fread(&NumTot,sizeof(int),1,fd);
-       NumTrac += N;
-       fclose(fd);
-   }
-
-   if (NumTrac != NumTot) {
-      fprintf(stdout,"Error. Missing halos: NumTrac = %d, NumTot = %d\n",NumTrac,NumTot);
-      fflush(stdout);
-      exit(EXIT_FAILURE);
-   }
-
-   for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
-
-   for (j=1; j<=NumFiles; j++) { 
-       sprintf(filename,"%s%02d",basename,j);
-       fd = safe_open(filename,"r");
-       fread(&N,sizeof(int),1,fd);
-       fread(&NumTot,sizeof(int),1,fd);
-       for (i=0; i<N; i++) {
-	   fread(&id,sizeof(int),1,fd);
-	   fread(Pos,sizeof(float),3,fd);
-	   fread(Vel,sizeof(float),3,fd);
-
-	   for (k=0; k<3; k++) {
-	       Tracer[id].Pos[k] = Pos[k]*ScalePos;
-	       Tracer[id].Vel[k] = Vel[k]*ScaleVel;
-	   }
-       }
-       fclose(fd);
-   }
-
-}
-
-void redshift_space_distortions()
-{
-
-   int    i;
-   double Hubble_z;
-   double RSDFactor;	
-   struct cosmoparam C = {OmegaMatter,OmegaLambda,(1.0 - OmegaMatter - OmegaLambda),Hubble};
-
-   fprintf(logfile," | Applying redshift-space distortions: LOS = z-axis, POS = xy-plane\n");
-
-   if (Redshift == 0.0) {
-     RSDFactor = 1.0/100.0;	   
-   } else { 
-     Hubble_z = 100.0*evolution_param(Redshift,&C);
-     RSDFactor = (1.0 + Redshift)/Hubble_z;
-   }
-
-   fprintf(logfile," | RSD factor = (1+z)/H(z) = %f [h⁻¹Mpc/(km/s)]\n",RSDFactor);
-   fflush(logfile);
-
-   for (i=0; i<NumTrac; i++) { 
-       Tracer[i].Pos[2] += Tracer[i].Vel[2]*RSDFactor;
-       if (Tracer[i].Pos[2] < 0.0    ) Tracer[i].Pos[2] += LBox[2];
-       if (Tracer[i].Pos[2] > LBox[2]) Tracer[i].Pos[2] -= LBox[2];        
-   }	       
-
-}
-
-void geometrical_distortions()
-{
-
-   int    i;
-   double Hubble_z,Distance_z;	
-   double FidHubble_z,FidDistance_z;	
-   double GDFactor_LOS,GDFactor_POS;
-   struct cosmoparam C = {OmegaMatter,
-                         OmegaLambda,
-			 1.0 - OmegaMatter - OmegaLambda,
-                         Hubble};
-   struct cosmoparam FC = {FidOmegaMatter,
-	                  FidOmegaLambda,
-			  1.0 - FidOmegaMatter - FidOmegaLambda,
-                          FidHubble};
-
-   fprintf(logfile," | Applying fiducial cosmology distortions: LOS = z-axis, POS = xy-plane\n");
-   fprintf(logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",C.OmM,C.OmL,C.OmK,C.Hub);
-
-   Hubble_z = C.Hub*evolution_param(Redshift,&C);
-   Distance_z = angular_distance(Redshift,&C);
-   
-   fprintf(logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
-
-   FidHubble_z = FC.Hub*evolution_param(Redshift,&FC);
-   FidDistance_z = angular_distance(Redshift,&FC);
-
-   GDFactor_LOS = Hubble_z/FidHubble_z;
-   GDFactor_POS = FidDistance_z/Distance_z;
-
-   fprintf(logfile," | GD factor: LOS = H(z)/FidH(z) = %f \n",GDFactor_LOS);
-   fprintf(logfile," |            POS = FidD(z)/D(z) = %f \n",GDFactor_POS);
-   fflush(logfile);
-
-   LBox[0] *= GDFactor_POS;
-   LBox[1] *= GDFactor_POS;
-   LBox[2] *= GDFactor_LOS;
-
-   for (i=0; i<NumTrac; i++) { 
-       Tracer[i].Pos[0] *= GDFactor_POS;
-       Tracer[i].Pos[1] *= GDFactor_POS;
-       Tracer[i].Pos[2] *= GDFactor_LOS;
-   }	
-
-}
-
-void write_voids()
-{
-   int     i;
-   FILE    *fd;
-   clock_t t;
-
-   fprintf(logfile,"\n WRITTING VOID CATALOGUE \n");
-   t = clock();
-   
-   fd = safe_open(FileVoids,"w");
-
-   for (i=0; i<NumVoid; i++) {
-       if (Void[i].ToF) {
-
-          fprintf(fd," %8.5f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %5d\n",
-	  	       Void[i].Rad,Void[i].Pos[0],Void[i].Pos[1],Void[i].Pos[2],Void[i].Vel[0],Void[i].Vel[1],
-	  	       Void[i].Vel[2],Void[i].Delta,Void[i].Dtype,Void[i].Poisson,Void[i].Nran);   
-       }
-   }
-   fclose(fd);
-
-   StepName.push_back("Writting void catalogue");
-   StepTime.push_back(get_time(t,1));
-
-}
-
+ */
