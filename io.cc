@@ -255,6 +255,20 @@ void read_tracers()
 
    }
 
+   float xmax = 0.0;
+   float ymax = 0.0;
+   float zmax = 0.0;
+   for (int i=0; i<NumTrac; i++) {
+       if (Tracer[i].Pos[0] > xmax) xmax = Tracer[i].Pos[0];	   
+       if (Tracer[i].Pos[1] > ymax) ymax = Tracer[i].Pos[1];	   
+       if (Tracer[i].Pos[2] > zmax) zmax = Tracer[i].Pos[2];	   
+   }
+   if (xmax < 0.99*BoxSize || ymax < 0.99*BoxSize || zmax < 0.99*BoxSize) {
+      fprintf(stdout,"\n Error. Wrong BoxSize? - MAX = (%f,%f,%f) \n",xmax,ymax,zmax);
+      fflush(stdout);
+      exit(EXIT_FAILURE);	
+   } 
+
    LBox[0] = BoxSize;
    LBox[1] = BoxSize;
    LBox[2] = BoxSize;
