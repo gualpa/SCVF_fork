@@ -458,11 +458,11 @@ void read_tracers_gadget4()
     long long NtreesTot;
   } Header;
 
-  int       i,j,k,SkipBlock,dummy,Np,NC;
-  long long *id;
-  float     *pos,*vel;
-  FILE      *f1;
-  char      snapshot[MAXCHAR];
+  int  i,j,k,SkipBlock,dummy,Np,NC;
+  FILE *f1;
+  int *id;
+  float *pos, *vel;
+  char snapshot[MAXCHAR];
 
   if (NumFiles == 1) 
      sprintf(snapshot,"%s",FileTracers);	  
@@ -471,7 +471,7 @@ void read_tracers_gadget4()
 
   f1 = safe_open(snapshot,"r");
 
-  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); 
+  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;
   fclose(f1);
 
   if (Header.BoxSize*ScalePos != BoxSize || Header.NumFiles != NumFiles) {
@@ -491,7 +491,7 @@ void read_tracers_gadget4()
 
   NumTrac = Header.NpartTotal[1];
   for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
- 
+
   if (NumFiles < OMPcores)
      NC = NumFiles;
   else
@@ -515,11 +515,11 @@ void read_tracers_gadget4()
       Np = Header.Npart[1];
       pos = (float *) malloc(3*Np*sizeof(float));
       vel = (float *) malloc(3*Np*sizeof(float));
-      id = (long long *) malloc(Np*sizeof(long long));
+      id = (int *) malloc(Np*sizeof(int));
 
       SKIP; fread(pos,sizeof(float),3*Np,f1); SKIP;
       SKIP; fread(vel,sizeof(float),3*Np,f1); SKIP;
-      SKIP; fread(id,sizeof(long long),Np,f1); SKIP;
+      SKIP; fread(id,sizeof(int),Np,f1); SKIP;
 
       fclose(f1);
 
