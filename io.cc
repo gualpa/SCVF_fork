@@ -235,21 +235,16 @@ void read_tracers()
       break;
 
       case 1:
-      fprintf(logfile," | Reading GADGET-2 \n");	   
-      read_tracers_gadget2();
+      fprintf(logfile," | Reading GADGET \n");	   
+      read_tracers_gadget();
       break;
 
       case 2:
-      fprintf(logfile," | Reading GADGET-4 \n");	   
-      read_tracers_gadget4();
-      break;
-
-      case 3:
       fprintf(logfile," | Reading MXXL format \n");	   
       read_tracers_mxxl();
       break;
 
-      case 4:
+      case 3:
       fprintf(logfile," | Reading BINARY format \n");	   
       read_tracers_binary();
 
@@ -344,9 +339,11 @@ void read_tracers_binary()
 
 }
 
-void read_tracers_gadget2()
+void read_tracers_gadget()
 {
 #define SKIP fread(&dummy,sizeof(int),1,f1)
+
+/*
   struct GadgetHeader {
     int      Npart[6];
     double   Mass[6];
@@ -363,89 +360,8 @@ void read_tracers_gadget2()
     double   HubbleParam; 
     char     fill[96];  
   } Header;
+*/
 
-  int   i,j,k,SkipBlock,dummy,Np,NC;
-  int   *id;
-  float *pos,*vel;
-  FILE  *f1;
-  char  snapshot[MAXCHAR];
-
-  if (NumFiles == 1) 
-     sprintf(snapshot,"%s",FileTracers);	  
-  else 
-     sprintf(snapshot,"%s.0",FileTracers);	  
-
-  f1 = safe_open(snapshot,"r");
-
-  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); 
-  fclose(f1);
-
-  if (Header.BoxSize*ScalePos != BoxSize || Header.NumFiles != NumFiles) {
-     fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
-     fprintf(stdout,"BoxSize = %f (%f in inputfile)\n",Header.BoxSize*ScalePos,BoxSize);
-     fprintf(stdout,"NumFiles = %d (%d in inputfile)\n",Header.NumFiles,NumFiles);
-     fflush(stdout);
-     exit(EXIT_FAILURE);
-  }
-
-  if ((RSDist == 1 || GDist == 1) || Header.Redshift != Redshift) { 
-     fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
-     fprintf(stdout,"Redshift = %f (%f in inputfile)\n",Header.Redshift,Redshift);
-     fflush(stdout);
-     exit(EXIT_FAILURE);
-  }
-
-  NumTrac = Header.NpartTotal[1];
-  for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
- 
-  if (NumFiles < OMPcores)
-     NC = NumFiles;
-  else
-     NC = OMPcores;  
-
-  #pragma omp parallel for default(none) schedule(static) num_threads(NC) \
-   private(i,snapshot,f1,Np,Header,pos,vel,id,j,k,dummy)  \
-   shared(Tracer,ScalePos,ScaleVel,stdout,NumFiles,FileTracers)  
-  
-  for (i=0; i<NumFiles; i++) {
-
-      if (NumFiles == 1) 
-         sprintf(snapshot,"%s",FileTracers);	  
-      else 
-         sprintf(snapshot,"%s.%d",FileTracers,i);	  
-
-      f1 = safe_open(snapshot,"r");     
-
-      SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;  
-
-      Np = Header.Npart[1];
-      pos = (float *) malloc(3*Np*sizeof(float));
-      vel = (float *) malloc(3*Np*sizeof(float));
-      id = (int *) malloc(Np*sizeof(int));
-
-      SKIP; fread(pos,sizeof(float),3*Np,f1); SKIP;
-      SKIP; fread(vel,sizeof(float),3*Np,f1); SKIP;
-      SKIP; fread(id,sizeof(int),Np,f1); SKIP;
-
-      fclose(f1);
-
-      for (j=0; j<Np; j++) {
-	  for (k=0; k<3; k++) {
-	      Tracer[id[j]-1].Pos[k] = pos[3*j+k]*ScalePos; 
-	      Tracer[id[j]-1].Vel[k] = vel[3*j+k]*sqrt(Header.Time)*ScaleVel;
-	  }
-      }
-
-      free(pos);
-      free(vel);
-      free(id);
-  }
-#undef SKIP 
-}
-
-void read_tracers_gadget4()
-{
-#define SKIP fread(&dummy,sizeof(int),1,f1)
   struct GadgetHeader {
     long long Npart[2];
     long long NpartTotal[2];
@@ -458,10 +374,14 @@ void read_tracers_gadget4()
     long long NtreesTot;
   } Header;
 
-  int  i,j,k,SkipBlock,dummy,Np,NC;
+  typedef float postype;
+  typedef int idtype;
+
+  int  i,j,k,dummy,Np,NC,jump;
+  int  possize,velsize,idsize;
   FILE *f1;
-  int *id;
-  float *pos, *vel;
+  idtype *id;
+  postype *pos,*vel;
   char snapshot[MAXCHAR];
 
   if (NumFiles == 1) 
@@ -471,7 +391,18 @@ void read_tracers_gadget4()
 
   f1 = safe_open(snapshot,"r");
 
-  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;
+  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP; 
+
+  fread(&possize,sizeof(int),1,f1);
+  fseek(f1,possize+sizeof(int),SEEK_CUR);
+  fread(&velsize,sizeof(int),1,f1);
+  fseek(f1,velsize+sizeof(int),SEEK_CUR);
+  fread(&idsize,sizeof(int),1,f1);
+  
+  possize /= (3*Header.Npart[1]); 
+  velsize /= (3*Header.Npart[1]); 
+  idsize /= Header.Npart[1]; 
+
   fclose(f1);
 
   if (Header.BoxSize*ScalePos != BoxSize || Header.NumFiles != NumFiles) {
@@ -482,12 +413,21 @@ void read_tracers_gadget4()
      exit(EXIT_FAILURE);
   }
 
-  if ((RSDist == 1 || GDist == 1) || Header.Redshift != Redshift) { 
+  if ((RSDist == 1 || GDist == 1) && Header.Redshift != Redshift) { 
      fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
      fprintf(stdout,"Redshift = %f (%f in inputfile)\n",Header.Redshift,Redshift);
      fflush(stdout);
      exit(EXIT_FAILURE);
   }
+
+  if (possize != sizeof(postype) || velsize != sizeof(postype) || idsize != sizeof(idtype)) {
+     fprintf(stdout,"\nError. Missmatch data types in Gadget file.\n");
+     fprintf(stdout,"Pos: defined as %d bytes, in file %d bytes. \n",sizeof(postype),possize);
+     fprintf(stdout,"Vel: defined as %d bytes, in file %d bytes. \n",sizeof(postype),velsize);
+     fprintf(stdout,"IDs: defined as %d bytes, in file %d bytes. \n",sizeof(idtype),idsize);
+     fflush(stdout);
+     exit(EXIT_FAILURE);
+  } 
 
   NumTrac = Header.NpartTotal[1];
   for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
@@ -513,13 +453,13 @@ void read_tracers_gadget4()
       SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;  
 
       Np = Header.Npart[1];
-      pos = (float *) malloc(3*Np*sizeof(float));
-      vel = (float *) malloc(3*Np*sizeof(float));
-      id = (int *) malloc(Np*sizeof(int));
+      pos = (postype *) malloc(3*Np*sizeof(postype));
+      vel = (postype *) malloc(3*Np*sizeof(postype));
+      id = (idtype *) malloc(Np*sizeof(idtype));
 
-      SKIP; fread(pos,sizeof(float),3*Np,f1); SKIP;
-      SKIP; fread(vel,sizeof(float),3*Np,f1); SKIP;
-      SKIP; fread(id,sizeof(int),Np,f1); SKIP;
+      SKIP; fread(pos,sizeof(postype),3*Np,f1); SKIP;
+      SKIP; fread(vel,sizeof(postype),3*Np,f1); SKIP;
+      SKIP; fread(id,sizeof(idtype),Np,f1); SKIP;
 
       fclose(f1);
 
