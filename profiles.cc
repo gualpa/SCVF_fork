@@ -7,17 +7,23 @@
 void compute_profiles()
 {
    int          i,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
-   double       xc[3],xt[3],dx[3],vt[3],dist,Rho,GridSize[3];
-   double       dR,DeltaDiff,DeltaCum,MinDist,MaxDist,GAP;
-   double       CGal[NumProfileBins],Suma[NumProfileBins],CVel[NumProfileBins];
-   double       VRad,rm,ri,rs,Vol,DeltaMax,Radius;
+   double       xc[3],xt[3],dx[3],vt[3],dist,GridSize[3];
+   double       dR,MinDist,MaxDist,GAP;
+   double       VRad,Vol,DeltaMax,Radius;
    vector <int> Indx; 
-   char         OutFile[MAXCHAR];
+   char         TxtFile[MAXCHAR],BinFile[MAXCHAR];
    int          NumQuery;
    struct query Query;
    struct grid  *GridList;
-   FILE         *fd;
+   FILE         *ftxt,*fbin;
    clock_t      t;
+
+   struct profile {
+      float DeltaDiff;
+      float DeltaCum;
+      float Velocity;
+      float Ri,Rm,Rs;
+   } Prof[NumProfileBins];
 
    fprintf(logfile,"\n COMPUTING VOID PROFILES \n");
    t = clock();
@@ -50,20 +56,24 @@ void compute_profiles()
    fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
    fflush(logfile);
 
+   if (WriteProfiles == 2) {
+      sprintf(BinFile,"%s/profiles.bin",PathProfiles);
+      fbin = safe_open(BinFile,"w");
+   }
+
    #pragma omp parallel for default(none) schedule(dynamic)                   \
     shared(NumVoid,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
            Indx,MeanNumTrac,LBox,NumProfileBins,MinProfileDist,MaxProfileDist,\
-	   WriteProfiles,PathProfiles,GAP)                                    \
-    private(i,m,k,ii,jj,kk,l,Radius,ic,jc,kc,CVel,CGal,Suma,xc,xt,dx,vt,next, \
-	    dist,VRad,ibin,DeltaMax,ri,rm,rs,Rho,Vol,DeltaDiff,DeltaCum,fd,in,\
-	    OutFile)
+	   WriteProfiles,PathProfiles,GAP,fbin,BinFile)                       \
+    private(i,m,k,ii,jj,kk,l,Radius,ic,jc,kc,xc,xt,dx,vt,next,Prof,dist,VRad, \
+	    ibin,DeltaMax,Vol,ftxt,in,TxtFile)
 
    for (i=0; i<(int)Indx.size(); i++) {
        
        for (k=0; k<NumProfileBins; k++) {
-           CVel[k] = 0.0;
-           CGal[k] = 0.0;
-           Suma[k] = 0.0;
+           Prof[k].DeltaDiff = 0.0;
+           Prof[k].DeltaCum = 0.0;
+           Prof[k].Velocity = 0.0;
        }
        
        Radius = Void[Indx[i]].Rad;
@@ -115,65 +125,78 @@ void compute_profiles()
 	          VRad = vt[0]*dx[0] + vt[1]*dx[1] + vt[2]*dx[2];
 	          VRad /= dist;
 
-	          CVel[ibin] += VRad;
-	          CGal[ibin] += 1.0; 
+	          Prof[ibin].Velocity += VRad;
+	          Prof[ibin].DeltaDiff += 1.0; 
 
 	       }
 	   }
        }
        
        for (k=0; k<NumProfileBins; k++) {
-	   if (CGal[k] < 3.0) {
-	       CGal[k] = 0.0;
-               CVel[k] = 0.0;
+	   if (Prof[k].DeltaDiff < 3.0) {
+	       Prof[k].DeltaDiff = 0.0;
+               Prof[k].Velocity = 0.0;
            } else {
-               CVel[k] /= CGal[k];	   
+               Prof[k].Velocity /= Prof[k].DeltaDiff;	   
 	   }
-       }
-
-       if (WriteProfiles == 1) {
-          sprintf(OutFile,"%s/void_%d.dat",PathProfiles,i);
-          fd = safe_open(OutFile,"w");
        }
 
        DeltaMax = -1.0;
        for (k=0; k<NumProfileBins; k++) {
 
 	   for (kk=0; kk<=k; kk++) 
-	       Suma[k] += CGal[kk]; 
+	       Prof[k].DeltaCum += Prof[kk].DeltaDiff; 
 
-	   ri = (double)(k    )*dR + log10(MinProfileDist);
-	   rm = (double)(k+0.5)*dR + log10(MinProfileDist);
-	   rs = (double)(k+1.0)*dR + log10(MinProfileDist);
+	   Prof[k].Ri = (float)(k    )*dR + log10(MinProfileDist);
+	   Prof[k].Rm = (float)(k+0.5)*dR + log10(MinProfileDist);
+	   Prof[k].Rs = (float)(k+1.0)*dR + log10(MinProfileDist);
 
-	   ri = pow(10.0,ri)*Radius;
-	   rm = pow(10.0,rm)*Radius;
-	   rs = pow(10.0,rs)*Radius;
+	   Prof[k].Ri = pow(10.0,Prof[k].Ri)*Radius;
+	   Prof[k].Rm = pow(10.0,Prof[k].Rm)*Radius;
+	   Prof[k].Rs = pow(10.0,Prof[k].Rs)*Radius;
 
-	   Vol = (4.0/3.0)*PI*(pow(rs,3) - pow(ri,3));
-	   Rho = CGal[k]/Vol;
-	   DeltaDiff = Rho/MeanNumTrac - 1.0;
+	   Vol = (4.0/3.0)*PI*(pow(Prof[k].Rs,3) - pow(Prof[k].Ri,3));
+	   Prof[k].DeltaDiff = Prof[k].DeltaDiff/Vol/MeanNumTrac - 1.0;
 
-	   Vol = (4.0/3.0)*PI*pow(rs,3);
-	   Rho = Suma[k]/Vol;
-           DeltaCum = Rho/MeanNumTrac - 1.0;
+	   Vol = (4.0/3.0)*PI*pow(Prof[k].Rs,3);
+	   Prof[k].DeltaCum = Prof[k].DeltaCum/Vol/MeanNumTrac - 1.0;
 
-    	   if (WriteProfiles == 1) 
-	      fprintf(fd,"%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f \n",
-			  ri,rm,rs,CVel[k],DeltaDiff,DeltaCum,Radius);
-	   
-	   if (rs < 2.0*Radius || rs > 3.0*Radius) continue;
+	   if (Prof[k].Rs < 2.0*Radius || Prof[k].Rs > 3.0*Radius) continue;
 
-	   if (DeltaCum > DeltaMax) DeltaMax = DeltaCum;
+	   if (Prof[k].DeltaCum > DeltaMax) DeltaMax = Prof[k].DeltaCum;
 
        }
-       
-       if (WriteProfiles == 1)
-          fclose(fd);
 
        Void[Indx[i]].Dtype = DeltaMax;
+       
+       if (WriteProfiles == 1) {
+          sprintf(TxtFile,"%s/profile_void_%d.dat",PathProfiles,i);
+          ftxt = safe_open(TxtFile,"w");
+          for (k=0; k<NumProfileBins; k++)
+	      fprintf(ftxt,"%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f \n",
+			   Prof[k].Ri,Prof[k].Rm,Prof[k].Rs,Prof[k].DeltaDiff,
+			   Prof[k].DeltaCum,Prof[k].Velocity,Radius);  
+          fclose(ftxt);
+       }
+       
+       if (WriteProfiles == 2) {
+          #pragma omp critical
+	  {
+	     fwrite(&i,sizeof(int),1,fbin);
+             fwrite(&Radius,sizeof(float),1,fbin);
+	     fwrite(&Prof[0].Ri,sizeof(float),NumProfileBins,fbin);
+	     fwrite(&Prof[0].Rm,sizeof(float),NumProfileBins,fbin);
+	     fwrite(&Prof[0].Rs,sizeof(float),NumProfileBins,fbin);
+	     fwrite(&Prof[0].DeltaDiff,sizeof(float),NumProfileBins,fbin);
+	     fwrite(&Prof[0].DeltaCum,sizeof(float),NumProfileBins,fbin);
+	     fwrite(&Prof[0].Velocity,sizeof(float),NumProfileBins,fbin);
+	  }
+       }
 
+       Void[Indx[i]].Dtype = DeltaMax;
    } 
+   
+   if (WriteProfiles == 2) fclose(fbin);
 
    Indx.clear();
    free_query_grid(&Query);

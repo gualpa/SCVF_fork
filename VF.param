@@ -47,7 +47,7 @@ FidHubble         0.7
 %_________________________________________________________________________________________
 %                                                                            VOID PROFILES
 
-WriteProfiles     0                         % Write void profiles (0/1 - No/Yes)
+WriteProfiles     0                         % Write void profiles: 0 = No | 1 = ascii | 2 = binary
 MinProfileDist    0.5                       % Minimun distance to compute profile [Rvoid]
 MaxProfileDist    3.0                       % Maximun distance to compute profile [Rvoid]           
 NumProfileBins    100                       % Number of bins 
