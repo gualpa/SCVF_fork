@@ -139,13 +139,12 @@ void compute_profiles()
            } else {
                Prof[k].Velocity /= Prof[k].DeltaDiff;	   
 	   }
+           for (kk=0; kk<=k; kk++) 
+	       Prof[k].DeltaCum += Prof[kk].DeltaDiff;
        }
 
        DeltaMax = -1.0;
        for (k=0; k<NumProfileBins; k++) {
-
-	   for (kk=0; kk<=k; kk++) 
-	       Prof[k].DeltaCum += Prof[kk].DeltaDiff; 
 
 	   Prof[k].Ri = (float)(k    )*dR + log10(MinProfileDist);
 	   Prof[k].Rm = (float)(k+0.5)*dR + log10(MinProfileDist);
@@ -184,6 +183,7 @@ void compute_profiles()
 	  {
 	     fwrite(&i,sizeof(int),1,fbin);
              fwrite(&Radius,sizeof(float),1,fbin);
+             fwrite(&NumProfileBins,sizeof(int),1,fbin);
 	     fwrite(&Prof[0].Ri,sizeof(float),NumProfileBins,fbin);
 	     fwrite(&Prof[0].Rm,sizeof(float),NumProfileBins,fbin);
 	     fwrite(&Prof[0].Rs,sizeof(float),NumProfileBins,fbin);
