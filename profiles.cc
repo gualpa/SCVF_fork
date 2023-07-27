@@ -6,24 +6,19 @@
 
 void compute_profiles()
 {
-   int          i,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
-   double       xc[3],xt[3],dx[3],vt[3],dist,GridSize[3];
-   double       dR,MinDist,MaxDist,GAP;
-   double       VRad,Vol,DeltaMax,Radius;
-   vector <int> Indx; 
-   char         TxtFile[MAXCHAR],BinFile[MAXCHAR];
-   int          NumQuery;
-   struct query Query;
-   struct grid  *GridList;
-   FILE         *ftxt,*fbin;
-   clock_t      t;
-
-   struct profile {
-      float DeltaDiff;
-      float DeltaCum;
-      float Velocity;
-      float Ri,Rm,Rs;
-   } Prof[NumProfileBins];
+   int            i,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
+   double         xc[3],xt[3],dx[3],vt[3],dist,GridSize[3];
+   double         dR,MinDist,MaxDist,GAP;
+   double         VRad,Vol,DeltaMax;
+   float          Radius;
+   vector <int>   Indx;
+   struct profile Prof[NumProfileBins];  
+   char           TxtFile[MAXCHAR],BinFile[MAXCHAR];
+   int            NumQuery;
+   struct query   Query;
+   struct grid    *GridList;
+   FILE           *ftxt,*fbin;
+   clock_t        t;
 
    fprintf(logfile,"\n COMPUTING VOID PROFILES \n");
    t = clock();
@@ -184,12 +179,14 @@ void compute_profiles()
 	     fwrite(&i,sizeof(int),1,fbin);
              fwrite(&Radius,sizeof(float),1,fbin);
              fwrite(&NumProfileBins,sizeof(int),1,fbin);
-	     fwrite(&Prof[0].Ri,sizeof(float),NumProfileBins,fbin);
-	     fwrite(&Prof[0].Rm,sizeof(float),NumProfileBins,fbin);
-	     fwrite(&Prof[0].Rs,sizeof(float),NumProfileBins,fbin);
-	     fwrite(&Prof[0].DeltaDiff,sizeof(float),NumProfileBins,fbin);
-	     fwrite(&Prof[0].DeltaCum,sizeof(float),NumProfileBins,fbin);
-	     fwrite(&Prof[0].Velocity,sizeof(float),NumProfileBins,fbin);
+	     for (k=0; k<NumProfileBins; k++) {
+	         fwrite(&Prof[k].Ri,sizeof(float),1,fbin);
+	         fwrite(&Prof[k].Rm,sizeof(float),1,fbin);
+	         fwrite(&Prof[k].Rs,sizeof(float),1,fbin);
+	         fwrite(&Prof[k].DeltaDiff,sizeof(float),1,fbin);
+	         fwrite(&Prof[k].DeltaCum,sizeof(float),1,fbin);
+	         fwrite(&Prof[k].Velocity,sizeof(float),1,fbin);
+	     }
 	  }
        }
 
@@ -204,5 +201,51 @@ void compute_profiles()
    
    StepName.push_back("Computing profiles");
    StepTime.push_back(get_time(t,OMPcores));
+
+}
+
+void bin2ascii_profile(int voidID)
+{
+   int            SkipBlock,iv,k;
+   float          Radius;  
+   struct profile Prof[NumProfileBins];
+   FILE           *fbin,*fout;
+   char           filename[MAXCHAR];
+   
+   SkipBlock = sizeof(float) + sizeof(int) + 6*NumProfileBins*sizeof(float);
+   sprintf(filename,"%s/profiles.bin",PathProfiles);  
+   fbin = safe_open(filename,"r");
+
+   do {
+   
+      fread(&iv,sizeof(int),1,fbin);
+
+      if (iv+1 != voidID)  
+         fseek(fbin,SkipBlock,SEEK_CUR);
+      else {
+         fread(&Radius,sizeof(float),1,fbin);
+         fread(&NumProfileBins,sizeof(int),1,fbin);
+	 for (k=0; k<NumProfileBins; k++) {
+	     fread(&Prof[k].Ri,sizeof(float),1,fbin);
+	     fread(&Prof[k].Rm,sizeof(float),1,fbin);
+	     fread(&Prof[k].Rs,sizeof(float),1,fbin);
+	     fread(&Prof[k].DeltaDiff,sizeof(float),1,fbin);
+	     fread(&Prof[k].DeltaCum,sizeof(float),1,fbin);
+	     fread(&Prof[k].Velocity,sizeof(float),1,fbin);
+	 }
+      }
+   } while (iv+1 != voidID);
+   fclose(fbin);
+
+   fprintf(logfile,"\n Writting profile for void %d, with radius %5.3f [Mpc/h] \n",voidID,Radius);
+
+   sprintf(filename,"%s/profile_void_%d.dat",PathProfiles,voidID);
+   fout = safe_open(filename,"w");
+
+   for (k=0; k<NumProfileBins; k++)
+       fprintf(fout,"%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f \n",
+		     Prof[k].Ri,Prof[k].Rm,Prof[k].Rs,Prof[k].DeltaDiff,
+		     Prof[k].DeltaCum,Prof[k].Velocity,Radius);  
+   fclose(fout);
 
 }

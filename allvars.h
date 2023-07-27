@@ -52,6 +52,7 @@ extern double InnerShellVel;
 extern double OuterShellVel;  
 extern double ScalePos;
 extern double ScaleVel;
+extern int    RunFlag;
 
 extern vector <double> StepTime;
 extern vector <string> StepName;   

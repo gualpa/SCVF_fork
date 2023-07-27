@@ -9,14 +9,26 @@
 
 int main(int argc, char **argv) 
 {
-   
+   int RunFlag;	   
+
    if (argc < 2) {
-       fprintf(stdout, "\n Error. Missing input file.\n");
-       fprintf(stdout, "./main.x <input_param>\n\n");
+       fprintf(stdout, "\n Error. Missing input file or flags.\n");
+       fprintf(stdout, "./main.x <input_param> [<run flag>] \n\n");
        exit(EXIT_FAILURE);
+   } else if (argc == 2) {
+       RunFlag = 0;	   
+   } else {
+       sscanf(argv[2], "%d", &RunFlag);   
    }
 
    read_input_file(argv[1]);
+
+   if (RunFlag == 1) {
+      int voidID; 
+      sscanf(argv[3], "%d", &voidID);
+      bin2ascii_profile(voidID); 
+      exit(EXIT_SUCCESS);
+   } 
 
    if (Redshift == 0.0 && GDist == 1) {
       fprintf(stdout,"\nError. Geometrical distortions not available for z = 0\n");

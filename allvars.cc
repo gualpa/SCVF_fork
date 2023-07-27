@@ -33,6 +33,7 @@ double InnerShellVel;
 double OuterShellVel;  
 double ScalePos;
 double ScaleVel;
+int    RunFlag;
 
 vector <double> StepTime;
 vector <string> StepName;

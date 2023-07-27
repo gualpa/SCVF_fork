@@ -152,9 +152,12 @@ void read_input_file(char *filename)
 
   fd = safe_open(filename,"r");
 
-  sprintf(fname,"%s.log",filename);	  
+  if (RunFlag == 0) 
+     sprintf(fname,"%s.log",filename);	  
+  else
+     sprintf(fname,"%s_%d.log",filename,RunFlag);	  
+  
   logfile = safe_open(fname,"w");
-
   fprintf(logfile,"\n CONFIGURATION PARAMETERS USED \n\n");
 
   while (!feof(fd)) {
@@ -296,6 +299,8 @@ void read_tracers_ascii()
    FILE *fd = safe_open(FileTracers,"r");
 
    for (int i=0; i<NumTot; i++) {
+
+       //if (NumTrac > 250000) break	   
 
        Tracer.push_back(tracers());
 
