@@ -9,11 +9,10 @@
 
 int main(int argc, char **argv) 
 {
-   int RunFlag;	   
-
+   
    if (argc < 2) {
-       fprintf(stdout, "\n Error. Missing input file or flags.\n");
-       fprintf(stdout, "./main.x <input_param> [<run flag>] \n\n");
+       fprintf(stdout, "\n Error. Missing input file and flags.\n");
+       fprintf(stdout, "./main.x <input_param> [<run flag>] [...] \n\n");
        exit(EXIT_FAILURE);
    } else if (argc == 2) {
        RunFlag = 0;	   
@@ -24,6 +23,11 @@ int main(int argc, char **argv)
    read_input_file(argv[1]);
 
    if (RunFlag == 1) {
+      if (argc < 4) {
+	 fprintf(stdout, "\n Error. Missing void ID.\n");
+         fprintf(stdout, "./main.x <input_param> 1 <void_ID> \n\n");
+         exit(EXIT_FAILURE);
+      }	      
       int voidID; 
       sscanf(argv[3], "%d", &voidID);
       bin2ascii_profile(voidID); 

@@ -156,7 +156,7 @@ void read_input_file(char *filename)
      sprintf(fname,"%s.log",filename);	  
   else
      sprintf(fname,"%s_%d.log",filename,RunFlag);	  
-  
+
   logfile = safe_open(fname,"w");
   fprintf(logfile,"\n CONFIGURATION PARAMETERS USED \n\n");
 
