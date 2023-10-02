@@ -297,15 +297,15 @@ void read_tracers_ascii()
    NumTrac = 0;	
    int NumTot = count_lines(FileTracers);
    FILE *fd = safe_open(FileTracers,"r");
-
+   float dummy ; // agrego Seba par poder levantar archivo de 7 columnas
    for (int i=0; i<NumTot; i++) {
 
        //if (NumTrac > 250000) break	   
 
        Tracer.push_back(tracers());
 
-       fscanf(fd,"%f %f %f %f %f %f \n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2],	   
-                                        &Tracer[i].Vel[0],&Tracer[i].Vel[1],&Tracer[i].Vel[2]);
+       fscanf(fd,"%f %f %f %f %f %f %f\n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2],	   
+                                        &Tracer[i].Vel[0],&Tracer[i].Vel[1],&Tracer[i].Vel[2],&dummy);
        Tracer[NumTrac].Pos[0] *= ScalePos;
        Tracer[NumTrac].Pos[1] *= ScalePos;
        Tracer[NumTrac].Pos[2] *= ScalePos;

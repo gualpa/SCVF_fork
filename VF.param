@@ -5,7 +5,7 @@
 
 OMPcores           8        % Number of cores for OpenMP sections
 
-BoxSize          1000       % Boxsize in Mpc/h
+BoxSize          500       % Boxsize in Mpc/h      Lo ambio el seba para utilizar el archivo de entrada del polaco
 MaxRadiusSearch  40.0       % Maximum void radius in Mpc/h
 ProxyGridSize     5.0       % Proxy for the size of the grid in Mpc/h   
 DeltaThreshold   -0.9       % Integrated density contrast threshold
@@ -14,7 +14,7 @@ OverlapTol        0.0       % Overlap tolerance
 
 FormatTracers     0                      % 0 = ASCII | 1 = GADGET | 2 = MXXL | 3 = BINARY
 NumFiles          32                     % Ignored if format = 0,3,4
-FileTracers       data/galaxies.dat      % File with tracers
+FileTracers       /home/srgualpa/projects/SCVF_Polaco_finder_void/data/halos_fede.dat      % File with tracers
 FileVoids         data/test.dat          % File for void catalogue
 
 ScalePos          1.0        % Convert positions to Mpc/h

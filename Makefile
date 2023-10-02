@@ -6,14 +6,15 @@ CPP = g++
 #__________________________________________________________
 #                                                    voro++
 
-VORO_LIB = -L/usr/local/lib -lvoro++
-VORO_INC = -I/usr/local/include/voro++
+VORO_LIB = -L/home/srgualpa/projects/SCVF_Polaco_finder_void/voro++-0.4.6/src -lvoro++
+VORO_INC = -I/home/srgualpa/projects/SCVF_Polaco_finder_void/voro++-0.4.6/src
 
 #__________________________________________________________
 #                                                       GSL
 
-GSL_LIB = -L/usr/lib -lgsl -lgslcblas 
-GSL_INC = -I/usr/include/gsl
+GSL_LIB = -L/opt/spack/dev/opt/spack/linux-centos7-x86_64_v3/gcc-12.1.0/gsl-2.7.1-ttp5l7ez636aw4kkpbfzfufdu2546jgf/lib -lgsl -lgslcblas 
+GSL_INC = -I/opt/spack/dev/opt/spack/linux-centos7-x86_64_v3/gcc-12.1.0/gsl-2.7.1-ttp5l7ez636aw4kkpbfzfufdu2546jgf/include/gsl/
+
 
 #__________________________________________________________
 #                                                    OpenMP
