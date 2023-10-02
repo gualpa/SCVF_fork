@@ -14,7 +14,7 @@ OverlapTol        0.0       % Overlap tolerance
 
 FormatTracers     0                      % 0 = ASCII | 1 = GADGET | 2 = MXXL | 3 = BINARY
 NumFiles          32                     % Ignored if format = 0,3,4
-FileTracers       /home/srgualpa/projects/SCVF_Polaco_finder_void/data/halos_fede.dat      % File with tracers
+FileTracers       data/halos_fede.dat      % File with tracers
 FileVoids         data/test.dat          % File for void catalogue
 
 ScalePos          1.0        % Convert positions to Mpc/h
