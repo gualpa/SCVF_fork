@@ -119,5 +119,5 @@ void compute_velocity()
    free_query_grid(&Query);
 
    StepName.push_back("Computing velocities");
-   StepTime.push_back(get_time(t,OMPcores));
+   StepTime.push_back(get_time(t,VarConfig.OMPcores));
 }

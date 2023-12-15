@@ -23,7 +23,7 @@ void compute_profiles()
    fprintf(logfile,"\n COMPUTING VOID PROFILES \n");
    t = clock();
 
-   NumGrid = (int)(BoxSize/ProxyGridSize);
+   NumGrid = (int)(VarConfig.BoxSize/VarConfig.ProxyGridSize);
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
    build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
@@ -200,7 +200,7 @@ void compute_profiles()
    free_grid_list(GridList,NumGrid);
    
    StepName.push_back("Computing profiles");
-   StepTime.push_back(get_time(t,OMPcores));
+   StepTime.push_back(get_time(t,VarConfig.OMPcores));
 
 }
 

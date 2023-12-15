@@ -128,6 +128,6 @@ void compute_voronoi()
    free_grid_list(GridList,NumGrid);
 
    StepName.push_back("Computing Voronoi tessellation");
-   StepTime.push_back(get_time(t,OMPcores));
+   StepTime.push_back(get_time(t,VarConfig.OMPcores));
 
 }

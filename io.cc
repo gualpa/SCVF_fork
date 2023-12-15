@@ -23,43 +23,43 @@ void read_input_file(char *filename)
   nt = 0;
 
   strcpy(tag[nt],"BoxSize");
-  addr[nt] = &BoxSize;
+  addr[nt] = &VarConfig.BoxSize;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"MaxRadiusSearch");
-  addr[nt] = &MaxRadiusSearch;
+  addr[nt] = &VarConfig.MaxRadiusSearch;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"ProxyGridSize");
-  addr[nt] = &ProxyGridSize;
+  addr[nt] = &VarConfig.ProxyGridSize;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"DeltaThreshold");
-  addr[nt] = &DeltaThreshold;
+  addr[nt] = &VarConfig.DeltaThreshold;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"DeltaSeed");
-  addr[nt] = &DeltaSeed;
+  addr[nt] = &VarConfig.DeltaSeed;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"OverlapTol");
-  addr[nt] = &OverlapTol;
+  addr[nt] = &VarConfig.OverlapTol;
   id[nt++] = DOUBLE;  
 
   strcpy(tag[nt],"FormatTracers");
-  addr[nt] = &FormatTracers;
+  addr[nt] = &VarConfig.FormatTracers;
   id[nt++] = INT;
 
   strcpy(tag[nt],"NumFiles");
-  addr[nt] = &NumFiles;
+  addr[nt] = &VarConfig.NumFiles;
   id[nt++] = INT;
 
   strcpy(tag[nt],"FileTracers");
-  addr[nt] = FileTracers;
+  addr[nt] = VarConfig.FileTracers;
   id[nt++] = STRING;
 
   strcpy(tag[nt],"FileVoids");
-  addr[nt] = FileVoids;
+  addr[nt] = VarConfig.FileVoids;
   id[nt++] = STRING;
 
   strcpy(tag[nt],"ScalePos");
@@ -71,19 +71,19 @@ void read_input_file(char *filename)
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"OMPcores");
-  addr[nt] = &OMPcores;
+  addr[nt] = &VarConfig.OMPcores;
   id[nt++] = INT;
 
   strcpy(tag[nt],"RadIncrement");
-  addr[nt] = &RadIncrement;
+  addr[nt] = &VarConfig.RadIncrement;
   id[nt++] = DOUBLE;
   
   strcpy(tag[nt],"NumRanWalk");
-  addr[nt] = &NumRanWalk;
+  addr[nt] = &VarConfig.NumRanWalk;
   id[nt++] = INT;
 
   strcpy(tag[nt],"FracRadius");
-  addr[nt] = &FracRadius;
+  addr[nt] = &VarConfig.FracRadius;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"RSDist");
@@ -230,7 +230,7 @@ void read_tracers()
    fprintf(logfile,"\n READING TRACERS \n");
    clock_t t = clock();
 
-   switch (FormatTracers) {
+   switch (VarConfig.FormatTracers) {
 
       case 0: 
       fprintf(logfile," | Reading ASCII format \n");	   
@@ -262,15 +262,15 @@ void read_tracers()
        if (Tracer[i].Pos[1] > ymax) ymax = Tracer[i].Pos[1];	   
        if (Tracer[i].Pos[2] > zmax) zmax = Tracer[i].Pos[2];	   
    }
-   if (xmax/BoxSize < diff || ymax/BoxSize < diff || zmax/BoxSize < diff) {
+   if (xmax/BoxSize < diff || ymax/VarConfig.BoxSize < diff || zmax/VarConfig.BoxSize < diff) {
       fprintf(stdout,"\n Error. Wrong BoxSize? - MAX = (%f,%f,%f) \n",xmax,ymax,zmax);
       fflush(stdout);
       exit(EXIT_FAILURE);	
    } 
 
-   LBox[0] = BoxSize;
-   LBox[1] = BoxSize;
-   LBox[2] = BoxSize;
+   LBox[0] = VarConfig.BoxSize;
+   LBox[1] = VarConfig.BoxSize;
+   LBox[2] = VarConfig.BoxSize;
 
    if (RSDist == 1) redshift_space_distortions();
    if (GDist == 1) geometrical_distortions();
@@ -295,8 +295,8 @@ void read_tracers_ascii()
 {
    
    NumTrac = 0;	
-   int NumTot = count_lines(FileTracers);
-   FILE *fd = safe_open(FileTracers,"r");
+   int NumTot = count_lines(VarConfig.FileTracers);
+   FILE *fd = safe_open(VarConfig.FileTracers,"r");
    float dummy ; // agrego Seba par poder levantar archivo de 7 columnas
    for (int i=0; i<NumTot; i++) {
 
@@ -320,7 +320,7 @@ void read_tracers_ascii()
 
 void read_tracers_binary()
 {
-   FILE *fd = safe_open(FileTracers,"r");
+   FILE *fd = safe_open(VarConfig.FileTracers,"r");
    int NumTot;
 
    NumTrac = 0;
@@ -389,10 +389,10 @@ void read_tracers_gadget()
   postype *pos,*vel;
   char snapshot[MAXCHAR];
 
-  if (NumFiles == 1) 
-     sprintf(snapshot,"%s",FileTracers);	  
+  if (VarConfig.NumFiles == 1) 
+     sprintf(snapshot,"%s",VarConfig.FileTracers);	  
   else 
-     sprintf(snapshot,"%s.0",FileTracers);	  
+     sprintf(snapshot,"%s.0",VarConfig.FileTracers);	  
 
   f1 = safe_open(snapshot,"r");
 
@@ -410,10 +410,10 @@ void read_tracers_gadget()
 
   fclose(f1);
 
-  if (Header.BoxSize*ScalePos != BoxSize || Header.NumFiles != NumFiles) {
+  if (Header.BoxSize*ScalePos != VarConfig.BoxSize || Header.NumFiles != VarConfig.NumFiles) {
      fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
-     fprintf(stdout,"BoxSize = %f (%f in inputfile)\n",Header.BoxSize*ScalePos,BoxSize);
-     fprintf(stdout,"NumFiles = %d (%d in inputfile)\n",Header.NumFiles,NumFiles);
+     fprintf(stdout,"BoxSize = %f (%f in inputfile)\n",Header.BoxSize*ScalePos,VarConfig.BoxSize);
+     fprintf(stdout,"NumFiles = %d (%d in inputfile)\n",Header.NumFiles,VarConfig.NumFiles);
      fflush(stdout);
      exit(EXIT_FAILURE);
   }
@@ -437,18 +437,18 @@ void read_tracers_gadget()
   NumTrac = Header.NpartTotal[1];
   for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
 
-  if (NumFiles < OMPcores)
-     NC = NumFiles;
+  if (VarConfig.NumFiles < VarConfig.OMPcores)
+     NC = VarConfig.NumFiles;
   else
-     NC = OMPcores;  
+     NC = VarConfig.OMPcores;  
 
   #pragma omp parallel for default(none) schedule(static) num_threads(NC) \
    private(i,snapshot,f1,Np,Header,pos,vel,id,j,k,dummy)  \
-   shared(Tracer,ScalePos,ScaleVel,stdout,NumFiles,FileTracers)  
+   shared(Tracer,ScalePos,ScaleVel,stdout,VarConfig.NumFiles,FileTracers)  
   
-  for (i=0; i<NumFiles; i++) {
+  for (i=0; i<VarConfig.NumFiles; i++) {
 
-      if (NumFiles == 1) 
+      if (VarConfig.NumFiles == 1) 
          sprintf(snapshot,"%s",FileTracers);	  
       else 
          sprintf(snapshot,"%s.%d",FileTracers,i);	  
@@ -490,10 +490,10 @@ void read_tracers_mxxl()
    char    filename[MAXCHAR],basename[MAXCHAR];
    FILE    *fd;
 	
-   sprintf(basename,"%s/z%4.2f/halos_z%4.2f_part",FileTracers,Redshift,Redshift);
-   fprintf(logfile," | Files = %s (%d files) \n",basename,NumFiles);
+   sprintf(basename,"%s/z%4.2f/halos_z%4.2f_part",VarConfig.FileTracers,Redshift,Redshift);
+   fprintf(logfile," | Files = %s (%d files) \n",basename,VarConfig.NumFiles);
 
-   for (i=1; i<=NumFiles; i++) {
+   for (i=1; i<=VarConfig.NumFiles; i++) {
        sprintf(filename,"%s%02d",basename,i);
        fd = safe_open(filename,"r");
        fread(&N,sizeof(int),1,fd);
@@ -510,7 +510,7 @@ void read_tracers_mxxl()
 
    for (int i=0; i<NumTrac; i++) Tracer.push_back(tracers());
 
-   for (j=1; j<=NumFiles; j++) { 
+   for (j=1; j<=VarConfig.NumFiles; j++) { 
        sprintf(filename,"%s%02d",basename,j);
        fd = safe_open(filename,"r");
        fread(&N,sizeof(int),1,fd);
@@ -613,7 +613,7 @@ void write_voids()
    fprintf(logfile,"\n WRITTING VOID CATALOGUE \n");
    t = clock();
    
-   fd = safe_open(FileVoids,"w");
+   fd = safe_open(VarConfigFileVoids,"w");
 
    for (i=0; i<NumVoid; i++) {
        if (Void[i].ToF) {

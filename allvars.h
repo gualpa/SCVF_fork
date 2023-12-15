@@ -20,20 +20,20 @@ using namespace voro;
 #define PI   3.141592653589793238
 #define CVEL  299792.469 
 
-extern double RadIncrement;
-extern int    NumRanWalk;
-extern double BoxSize;          
-extern double MaxRadiusSearch;  
-extern double ProxyGridSize;  
-extern double FracRadius;       
-extern double DeltaThreshold;   
-extern double DeltaSeed;        
-extern double OverlapTol;   
-extern int    FormatTracers;
-extern int    NumFiles;
-extern char   FileTracers[MAXCHAR];      
-extern char   FileVoids[MAXCHAR];        
-extern int    OMPcores;         
+//extern double RadIncrement;
+//extern int    NumRanWalk;
+//extern double BoxSize;          
+//extern double MaxRadiusSearch;  
+//extern double ProxyGridSize;  
+//extern double FracRadius;       
+//extern double DeltaThreshold;   
+//extern double DeltaSeed;        
+//extern double OverlapTol;   
+//extern int    FormatTracers;
+//extern int    NumFiles;
+//extern char   FileTracers[MAXCHAR];      
+//extern char   FileVoids[MAXCHAR];        
+//extern int    OMPcores;         
 extern int    RSDist;           
 extern double Redshift;         
 extern double OmegaMatter;
@@ -63,6 +63,62 @@ extern double MeanSeparation;
 extern int    NumVoid;
 extern double LBox[3];
 extern FILE   *logfile;
+
+
+
+
+struct varConfiguration {
+  double RadIncrement;
+  int    NumRanWalk;
+  double BoxSize;          
+  double MaxRadiusSearch;  
+  double ProxyGridSize;  
+  double FracRadius;       
+  double DeltaThreshold;   
+  double DeltaSeed;        
+  double OverlapTol;   
+  int    FormatTracers;
+  int    NumFiles;
+  char   FileTracers[MAXCHAR];      
+  char   FileVoids[MAXCHAR];        
+  int    OMPcores;         
+  int    RSDist;           
+  double Redshift;         
+  double OmegaMatter;
+  double OmegaLambda;
+  double Hubble;           
+  int    GDist;           
+  double FidOmegaMatter;        
+  double FidOmegaLambda;        
+  double FidHubble;        
+  int    WriteProfiles;    
+  double MinProfileDist;   
+  double MaxProfileDist;   
+  int    NumProfileBins;   
+  char   PathProfiles[MAXCHAR];     
+  double InnerShellVel;  
+  double OuterShellVel;  
+  double ScalePos;
+  double ScaleVel;
+  int    RunFlag;
+
+  vector <double> StepTime;
+  vector <string> StepName;   
+
+  int    NumTrac;
+  double MeanNumTrac;
+  double MeanSeparation;
+  int    NumVoid;
+  double LBox[3];
+  FILE   *logfile;
+
+}; 
+extern  varConfiguration VarConfig;
+
+
+
+
+
 
 // Tracers
 

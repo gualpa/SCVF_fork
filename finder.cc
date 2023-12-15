@@ -14,7 +14,7 @@ void find_void_candidates()
 
   NumVoid = 0;
   for (i=0; i<NumTrac; i++) {
-      if (Tracer[i].Delta <= DeltaSeed) {
+      if (Tracer[i].Delta <= VarConfig.DeltaSeed) {
          Void.push_back(voids());
          Void[NumVoid].Pos[0] = Tracer[i].Cen[0];	 
          Void[NumVoid].Pos[1] = Tracer[i].Cen[1];	 
@@ -56,36 +56,36 @@ void find_voids()
 
   srand(time(NULL));
   
-  NumGrid = (int)(BoxSize/ProxyGridSize);
+  NumGrid = (int)(VarConfig.BoxSize/VarConfig.ProxyGridSize);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
   build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
 
 // int          NumShell = (int)round(0.5*MaxRadiusSearch/max_grid_size(GridSize));
-  int          NumShell = (int)round(MaxRadiusSearch/max_grid_size(GridSize));
+  int          NumShell = (int)round(VarConfig.MaxRadiusSearch/max_grid_size(GridSize));
   int          NumQuery[NumShell];
   struct query Query[NumShell];
 
   // Selecciono vecinos
 
-  if (OMPcores > NumShell) 
+  if (VarConfig.OMPcores > NumShell) 
      NumCores = NumShell;
   else
-     NumCores = OMPcores;	
+     NumCores = VarConfig.OMPcores;	
 
   #pragma omp parallel for default(none) num_threads(NumCores)    \
-   shared(NumShell,NumQuery,Query,GridSize,stdout,MaxRadiusSearch)\
+   shared(NumShell,NumQuery,Query,GridSize,stdout,VarConfig.MaxRadiusSearch)\
    private(p,MinDist,MaxDist)
 
   for (p=0; p<NumShell; p++) {
-      MinDist = MaxRadiusSearch/(double)NumShell*(double)p;  
-      MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1);  
+      MinDist = VarConfig.MaxRadiusSearch/(double)NumShell*(double)p;  
+      MaxDist = VarConfig.MaxRadiusSearch/(double)NumShell*(double)(p+1);  
       query_grid(&Query[p],GridSize,MinDist,MaxDist);
       NumQuery[p] = Query[p].i.size();
   } 
 
   for (p=0; p<NumShell; p++) {
-      MinDist = MaxRadiusSearch/(double)NumShell*(double)p;  
-      MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1); 
+      MinDist = VarConfig.MaxRadiusSearch/(double)NumShell*(double)p;  
+      MaxDist = VarConfig.MaxRadiusSearch/(double)NumShell*(double)(p+1); 
       fprintf(logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids (Overlap = %f) \n",
 		      p,MinDist,MaxDist,NumQuery[p],0.5*sqrt(3.0)*max_grid_size(GridSize));
   }
@@ -93,8 +93,8 @@ void find_voids()
 
   #pragma omp parallel for default(none) schedule(static)                     \
    shared(NumVoid,MeanNumTrac,Void,Tracer,Query,NumQuery,NumShell,LBox,stdout,\
-          MaxRadiusSearch,FracRadius,DeltaThreshold,NumGrid,GridSize,GridList,\
-	  OMPcores,RadIncrement,NumRanWalk)                                   \
+          VarConfig.MaxRadiusSearch,VarConfig.FracRadius,VarConfig.DeltaThreshold,NumGrid,GridSize,GridList,\
+	         VarConfig.OMPcores,VarConfig.RadIncrement,NumRanWalk)                                   \
    private(iv,ir,ic,jc,kc,ii,jj,kk,xc,xr,dx,l,Radius,BiggestRadius,next,k,    \
            dist,val,kappa,SortArr,Nsort,the,phi,rad,Volume,Delta,lambda,p,m,  \
 	   MinDist,MaxDist,done,in,CheckRan,TotRan)
@@ -124,7 +124,7 @@ void find_voids()
 	     if (rad == 0.0) 
 	        rad = (double)Void[iv].Rini*random_number();
 	     else  
-	        rad *= FracRadius*random_number();
+	        rad *= VarConfig.FracRadius*random_number();
 
 	     xr[0] = rad*sin(the)*cos(phi);
 	     xr[1] = rad*sin(the)*sin(phi);
@@ -157,8 +157,8 @@ void find_voids()
 
 	  do {
 
-             MinDist = MaxRadiusSearch/(double)NumShell*(double)p;		  
-             MaxDist = MaxRadiusSearch/(double)NumShell*(double)(p+1);		  
+             MinDist = VarConfig.MaxRadiusSearch/(double)NumShell*(double)p;		  
+             MaxDist = VarConfig.MaxRadiusSearch/(double)NumShell*(double)(p+1);		  
 
 	     for (in=0; in<NumQuery[p]; in++) {
 
@@ -198,7 +198,7 @@ void find_voids()
    	     Volume = (4.0/3.0)*PI*Radius*Radius*Radius;
 	     Delta = (double)(Nsort-1)/Volume/MeanNumTrac - 1.0;
 
-	     if (Delta < DeltaThreshold) {
+	     if (Delta < VarConfig.DeltaThreshold) {
 	        p++;    
 		free(SortArr); 
 	     } else {
@@ -220,9 +220,9 @@ void find_voids()
    	      Volume = (4.0/3.0)*PI*Radius*Radius*Radius;
 	      Delta = (double)(ir+1)/Volume/MeanNumTrac - 1.0;
 
-              if (Delta < DeltaThreshold && Radius > BiggestRadius) {
+              if (Delta < VarConfig.DeltaThreshold && Radius > BiggestRadius) {
 		 
-		 if (Radius/BiggestRadius - 1.0 >= RadIncrement) CheckRan = 0;
+		 if (Radius/BiggestRadius - 1.0 >= VarConfig.RadIncrement) CheckRan = 0;
 		
 	         Void[iv].Rad = (float)Radius;
 		 Void[iv].Delta = (float)Delta;
@@ -233,13 +233,13 @@ void find_voids()
 		 kappa = ir + 1; 
 	         BiggestRadius = Radius;
 	      
-	      } /* Fin lazo Dcum < DeltaThreshold */
+	      } /* Fin lazo Dcum < VarConfig.DeltaThreshold */
 
 	  } /* Fin lazo bines */
 	 
 	  free(SortArr);
  
-      } while (CheckRan < NumRanWalk); /* Fin lazo random */      
+      } while (CheckRan < VarConfig.NumRanWalk); /* Fin lazo random */      
 
       if (Void[iv].ToF) {
 	 lambda = (4.0/3.0)*PI*pow((double)Void[iv].Rad,3)*MeanNumTrac;
@@ -254,7 +254,7 @@ void find_voids()
   free_grid_list(GridList,NumGrid);
 
   StepName.push_back("Finding voids");
-  StepTime.push_back(get_time(t,OMPcores));
+  StepTime.push_back(get_time(t,VarConfig.OMPcores));
 
 }
 
@@ -302,7 +302,7 @@ void clean_voids()
   // Selecciono vecinos
   
   MinDist = 0.0;
-  MaxDist = 2.0*MaxRadiusSearch;  
+  MaxDist = 2.0*VarConfig.MaxRadiusSearch;  
 
   query_grid(&Query,GridSize,MinDist,MaxDist);
   NumQuery = Query.i.size();
@@ -362,7 +362,7 @@ void clean_voids()
 	         Vij *= (pow(dist,2) + 2.0*dist*(Ri + Rj) - 3.0*pow(Ri - Rj,2));
 	         Vij /= Vj;
 
-	         if (Vij > OverlapTol) Void[next].ToF = false;
+	         if (Vij > VarConfig.OverlapTol) Void[next].ToF = false;
     
 	      } 
     	  }

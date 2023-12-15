@@ -1,19 +1,19 @@
 
 #include "allvars.h"
 
-double RadIncrement;
-int    NumRanWalk;
-double BoxSize;          
-double MaxRadiusSearch;  
-double ProxyGridSize;  
-double FracRadius;       
-double DeltaThreshold;   
-double DeltaSeed;        
-double OverlapTol;      
-int    FormatTracers;
-int    NumFiles;
-char   FileTracers[MAXCHAR];      
-char   FileVoids[MAXCHAR];        
+//double RadIncrement;
+//int    NumRanWalk;
+//double BoxSize;          
+//double MaxRadiusSearch;  
+//double ProxyGridSize;  
+//double FracRadius;       
+//double DeltaThreshold;   
+//double DeltaSeed;        
+//double OverlapTol;      
+//int    FormatTracers;
+//int    NumFiles;
+//char   FileTracers[MAXCHAR];      
+//char   FileVoids[MAXCHAR];        
 int    OMPcores;         
 int    RSDist;           
 double Redshift;         
@@ -44,7 +44,10 @@ double MeanSeparation;
 int    NumVoid;
 double LBox[3];
 FILE   *logfile;
+varConfiguration VarConfig;
+
 
 vector <tracers> Tracer;
 vector <voids> Void;
+
 

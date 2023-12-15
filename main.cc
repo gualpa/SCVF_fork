@@ -39,8 +39,8 @@ int main(int argc, char **argv)
       exit(EXIT_FAILURE);
    }
 
-   omp_set_num_threads(OMPcores);
-   fprintf(stdout,"\n ====>>>> Void finder runnning in %d core(s) <<<<==== \n",OMPcores);
+   omp_set_num_threads(VarConfig.OMPcores);
+   fprintf(stdout,"\n ====>>>> Void finder runnning in %d core(s) <<<<==== \n",VarConfig.OMPcores);
 
    fprintf(stdout,"\nReading tracers... ");fflush(stdout);
    read_tracers();
