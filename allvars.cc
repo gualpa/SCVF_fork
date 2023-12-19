@@ -14,39 +14,40 @@
 //int    NumFiles;
 //char   FileTracers[MAXCHAR];      
 //char   FileVoids[MAXCHAR];        
-int    OMPcores;         
-int    RSDist;           
-double Redshift;         
-double OmegaMatter;
-double OmegaLambda;
-double Hubble;           
-int    GDist;           
-double FidOmegaMatter;        
-double FidOmegaLambda;        
-double FidHubble;        
-int    WriteProfiles;    
-double MinProfileDist;   
-double MaxProfileDist;   
-int    NumProfileBins;   
-char   PathProfiles[MAXCHAR];     
-double InnerShellVel;  
-double OuterShellVel;  
-double ScalePos;
-double ScaleVel;
-int    RunFlag;
+//int    OMPcores;         
+//int    RSDist;           
+//double Redshift;         
+//double OmegaMatter;
+//double OmegaLambda;
+//double Hubble;           
+//int    GDist;           
+//double FidOmegaMatter;        
+//double FidOmegaLambda;        
+//double FidHubble;        
+//int    WriteProfiles;    
+//double MinProfileDist;   
+//double MaxProfileDist;   
+//int    NumProfileBins;   
+//char   PathProfiles[MAXCHAR];     
+//double InnerShellVel;  
+//double OuterShellVel;  
+//double ScalePos;
+//double ScaleVel;
+//int    RunFlag;
 
-vector <double> StepTime;
-vector <string> StepName;
+//vector <double> StepTime;
+//vector <string> StepName;
 
-int    NumTrac;
-double MeanNumTrac;
-double MeanSeparation;
-int    NumVoid;
-double LBox[3];
-FILE   *logfile;
+//int    NumTrac;
+//double MeanNumTrac;
+//double MeanSeparation;
+//int    NumVoid;
+//double LBox[3];
+//FILE   *logfile;
+
+
+scale_struct Scale;
 varConfiguration VarConfig;
-
-
 vector <tracers> Tracer;
 vector <voids> Void;
 

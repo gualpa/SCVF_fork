@@ -19,18 +19,18 @@ void compute_voronoi()
    FILE           *fd;
    clock_t        t;
 
-   fprintf(logfile,"\n COMPUTING VORONOI TESSELLATION \n");
+   fprintf(VarConfig.logfile,"\n COMPUTING VORONOI TESSELLATION \n");
   
    t = clock();
 
-   NumGrid = (int)round(cbrt((double)NumTrac/MeanPartPerGrid));
+   NumGrid = (int)round(cbrt((double)VarConfig.NumTrac/MeanPartPerGrid));
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,true);
+   build_grid_list(Tracer,VarConfig.NumTrac,GridList,NumGrid,GridSize,true);
 
-   Vol = LBox[0]*LBox[1]*LBox[2];
+   Vol = VarConfig.LBox[0]*VarConfig.LBox[1]*VarConfig.LBox[2];
 
    #pragma omp parallel for default(none) schedule(static)           \
-    shared(Vol,stdout,GridSize,NumGrid,LBox,Tracer,GridList,NumTrac) \
+    shared(Vol,stdout,GridSize,NumGrid,VarConfig.LBox,Tracer,GridList,VarConfig.NumTrac) \
     private(l,N,k,j,i,ref,min,max,xp,xc,G,count,p,id,IDs,rr,check,   \
             cell,con,clo,po,indx)                                    \
 
@@ -72,8 +72,8 @@ void compute_voronoi()
 
      	       for (k=0; k<3; k++) {
      	           xp[k] = (double)Tracer[id].Pos[k];
-                   if (xp[k] - ref[k] >  0.5*LBox[k]) xp[k] -= LBox[k];	      
-                   if (xp[k] - ref[k] < -0.5*LBox[k]) xp[k] += LBox[k];	      
+                   if (xp[k] - ref[k] >  0.5*VarConfig.LBox[k]) xp[k] -= VarConfig.LBox[k];	      
+                   if (xp[k] - ref[k] < -0.5*VarConfig.LBox[k]) xp[k] += VarConfig.LBox[k];	      
      	       }
 
      	       if (i == l) 
@@ -108,13 +108,13 @@ void compute_voronoi()
           cell.centroid(xc[0],xc[1],xc[2]);
 
           for (k=0; k<3; k++)  
-     	      Tracer[IDs[i]].Cen[k] = (float)periodic_position(xp[k] + xc[k],LBox[k]);
+     	      Tracer[IDs[i]].Cen[k] = (float)periodic_position(xp[k] + xc[k],VarConfig.LBox[k]);
          
           // Volume of the cell
           Tracer[IDs[i]].Volume = (float)cell.volume(); 
        
           // Delta
-          Tracer[IDs[i]].Delta = (float)((Vol/Tracer[IDs[i]].Volume)/(double)(NumTrac) - 1.0);
+          Tracer[IDs[i]].Delta = (float)((Vol/Tracer[IDs[i]].Volume)/(double)(VarConfig.NumTrac) - 1.0);
 
        } while ((*clo).inc());
 
@@ -127,7 +127,7 @@ void compute_voronoi()
 
    free_grid_list(GridList,NumGrid);
 
-   StepName.push_back("Computing Voronoi tessellation");
-   StepTime.push_back(get_time(t,VarConfig.OMPcores));
+   VarConfig.StepName.push_back("Computing Voronoi tessellation");
+   VarConfig.StepTime.push_back(get_time(t,VarConfig.OMPcores));
 
 }

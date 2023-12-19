@@ -12,7 +12,7 @@ void compute_profiles()
    double         VRad,Vol,DeltaMax;
    float          Radius;
    vector <int>   Indx;
-   struct profile Prof[NumProfileBins];  
+   struct profile Prof[VarConfig.NumProfileBins];  
    char           TxtFile[MAXCHAR],BinFile[MAXCHAR];
    int            NumQuery;
    struct query   Query;
@@ -20,52 +20,52 @@ void compute_profiles()
    FILE           *ftxt,*fbin;
    clock_t        t;
 
-   fprintf(logfile,"\n COMPUTING VOID PROFILES \n");
+   fprintf(VarConfig.logfile,"\n COMPUTING VOID PROFILES \n");
    t = clock();
 
    NumGrid = (int)(VarConfig.BoxSize/VarConfig.ProxyGridSize);
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
+   build_grid_list(Tracer,VarConfig.NumTrac,GridList,NumGrid,GridSize,false);
 
    // Only for true voids
 
-   for (i=0; i<NumVoid; i++) 
+   for (i=0; i<VarConfig.NumVoid; i++) 
        if (Void[i].ToF) 
 	  Indx.push_back(i);       
 
-   dR = (log10(MaxProfileDist)-log10(MinProfileDist))/(double)NumProfileBins;
+   dR = (log10(VarConfig.MaxProfileDist)-log10(VarConfig.MinProfileDist))/(double)VarConfig.NumProfileBins;
    
    // Selecciono grides
 
    MinDist = 0.0;
    MaxDist = 0.0;
-   for (i=0; i<NumVoid; i++) {
+   for (i=0; i<VarConfig.NumVoid; i++) {
        if (!Void[i].ToF) continue;
        if (Void[i].Rad > MaxDist) MaxDist = Void[i].Rad;
    }
-   MaxDist *= MaxProfileDist;
+   MaxDist *= VarConfig.MaxProfileDist;
    query_grid(&Query,GridSize,MinDist,MaxDist);
    NumQuery = Query.i.size();
    GAP = 0.5*sqrt(3.0)*max_grid_size(GridSize);
    
-   fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
-   fflush(logfile);
+   fprintf(VarConfig.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
+   fflush(VarConfig.logfile);
 
-   if (WriteProfiles == 2) {
-      sprintf(BinFile,"%s/profiles.bin",PathProfiles);
+   if (VarConfig.WriteProfiles == 2) {
+      sprintf(BinFile,"%s/profiles.bin",VarConfig.PathProfiles);
       fbin = safe_open(BinFile,"w");
    }
 
    #pragma omp parallel for default(none) schedule(dynamic)                   \
-    shared(NumVoid,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
-           Indx,MeanNumTrac,LBox,NumProfileBins,MinProfileDist,MaxProfileDist,\
-	   WriteProfiles,PathProfiles,GAP,fbin,BinFile)                       \
+    shared(VarConfig.NumVoid,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
+           Indx,VarConfig.MeanNumTrac,VarConfig.LBox,VarConfig.NumProfileBins,VarConfig.MinProfileDist,VarConfig.MaxProfileDist,\
+	   VarConfig.WriteProfiles,VarConfig.PathProfiles,GAP,fbin,BinFile)                       \
     private(i,m,k,ii,jj,kk,l,Radius,ic,jc,kc,xc,xt,dx,vt,next,Prof,dist,VRad, \
 	    ibin,DeltaMax,Vol,ftxt,in,TxtFile)
 
    for (i=0; i<(int)Indx.size(); i++) {
        
-       for (k=0; k<NumProfileBins; k++) {
+       for (k=0; k<VarConfig.NumProfileBins; k++) {
            Prof[k].DeltaDiff = 0.0;
            Prof[k].DeltaCum = 0.0;
            Prof[k].Velocity = 0.0;
@@ -91,7 +91,7 @@ void compute_profiles()
 	        + (double)(kk*kk)*(GridSize[2]*GridSize[2]);
 	   dist = sqrt(dist);
 
-	   if (dist > MaxProfileDist*Radius+GAP) continue;
+	   if (dist > VarConfig.MaxProfileDist*Radius+GAP) continue;
 
        	   ii = periodic_grid(ii + ic, NumGrid); 
 	   jj = periodic_grid(jj + jc, NumGrid); 
@@ -108,14 +108,14 @@ void compute_profiles()
 	       for (k=0; k<3; k++) {
 	           xt[k] = (double)Tracer[next].Pos[k];	 
 	           vt[k] = (double)(Tracer[next].Vel[k] - Void[Indx[i]].Vel[k]);
-	           dx[k] = periodic_delta(xt[k] - xc[k],LBox[k])/Radius;
+	           dx[k] = periodic_delta(xt[k] - xc[k],VarConfig.LBox[k])/Radius;
 	       }
 
                dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 
-	       if (dist > MinProfileDist && dist < MaxProfileDist) {
+	       if (dist > VarConfig.MinProfileDist && dist < VarConfig.MaxProfileDist) {
            
-	          ibin = (int)((log10(dist)-log10(MinProfileDist))/dR);
+	          ibin = (int)((log10(dist)-log10(VarConfig.MinProfileDist))/dR);
 
 	          VRad = vt[0]*dx[0] + vt[1]*dx[1] + vt[2]*dx[2];
 	          VRad /= dist;
@@ -127,7 +127,7 @@ void compute_profiles()
 	   }
        }
        
-       for (k=0; k<NumProfileBins; k++) {
+       for (k=0; k<VarConfig.NumProfileBins; k++) {
 	   if (Prof[k].DeltaDiff < 3.0) {
 	       Prof[k].DeltaDiff = 0.0;
                Prof[k].Velocity = 0.0;
@@ -139,21 +139,21 @@ void compute_profiles()
        }
 
        DeltaMax = -1.0;
-       for (k=0; k<NumProfileBins; k++) {
+       for (k=0; k<VarConfig.NumProfileBins; k++) {
 
-	   Prof[k].Ri = (float)(k    )*dR + log10(MinProfileDist);
-	   Prof[k].Rm = (float)(k+0.5)*dR + log10(MinProfileDist);
-	   Prof[k].Rs = (float)(k+1.0)*dR + log10(MinProfileDist);
+	   Prof[k].Ri = (float)(k    )*dR + log10(VarConfig.MinProfileDist);
+	   Prof[k].Rm = (float)(k+0.5)*dR + log10(VarConfig.MinProfileDist);
+	   Prof[k].Rs = (float)(k+1.0)*dR + log10(VarConfig.MinProfileDist);
 
 	   Prof[k].Ri = pow(10.0,Prof[k].Ri)*Radius;
 	   Prof[k].Rm = pow(10.0,Prof[k].Rm)*Radius;
 	   Prof[k].Rs = pow(10.0,Prof[k].Rs)*Radius;
 
 	   Vol = (4.0/3.0)*PI*(pow(Prof[k].Rs,3) - pow(Prof[k].Ri,3));
-	   Prof[k].DeltaDiff = Prof[k].DeltaDiff/Vol/MeanNumTrac - 1.0;
+	   Prof[k].DeltaDiff = Prof[k].DeltaDiff/Vol/VarConfig.MeanNumTrac - 1.0;
 
 	   Vol = (4.0/3.0)*PI*pow(Prof[k].Rs,3);
-	   Prof[k].DeltaCum = Prof[k].DeltaCum/Vol/MeanNumTrac - 1.0;
+	   Prof[k].DeltaCum = Prof[k].DeltaCum/Vol/VarConfig.MeanNumTrac - 1.0;
 
 	   if (Prof[k].Rs < 2.0*Radius || Prof[k].Rs > 3.0*Radius) continue;
 
@@ -163,23 +163,23 @@ void compute_profiles()
 
        Void[Indx[i]].Dtype = DeltaMax;
        
-       if (WriteProfiles == 1) {
-          sprintf(TxtFile,"%s/profile_void_%d.dat",PathProfiles,i);
+       if (VarConfig.WriteProfiles == 1) {
+          sprintf(TxtFile,"%s/profile_void_%d.dat",VarConfig.PathProfiles,i);
           ftxt = safe_open(TxtFile,"w");
-          for (k=0; k<NumProfileBins; k++)
+          for (k=0; k<VarConfig.NumProfileBins; k++)
 	      fprintf(ftxt,"%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f \n",
 			   Prof[k].Ri,Prof[k].Rm,Prof[k].Rs,Prof[k].DeltaDiff,
 			   Prof[k].DeltaCum,Prof[k].Velocity,Radius);  
           fclose(ftxt);
        }
        
-       if (WriteProfiles == 2) {
+       if (VarConfig.WriteProfiles == 2) {
           #pragma omp critical
 	  {
 	     fwrite(&i,sizeof(int),1,fbin);
              fwrite(&Radius,sizeof(float),1,fbin);
-             fwrite(&NumProfileBins,sizeof(int),1,fbin);
-	     for (k=0; k<NumProfileBins; k++) {
+             fwrite(&VarConfig.NumProfileBins,sizeof(int),1,fbin);
+	     for (k=0; k<VarConfig.NumProfileBins; k++) {
 	         fwrite(&Prof[k].Ri,sizeof(float),1,fbin);
 	         fwrite(&Prof[k].Rm,sizeof(float),1,fbin);
 	         fwrite(&Prof[k].Rs,sizeof(float),1,fbin);
@@ -193,14 +193,14 @@ void compute_profiles()
        Void[Indx[i]].Dtype = DeltaMax;
    } 
    
-   if (WriteProfiles == 2) fclose(fbin);
+   if (VarConfig.WriteProfiles == 2) fclose(fbin);
 
    Indx.clear();
    free_query_grid(&Query);
    free_grid_list(GridList,NumGrid);
    
-   StepName.push_back("Computing profiles");
-   StepTime.push_back(get_time(t,VarConfig.OMPcores));
+   VarConfig.StepName.push_back("Computing profiles");
+   VarConfig.StepTime.push_back(get_time(t,VarConfig.OMPcores));
 
 }
 
@@ -208,12 +208,12 @@ void bin2ascii_profile(int voidID)
 {
    int            SkipBlock,iv,k;
    float          Radius;  
-   struct profile Prof[NumProfileBins];
+   struct profile Prof[VarConfig.NumProfileBins];
    FILE           *fbin,*fout;
    char           filename[MAXCHAR];
    
    SkipBlock = sizeof(float) + sizeof(int) + 6*NumProfileBins*sizeof(float);
-   sprintf(filename,"%s/profiles.bin",PathProfiles);  
+   sprintf(filename,"%s/profiles.bin",VarConfig.PathProfiles);  
    fbin = safe_open(filename,"r");
 
    do {
@@ -237,9 +237,9 @@ void bin2ascii_profile(int voidID)
    } while (iv+1 != voidID);
    fclose(fbin);
 
-   fprintf(logfile,"\n Writting profile for void %d, with radius %5.3f [Mpc/h] \n",voidID,Radius);
+   fprintf(VarConfig.logfile,"\n Writting profile for void %d, with radius %5.3f [Mpc/h] \n",voidID,Radius);
 
-   sprintf(filename,"%s/profile_void_%d.dat",PathProfiles,voidID);
+   sprintf(filename,"%s/profile_void_%d.dat",VarConfig.PathProfiles,voidID);
    fout = safe_open(filename,"w");
 
    for (k=0; k<NumProfileBins; k++)

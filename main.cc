@@ -15,14 +15,14 @@ int main(int argc, char **argv)
        fprintf(stdout, "./main.x <input_param> [<run flag>] [...] \n\n");
        exit(EXIT_FAILURE);
    } else if (argc == 2) {
-       RunFlag = 0;	   
+       VarConfig.RunFlag = 0;	   
    } else {
-       sscanf(argv[2], "%d", &RunFlag);   
+       sscanf(argv[2], "%d", &VarConfig.RunFlag);   
    }
 
    read_input_file(argv[1]);
 
-   if (RunFlag == 1) {
+   if (VarConfig.RunFlag == 1) {
       if (argc < 4) {
 	 fprintf(stdout, "\n Error. Missing void ID.\n");
          fprintf(stdout, "./main.x <input_param> 1 <void_ID> \n\n");
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
       exit(EXIT_SUCCESS);
    } 
 
-   if (Redshift == 0.0 && GDist == 1) {
+   if (VarConfig.Redshift == 0.0 && VarConfig.GDist == 1) {
       fprintf(stdout,"\nError. Geometrical distortions not available for z = 0\n");
       exit(EXIT_FAILURE);
    }
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
    
    Tracer.clear();
    Void.clear();
-   fclose(logfile);
+   fclose(VarConfig.logfile);
 
    return(0);
 }

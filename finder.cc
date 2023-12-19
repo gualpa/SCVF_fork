@@ -9,31 +9,31 @@ void find_void_candidates()
   int     i;
   clock_t t;
    
-  fprintf(logfile,"\n SELECTING UNDERDENSE REGIONS \n");
+  fprintf(VarConfig.logfile,"\n SELECTING UNDERDENSE REGIONS \n");
   t = clock();
 
-  NumVoid = 0;
-  for (i=0; i<NumTrac; i++) {
+  VarConfig.NumVoid = 0;
+  for (i=0; i<VarConfig.NumTrac; i++) {
       if (Tracer[i].Delta <= VarConfig.DeltaSeed) {
          Void.push_back(voids());
-         Void[NumVoid].Pos[0] = Tracer[i].Cen[0];	 
-         Void[NumVoid].Pos[1] = Tracer[i].Cen[1];	 
-         Void[NumVoid].Pos[2] = Tracer[i].Cen[2];
-	 Void[NumVoid].Ini[0] = Tracer[i].Cen[0];	 
-         Void[NumVoid].Ini[1] = Tracer[i].Cen[1];	 
-         Void[NumVoid].Ini[2] = Tracer[i].Cen[2];
-         Void[NumVoid].Rini = 1.5*cbrt(0.75*(double)Tracer[i].Volume/PI);
-         Void[NumVoid].Rad = 0.0;
-         Void[NumVoid].ToF = false;
-	 Void[NumVoid].Nran = 0;
-         NumVoid++;	 
+         Void[VarConfig.NumVoid].Pos[0] = Tracer[i].Cen[0];	 
+         Void[VarConfig.NumVoid].Pos[1] = Tracer[i].Cen[1];	 
+         Void[VarConfig.NumVoid].Pos[2] = Tracer[i].Cen[2];
+	 Void[VarConfig.NumVoid].Ini[0] = Tracer[i].Cen[0];	 
+         Void[VarConfig.NumVoid].Ini[1] = Tracer[i].Cen[1];	 
+         Void[VarConfig.NumVoid].Ini[2] = Tracer[i].Cen[2];
+         Void[VarConfig.NumVoid].Rini = 1.5*cbrt(0.75*(double)Tracer[i].Volume/PI);
+         Void[VarConfig.NumVoid].Rad = 0.0;
+         Void[VarConfig.NumVoid].ToF = false;
+	 Void[VarConfig.NumVoid].Nran = 0;
+         VarConfig.NumVoid++;	 
       }
   }
 
-  fprintf(logfile," | Void candidates = %d \n",NumVoid);
+  fprintf(VarConfig.logfile," | Void candidates = %d \n",VarConfig.NumVoid);
   
-  StepName.push_back("Finding centers");
-  StepTime.push_back(get_time(t,1));
+  VarConfig.StepName.push_back("Finding centers");
+  VarConfig.StepTime.push_back(get_time(t,1));
 
 }
 
@@ -51,14 +51,14 @@ void find_voids()
   bool           done;
   clock_t        t;
 
-  fprintf(logfile,"\n VOID IDENTIFICATION \n");
+  fprintf(VarConfig.logfile,"\n VOID IDENTIFICATION \n");
   t = clock();
 
   srand(time(NULL));
   
   NumGrid = (int)(VarConfig.BoxSize/VarConfig.ProxyGridSize);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-  build_grid_list(Tracer,NumTrac,GridList,NumGrid,GridSize,false);
+  build_grid_list(Tracer,VarConfig.NumTrac,GridList,NumGrid,GridSize,false);
 
 // int          NumShell = (int)round(0.5*MaxRadiusSearch/max_grid_size(GridSize));
   int          NumShell = (int)round(VarConfig.MaxRadiusSearch/max_grid_size(GridSize));
@@ -86,20 +86,20 @@ void find_voids()
   for (p=0; p<NumShell; p++) {
       MinDist = VarConfig.MaxRadiusSearch/(double)NumShell*(double)p;  
       MaxDist = VarConfig.MaxRadiusSearch/(double)NumShell*(double)(p+1); 
-      fprintf(logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids (Overlap = %f) \n",
+      fprintf(VarConfig.logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids (Overlap = %f) \n",
 		      p,MinDist,MaxDist,NumQuery[p],0.5*sqrt(3.0)*max_grid_size(GridSize));
   }
-  fflush(logfile);
+  fflush(VarConfig.logfile);
 
   #pragma omp parallel for default(none) schedule(static)                     \
-   shared(NumVoid,MeanNumTrac,Void,Tracer,Query,NumQuery,NumShell,LBox,stdout,\
+   shared(VarConfig.NumVoid,VarConfig.MeanNumTrac,Void,Tracer,Query,NumQuery,NumShell,VarConfig.LBox,stdout,\
           VarConfig.MaxRadiusSearch,VarConfig.FracRadius,VarConfig.DeltaThreshold,NumGrid,GridSize,GridList,\
 	         VarConfig.OMPcores,VarConfig.RadIncrement,NumRanWalk)                                   \
    private(iv,ir,ic,jc,kc,ii,jj,kk,xc,xr,dx,l,Radius,BiggestRadius,next,k,    \
            dist,val,kappa,SortArr,Nsort,the,phi,rad,Volume,Delta,lambda,p,m,  \
 	   MinDist,MaxDist,done,in,CheckRan,TotRan)
 
-  for (iv=0; iv<NumVoid; iv++) {
+  for (iv=0; iv<VarConfig.NumVoid; iv++) {
 
       BiggestRadius = 0.1; 
       TotRan = 0;
@@ -134,18 +134,18 @@ void find_voids()
 	  if (Void[iv].Rad == 0.0) {
 
              for (k=0; k<3; k++) 
-		 xc[k] = periodic_position((double)Void[iv].Ini[k] + xr[k],LBox[k]);
+		 xc[k] = periodic_position((double)Void[iv].Ini[k] + xr[k],VarConfig.LBox[k]);
 
 	  } else {
 
              for (k=0; k<3; k++) {
-	         xc[k] = periodic_position((double)Void[iv].Pos[k] + xr[k],LBox[k]);
-	         dx[k] = periodic_delta(xc[k] - (double)Void[iv].Ini[k],LBox[k]);
+	         xc[k] = periodic_position((double)Void[iv].Pos[k] + xr[k],VarConfig.LBox[k]);
+	         dx[k] = periodic_delta(xc[k] - (double)Void[iv].Ini[k],VarConfig.LBox[k]);
 	     }
 	     dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 	     if (dist > Void[iv].Rad) // avoid big migration 
 	        for (k=0; k<3; k++) 
-	            xc[k] = periodic_position((double)Void[iv].Ini[k] + xr[k],LBox[k]); 	  
+	            xc[k] = periodic_position((double)Void[iv].Ini[k] + xr[k],VarConfig.LBox[k]); 	  
 	  }
 
 	  ic = (int)(xc[0]/GridSize[0]);
@@ -175,7 +175,7 @@ void find_voids()
 	             next = GridList[l].Member[m];		 
 
 		     for (k=0; k<3; k++) 
-	                 dx[k] = periodic_delta(xc[k] - (double)Tracer[next].Pos[k],LBox[k]);
+	                 dx[k] = periodic_delta(xc[k] - (double)Tracer[next].Pos[k],VarConfig.LBox[k]);
 
                      dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 
@@ -196,7 +196,7 @@ void find_voids()
 
 	     Radius = 0.5*(SortArr[Nsort-2].val + SortArr[Nsort-1].val);    
    	     Volume = (4.0/3.0)*PI*Radius*Radius*Radius;
-	     Delta = (double)(Nsort-1)/Volume/MeanNumTrac - 1.0;
+	     Delta = (double)(Nsort-1)/Volume/VarConfig.MeanNumTrac - 1.0;
 
 	     if (Delta < VarConfig.DeltaThreshold) {
 	        p++;    
@@ -218,7 +218,7 @@ void find_voids()
 	
 	      Radius = 0.5*(SortArr[ir].val + SortArr[ir+1].val);    
    	      Volume = (4.0/3.0)*PI*Radius*Radius*Radius;
-	      Delta = (double)(ir+1)/Volume/MeanNumTrac - 1.0;
+	      Delta = (double)(ir+1)/Volume/VarConfig.MeanNumTrac - 1.0;
 
               if (Delta < VarConfig.DeltaThreshold && Radius > BiggestRadius) {
 		 
@@ -242,7 +242,7 @@ void find_voids()
       } while (CheckRan < VarConfig.NumRanWalk); /* Fin lazo random */      
 
       if (Void[iv].ToF) {
-	 lambda = (4.0/3.0)*PI*pow((double)Void[iv].Rad,3)*MeanNumTrac;
+	 lambda = (4.0/3.0)*PI*pow((double)Void[iv].Rad,3)*VarConfig.MeanNumTrac;
          Void[iv].Poisson = (double)kappa*log(lambda) - lambda - ln_factorial(kappa); 	 
 	 Void[iv].Nran = TotRan;
       }    
@@ -253,8 +253,8 @@ void find_voids()
       free_query_grid(&Query[p]);	  
   free_grid_list(GridList,NumGrid);
 
-  StepName.push_back("Finding voids");
-  StepTime.push_back(get_time(t,VarConfig.OMPcores));
+  VarConfig.StepName.push_back("Finding voids");
+  VarConfig.StepTime.push_back(get_time(t,VarConfig.OMPcores));
 
 }
 
@@ -270,26 +270,26 @@ void clean_voids()
   struct grid  *GridList;
   clock_t      t;
 
-  fprintf(logfile,"\n CLEANING VOID CATALOGUE BY OVERLAP (TOL = %4.2f) \n",OverlapTol);
+  fprintf(VarConfig.logfile,"\n CLEANING VOID CATALOGUE BY OVERLAP (TOL = %4.2f) \n",OverlapTol);
   t = clock();
 
-  NumGrid = (int)cbrt((double)NumVoid/10.0);
+  NumGrid = (int)cbrt((double)VarConfig.NumVoid/10.0);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid)); 
-  build_grid_list(Void,NumVoid,GridList,NumGrid,GridSize,false);
+  build_grid_list(Void,VarConfig.NumVoid,GridList,NumGrid,GridSize,false);
   
   NumTrueVoid = 0;
-  for (i=0; i<NumVoid; i++)
+  for (i=0; i<VarConfig.NumVoid; i++)
       if (Void[i].ToF) 
 	 NumTrueVoid++;	  
   
-  fprintf(logfile," | Number of true voids before cleaning = %d (%4.2f %)\n",
-		  NumTrueVoid,(double)NumTrueVoid/(double)NumVoid*100.0);
-  fflush(logfile);
+  fprintf(VarConfig.logfile," | Number of true voids before cleaning = %d (%4.2f %)\n",
+		  NumTrueVoid,(double)NumTrueVoid/(double)VarConfig.NumVoid*100.0);
+  fflush(VarConfig.logfile);
 
   SortArr = (struct sort *) malloc(NumTrueVoid*sizeof(struct sort));
 
   it = 0;
-  for (i=0; i<NumVoid; i++) {
+  for (i=0; i<VarConfig.NumVoid; i++) {
       if (Void[i].ToF) {	      
          SortArr[it].val = Void[i].Rad;
          SortArr[it].ord = i;
@@ -307,8 +307,8 @@ void clean_voids()
   query_grid(&Query,GridSize,MinDist,MaxDist);
   NumQuery = Query.i.size();
   
-  fprintf(logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
-  fflush(logfile);
+  fprintf(VarConfig.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
+  fflush(VarConfig.logfile);
 
   for (i=NumTrueVoid-1; i>=0; i--) {
 
@@ -348,7 +348,7 @@ void clean_voids()
 	         Vj = (4.0/3.0)*PI*Rj*Rj*Rj;
     
 	         for (k=0; k<3; k++) 
-	             dx[k] = periodic_delta(xi[k] - xj[k],LBox[k]);
+	             dx[k] = periodic_delta(xi[k] - xj[k],VarConfig.LBox[k]);
 
                  dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 
@@ -370,19 +370,19 @@ void clean_voids()
   }
 
   NumTrueVoid = 0;
-  for (i=0; i<NumVoid; i++)
+  for (i=0; i<VarConfig.NumVoid; i++)
       if (Void[i].ToF) 
 	 NumTrueVoid++;	  
   
-  fprintf(logfile," | Number of true void after cleaning = %d (%4.2f %)\n",
-		  NumTrueVoid,(double)NumTrueVoid/(double)NumVoid*100.0);
+  fprintf(VarConfig.logfile," | Number of true void after cleaning = %d (%4.2f %)\n",
+		  NumTrueVoid,(double)NumTrueVoid/(double)VarConfig.NumVoid*100.0);
 
   free(SortArr);
   free_grid_list(GridList,NumGrid);
   free_query_grid(&Query);
 
-  StepName.push_back("Cleaning voids"); 
-  StepTime.push_back(get_time(t,1));
+  VarConfig.StepName.push_back("Cleaning voids"); 
+  VarConfig.StepTime.push_back(get_time(t,1));
 
 }
 

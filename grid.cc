@@ -7,16 +7,16 @@ template <class T>
 void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize, bool compute_neigh)
 {
 
-  fprintf(logfile," | Creating grid-list \n");
+  fprintf(VarConfig.logfile," | Creating grid-list \n");
 
   for (int k=0; k<3; k++) 
-      GridSize[k] = LBox[k]/(double)NumGrid;    
+      GridSize[k] = VarConfig.LBox[k]/(double)NumGrid;    
 
-  fprintf(logfile," | Number of grids = %d \n",NumGrid);
-  fprintf(logfile," | Grid sizes: x = %f [Mpc/h] \n",GridSize[0]);
-  fprintf(logfile," |             y = %f [Mpc/h] \n",GridSize[1]);
-  fprintf(logfile," |             z = %f [Mpc/h] \n",GridSize[2]);
-  fflush(logfile);
+  fprintf(VarConfig.logfile," | Number of grids = %d \n",NumGrid);
+  fprintf(VarConfig.logfile," | Grid sizes: x = %f [Mpc/h] \n",GridSize[0]);
+  fprintf(VarConfig.logfile," |             y = %f [Mpc/h] \n",GridSize[1]);
+  fprintf(VarConfig.logfile," |             z = %f [Mpc/h] \n",GridSize[2]);
+  fflush(VarConfig.logfile);
 
   for (int l=0; l<NumGrid*NumGrid*NumGrid; l++)
       GridList[l].NumMem = 0;

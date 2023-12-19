@@ -34,37 +34,46 @@ using namespace voro;
 //extern char   FileTracers[MAXCHAR];      
 //extern char   FileVoids[MAXCHAR];        
 //extern int    OMPcores;         
-extern int    RSDist;           
-extern double Redshift;         
-extern double OmegaMatter;
-extern double OmegaLambda;
-extern double Hubble;           
-extern int    GDist;           
-extern double FidOmegaMatter;        
-extern double FidOmegaLambda;        
-extern double FidHubble;        
-extern int    WriteProfiles;    
-extern double MinProfileDist;   
-extern double MaxProfileDist;   
-extern int    NumProfileBins;   
-extern char   PathProfiles[MAXCHAR];     
-extern double InnerShellVel;  
-extern double OuterShellVel;  
-extern double ScalePos;
-extern double ScaleVel;
-extern int    RunFlag;
+//extern int    RSDist;           
+//extern double Redshift;         
+//extern double OmegaMatter;
+//extern double OmegaLambda;
+//extern double Hubble;           
+//extern int    GDist;           
+//extern double FidOmegaMatter;        
+//extern double FidOmegaLambda;        
+//extern double FidHubble;        
+//extern int    WriteProfiles;    
+//extern double MinProfileDist;   
+//extern double MaxProfileDist;   
+//extern int    NumProfileBins;   
+//extern char   PathProfiles[MAXCHAR];     
+//extern double InnerShellVel;  
+//extern double OuterShellVel;  
+//extern double ScalePos;
+//extern double ScaleVel;
+//extern int    RunFlag;
 
-extern vector <double> StepTime;
-extern vector <string> StepName;   
+//extern vector <double> StepTime;
+//extern vector <string> StepName;   
 
-extern int    NumTrac;
-extern double MeanNumTrac;
-extern double MeanSeparation;
-extern int    NumVoid;
-extern double LBox[3];
-extern FILE   *logfile;
+//extern int    NumTrac;
+//extern double MeanNumTrac;
+//extern double MeanSeparation;
+//extern int    NumVoid;
+//extern double LBox[3];
+//extern FILE   *logfile;
 
 
+
+struct scale_struct {
+  double Pos;
+  double Vel;
+}; 
+extern  scale_struct Scale;
+
+ //double ScalePos;
+ //double ScaleVel;
 
 
 struct varConfiguration {

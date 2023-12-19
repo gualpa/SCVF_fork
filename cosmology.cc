@@ -58,4 +58,3 @@ double angular_distance(double z, struct cosmoparam *C)
 
   return(dang/(1.0 + z));  
 }	
-

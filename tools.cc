@@ -95,9 +95,9 @@ double get_time(clock_t ti, int N)
   tseg = (double)(tf - ti)/(double)CLOCKS_PER_SEC/(double)N;
   tmin = tseg/60.0;
 
-  fprintf(logfile," | -> time taken: %f seg (%f min) \n",tseg,tmin);
+  fprintf(VarConfig.logfile," | -> time taken: %f seg (%f min) \n",tseg,tmin);
  
-  fflush(logfile);
+  fflush(VarConfig.logfile);
 
   return tseg;
 }
@@ -107,18 +107,18 @@ void time_resume()
   int     i;	
   double  total;
 
-  fprintf(logfile,"\n TIME STATISTICS\n");
+  fprintf(VarConfig.logfile,"\n TIME STATISTICS\n");
 
   total = 0.0;
-  for (i=0; i<StepTime.size(); i++) 
-      total += StepTime[i];
+  for (i=0; i<VarConfig.StepTime.size(); i++) 
+      total += VarConfig.StepTime[i];
   
-  fprintf(logfile," | Total time taken: %f seg (%f min) \n",total,total/60.);
+  fprintf(VarConfig.logfile," | Total time taken: %f seg (%f min) \n",total,total/60.);
   
-  for (i=0; i<StepTime.size(); i++) 
-      fprintf(logfile," | %30s: %5.2f %s \n",StepName[i].c_str(),StepTime[i]/total*100.,"%");      
+  for (i=0; i<VarConfig.StepTime.size(); i++) 
+      fprintf(VarConfig.logfile," | %30s: %5.2f %s \n",VarConfig.StepName[i].c_str(),VarConfig.StepTime[i]/total*100.,"%");      
  
-  fflush(logfile);
+  fflush(VarConfig.logfile);
 
 }
 
