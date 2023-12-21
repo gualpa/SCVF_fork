@@ -57,9 +57,8 @@ void compute_profiles()
    }
 
    #pragma omp parallel for default(none) schedule(dynamic)                   \
-    shared(VarConfig.NumVoid,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
-           Indx,VarConfig.MeanNumTrac,VarConfig.LBox,VarConfig.NumProfileBins,VarConfig.MinProfileDist,VarConfig.MaxProfileDist,\
-	   VarConfig.WriteProfiles,VarConfig.PathProfiles,GAP,fbin,BinFile)                       \
+    shared(VarConfig,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
+           Indx,GAP,fbin,BinFile)                       \
     private(i,m,k,ii,jj,kk,l,Radius,ic,jc,kc,xc,xt,dx,vt,next,Prof,dist,VRad, \
 	    ibin,DeltaMax,Vol,ftxt,in,TxtFile)
 
@@ -212,7 +211,7 @@ void bin2ascii_profile(int voidID)
    FILE           *fbin,*fout;
    char           filename[MAXCHAR];
    
-   SkipBlock = sizeof(float) + sizeof(int) + 6*NumProfileBins*sizeof(float);
+   SkipBlock = sizeof(float) + sizeof(int) + 6*VarConfig.NumProfileBins*sizeof(float);
    sprintf(filename,"%s/profiles.bin",VarConfig.PathProfiles);  
    fbin = safe_open(filename,"r");
 
@@ -224,8 +223,8 @@ void bin2ascii_profile(int voidID)
          fseek(fbin,SkipBlock,SEEK_CUR);
       else {
          fread(&Radius,sizeof(float),1,fbin);
-         fread(&NumProfileBins,sizeof(int),1,fbin);
-	 for (k=0; k<NumProfileBins; k++) {
+         fread(&VarConfig.NumProfileBins,sizeof(int),1,fbin);
+	 for (k=0; k<VarConfig.NumProfileBins; k++) {
 	     fread(&Prof[k].Ri,sizeof(float),1,fbin);
 	     fread(&Prof[k].Rm,sizeof(float),1,fbin);
 	     fread(&Prof[k].Rs,sizeof(float),1,fbin);
@@ -242,7 +241,7 @@ void bin2ascii_profile(int voidID)
    sprintf(filename,"%s/profile_void_%d.dat",VarConfig.PathProfiles,voidID);
    fout = safe_open(filename,"w");
 
-   for (k=0; k<NumProfileBins; k++)
+   for (k=0; k<VarConfig.NumProfileBins; k++)
        fprintf(fout,"%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f \n",
 		     Prof[k].Ri,Prof[k].Rm,Prof[k].Rs,Prof[k].DeltaDiff,
 		     Prof[k].DeltaCum,Prof[k].Velocity,Radius);  

@@ -73,7 +73,7 @@ void find_voids()
      NumCores = VarConfig.OMPcores;	
 
   #pragma omp parallel for default(none) num_threads(NumCores)    \
-   shared(NumShell,NumQuery,Query,GridSize,stdout,VarConfig.MaxRadiusSearch)\
+   shared(NumShell,NumQuery,Query,GridSize,stdout,VarConfig)\
    private(p,MinDist,MaxDist)
 
   for (p=0; p<NumShell; p++) {
@@ -92,9 +92,8 @@ void find_voids()
   fflush(VarConfig.logfile);
 
   #pragma omp parallel for default(none) schedule(static)                     \
-   shared(VarConfig.NumVoid,VarConfig.MeanNumTrac,Void,Tracer,Query,NumQuery,NumShell,VarConfig.LBox,stdout,\
-          VarConfig.MaxRadiusSearch,VarConfig.FracRadius,VarConfig.DeltaThreshold,NumGrid,GridSize,GridList,\
-	         VarConfig.OMPcores,VarConfig.RadIncrement,NumRanWalk)                                   \
+   shared(VarConfig,Void,Tracer,Query,NumQuery,NumShell,stdout,\
+          NumGrid,GridSize,GridList)                                   \
    private(iv,ir,ic,jc,kc,ii,jj,kk,xc,xr,dx,l,Radius,BiggestRadius,next,k,    \
            dist,val,kappa,SortArr,Nsort,the,phi,rad,Volume,Delta,lambda,p,m,  \
 	   MinDist,MaxDist,done,in,CheckRan,TotRan)
@@ -270,7 +269,7 @@ void clean_voids()
   struct grid  *GridList;
   clock_t      t;
 
-  fprintf(VarConfig.logfile,"\n CLEANING VOID CATALOGUE BY OVERLAP (TOL = %4.2f) \n",OverlapTol);
+  fprintf(VarConfig.logfile,"\n CLEANING VOID CATALOGUE BY OVERLAP (TOL = %4.2f) \n",VarConfig.OverlapTol);
   t = clock();
 
   NumGrid = (int)cbrt((double)VarConfig.NumVoid/10.0);

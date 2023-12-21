@@ -111,7 +111,7 @@ void read_input_file(char *filename)
   id[nt++] = INT;
 
   strcpy(tag[nt],"FidOmegaMatter");
-  addr[nt] = &VarConfig,FidOmegaMatter;
+  addr[nt] = &VarConfig.FidOmegaMatter;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"FidOmegaLambda");
@@ -262,7 +262,7 @@ void read_tracers()
        if (Tracer[i].Pos[1] > ymax) ymax = Tracer[i].Pos[1];	   
        if (Tracer[i].Pos[2] > zmax) zmax = Tracer[i].Pos[2];	   
    }
-   if (xmax/BoxSize < diff || ymax/VarConfig.BoxSize < diff || zmax/VarConfig.BoxSize < diff) {
+   if (xmax/VarConfig.BoxSize < diff || ymax/VarConfig.BoxSize < diff || zmax/VarConfig.BoxSize < diff) {
       fprintf(stdout,"\n Error. Wrong BoxSize? - MAX = (%f,%f,%f) \n",xmax,ymax,zmax);
       fflush(stdout);
       exit(EXIT_FAILURE);	
@@ -388,6 +388,7 @@ void read_tracers_gadget()
   idtype *id;
   postype *pos,*vel;
   char snapshot[MAXCHAR];
+  int    NumFilesAux;
 
   if (VarConfig.NumFiles == 1) 
      sprintf(snapshot,"%s",VarConfig.FileTracers);	  
@@ -420,7 +421,7 @@ void read_tracers_gadget()
 
   if ((VarConfig.RSDist == 1 || VarConfig.GDist == 1) && Header.Redshift != VarConfig.Redshift) { 
      fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
-     fprintf(stdout,"Redshift = %f (%f in inputfile)\n",Header.Redshift,Redshift);
+     fprintf(stdout,"Redshift = %f (%f in inputfile)\n",Header.Redshift,VarConfig.Redshift);
      fflush(stdout);
      exit(EXIT_FAILURE);
   }
@@ -440,18 +441,19 @@ void read_tracers_gadget()
   if (VarConfig.NumFiles < VarConfig.OMPcores)
      NC = VarConfig.NumFiles;
   else
-     NC = VarConfig.OMPcores;  
+     NC = VarConfig.OMPcores;
 
+  NumFilesAux = VarConfig.NumFiles;
   #pragma omp parallel for default(none) schedule(static) num_threads(NC) \
    private(i,snapshot,f1,Np,Header,pos,vel,id,j,k,dummy)  \
-   shared(Tracer,Scale.Pos,Scale.Vel,stdout,VarConfig.NumFiles,FileTracers)  
+   shared(Tracer, Scale, stdout, NumFilesAux, VarConfig)  
   
-  for (i=0; i<VarConfig.NumFiles; i++) {
+  for (i=0; i<NumFilesAux; i++) {
 
-      if (VarConfig.NumFiles == 1) 
-         sprintf(snapshot,"%s",FileTracers);	  
+      if (NumFilesAux == 1) 
+         sprintf(snapshot,"%s",VarConfig.FileTracers);	  
       else 
-         sprintf(snapshot,"%s.%d",FileTracers,i);	  
+         sprintf(snapshot,"%s.%d",VarConfig.FileTracers,i);	  
 
       f1 = safe_open(snapshot,"r");     
 
@@ -590,8 +592,8 @@ void geometrical_distortions()
    
    fprintf(VarConfig.logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
 
-   FidHubble_z = FC.Hub*evolution_param(Redshift,&FC);
-   FidDistance_z = angular_distance(Redshift,&FC);
+   FidHubble_z = FC.Hub*evolution_param(VarConfig.Redshift,&FC);
+   FidDistance_z = angular_distance(VarConfig.Redshift,&FC);
 
    GDFactor_LOS = Hubble_z/FidHubble_z;
    GDFactor_POS = FidDistance_z/Distance_z;
@@ -621,7 +623,7 @@ void write_voids()
    fprintf(VarConfig.logfile,"\n WRITTING VOID CATALOGUE \n");
    t = clock();
    
-   fd = safe_open(VarConfigFileVoids,"w");
+   fd = safe_open(VarConfig.FileVoids,"w");
 
    for (i=0; i<VarConfig.NumVoid; i++) {
        if (Void[i].ToF) {

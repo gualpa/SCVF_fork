@@ -30,7 +30,7 @@ void compute_voronoi()
    Vol = VarConfig.LBox[0]*VarConfig.LBox[1]*VarConfig.LBox[2];
 
    #pragma omp parallel for default(none) schedule(static)           \
-    shared(Vol,stdout,GridSize,NumGrid,VarConfig.LBox,Tracer,GridList,VarConfig.NumTrac) \
+    shared(Vol,stdout,GridSize,NumGrid,VarConfig,Tracer,GridList) \
     private(l,N,k,j,i,ref,min,max,xp,xc,G,count,p,id,IDs,rr,check,   \
             cell,con,clo,po,indx)                                    \
 

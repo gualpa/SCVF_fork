@@ -40,8 +40,8 @@ void compute_velocity()
    fflush(VarConfig.logfile);
 
    #pragma omp parallel for default(none) schedule(dynamic)      \
-    shared(VarConfig.NumVoid,Void,Tracer,NumQuery,Query,LBox,VarConfig.InnerShellVel,\
-           VarConfig.OuterShellVel,NumGrid,GridSize,GridList,GAP)          \
+    shared(VarConfig,Void,Tracer,NumQuery,Query,\
+           NumGrid,GridSize,GridList,GAP)          \
    private(i,l,k,m,Radius,xc,ic,jc,kc,ii,jj,kk,next,dx,xt,dist,  \
            Counter,vt,PLUS,in)
 
