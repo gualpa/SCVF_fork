@@ -9,20 +9,20 @@
 
 int main(int argc, char **argv) 
 {
-   
+   varConfiguration VarConfigAux;
    if (argc < 2) {
        fprintf(stdout, "\n Error. Missing input file and flags.\n");
        fprintf(stdout, "./main.x <input_param> [<run flag>] [...] \n\n");
        exit(EXIT_FAILURE);
    } else if (argc == 2) {
-       VarConfig.RunFlag = 0;	   
+       VarConfigAux.RunFlag = 0;
    } else {
-       sscanf(argv[2], "%d", &VarConfig.RunFlag);   
+       sscanf(argv[2], "%d", &VarConfigAux.RunFlag);
    }
 
-   read_input_file(argv[1]);
+   VarConfigAux = read_input_file(argv[1],VarConfigAux);
 
-   if (VarConfig.RunFlag == 1) {
+   if (VarConfigAux.RunFlag == 1) {
       if (argc < 4) {
 	 fprintf(stdout, "\n Error. Missing void ID.\n");
          fprintf(stdout, "./main.x <input_param> 1 <void_ID> \n\n");
@@ -30,55 +30,56 @@ int main(int argc, char **argv)
       }	      
       int voidID; 
       sscanf(argv[3], "%d", &voidID);
-      bin2ascii_profile(voidID); 
+      VarConfigAux = bin2ascii_profile(voidID, VarConfigAux);
       exit(EXIT_SUCCESS);
    } 
 
-   if (VarConfig.Redshift == 0.0 && VarConfig.GDist == 1) {
+   if (VarConfigAux.Redshift == 0.0 && VarConfigAux.GDist == 1) {
       fprintf(stdout,"\nError. Geometrical distortions not available for z = 0\n");
       exit(EXIT_FAILURE);
    }
 
-   omp_set_num_threads(VarConfig.OMPcores);
-   fprintf(stdout,"\n ====>>>> Void finder runnning in %d core(s) <<<<==== \n",VarConfig.OMPcores);
+   omp_set_num_threads(VarConfigAux.OMPcores);
+   fprintf(stdout,"\n ====>>>> Void finder runnning in %d core(s) <<<<==== \n",VarConfigAux.OMPcores);
 
    fprintf(stdout,"\nReading tracers... ");fflush(stdout);
-   read_tracers();
+   VarConfigAux = read_tracers(VarConfigAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
+ fprintf(stdout,"3  VarConfigAux.NumTrac %i  \n",VarConfigAux.NumTrac);    fflush(stdout);
    fprintf(stdout,"\nComputing Voronoi tessellation... ");fflush(stdout);
-   compute_voronoi();
+   VarConfigAux = compute_voronoi(VarConfigAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nSearching candidates... ");fflush(stdout);
-   find_void_candidates(); 
+   VarConfigAux = find_void_candidates(VarConfigAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nPerforming void identification... ");fflush(stdout);
-   find_voids();
+   VarConfigAux = find_voids(VarConfigAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nCleaning void catalogue... ");fflush(stdout);
-   clean_voids();
+   VarConfigAux = clean_voids(VarConfigAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void velocities... ");fflush(stdout);
-   compute_velocity();
+   VarConfigAux = compute_velocity(VarConfigAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void profiles... ");fflush(stdout);
-   compute_profiles();
+   VarConfigAux = compute_profiles(VarConfigAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nWrinting void catalogue... ");fflush(stdout);
-   write_voids();
+   write_voids(VarConfigAux);
    fprintf(stdout,"Done.\n\n");fflush(stdout);
 
-   time_resume();
+   time_resume(VarConfigAux);
    
    Tracer.clear();
    Void.clear();
-   fclose(VarConfig.logfile);
+   fclose(VarConfigAux.logfile);
 
    return(0);
 }

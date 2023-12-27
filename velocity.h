@@ -1,2 +1,3 @@
+#include "allvars.h"
 
-void compute_velocity(void);
+varConfiguration compute_velocity(varConfiguration VarConfigAux);

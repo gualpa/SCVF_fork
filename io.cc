@@ -4,7 +4,16 @@
 #include "tools.h"
 #include "cosmology.h"
 
-void read_input_file(char *filename)
+/**
+ * @brief Carga los valores del archivo de configuración.
+ *
+ * Esta función lee el archivo de configuración y lo carga en la variable que devuelve.
+ *
+ * @param filename nombre del archivo de configuración
+ * @param VarConfigAux estructura donde estan almacenados valores de configuración del programa.
+ * @return Una estructura con los valores de configuración.
+ */
+varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux)
 {
 #define DOUBLE  1
 #define STRING  2
@@ -19,146 +28,146 @@ void read_input_file(char *filename)
   char buf[MAXCHAR],buf1[MAXCHAR];
   char buf2[MAXCHAR],buf3[MAXCHAR];
   char fname[MAXCHAR];
-
+  scale_struct ScaleAux;
   nt = 0;
 
   strcpy(tag[nt],"BoxSize");
-  addr[nt] = &VarConfig.BoxSize;
+  addr[nt] = &VarConfigAux.BoxSize;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"MaxRadiusSearch");
-  addr[nt] = &VarConfig.MaxRadiusSearch;
+  addr[nt] = &VarConfigAux.MaxRadiusSearch;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"ProxyGridSize");
-  addr[nt] = &VarConfig.ProxyGridSize;
+  addr[nt] = &VarConfigAux.ProxyGridSize;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"DeltaThreshold");
-  addr[nt] = &VarConfig.DeltaThreshold;
+  addr[nt] = &VarConfigAux.DeltaThreshold;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"DeltaSeed");
-  addr[nt] = &VarConfig.DeltaSeed;
+  addr[nt] = &VarConfigAux.DeltaSeed;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"OverlapTol");
-  addr[nt] = &VarConfig.OverlapTol;
+  addr[nt] = &VarConfigAux.OverlapTol;
   id[nt++] = DOUBLE;  
 
   strcpy(tag[nt],"FormatTracers");
-  addr[nt] = &VarConfig.FormatTracers;
+  addr[nt] = &VarConfigAux.FormatTracers;
   id[nt++] = INT;
 
   strcpy(tag[nt],"NumFiles");
-  addr[nt] = &VarConfig.NumFiles;
+  addr[nt] = &VarConfigAux.NumFiles;
   id[nt++] = INT;
 
   strcpy(tag[nt],"FileTracers");
-  addr[nt] = VarConfig.FileTracers;
+  addr[nt] = VarConfigAux.FileTracers;
   id[nt++] = STRING;
 
   strcpy(tag[nt],"FileVoids");
-  addr[nt] = VarConfig.FileVoids;
+  addr[nt] = VarConfigAux.FileVoids;
   id[nt++] = STRING;
 
   strcpy(tag[nt],"ScalePos");
-  addr[nt] = &Scale.Pos;
+  addr[nt] = &ScaleAux.Pos;
   id[nt++] = DOUBLE;
   
   strcpy(tag[nt],"ScaleVel");
-  addr[nt] = &Scale.Vel;
+  addr[nt] = &ScaleAux.Vel;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"OMPcores");
-  addr[nt] = &VarConfig.OMPcores;
+  addr[nt] = &VarConfigAux.OMPcores;
   id[nt++] = INT;
 
   strcpy(tag[nt],"RadIncrement");
-  addr[nt] = &VarConfig.RadIncrement;
+  addr[nt] = &VarConfigAux.RadIncrement;
   id[nt++] = DOUBLE;
   
   strcpy(tag[nt],"NumRanWalk");
-  addr[nt] = &VarConfig.NumRanWalk;
+  addr[nt] = &VarConfigAux.NumRanWalk;
   id[nt++] = INT;
 
   strcpy(tag[nt],"FracRadius");
-  addr[nt] = &VarConfig.FracRadius;
+  addr[nt] = &VarConfigAux.FracRadius;
   id[nt++] = DOUBLE;
 
   strcpy(tag[nt],"RSDist");
-  addr[nt] = &VarConfig.RSDist;
+  addr[nt] = &VarConfigAux.RSDist;
   id[nt++] = INT;
 
   strcpy(tag[nt],"Redshift");
-  addr[nt] = &VarConfig.Redshift;
+  addr[nt] = &VarConfigAux.Redshift;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"OmegaMatter");
-  addr[nt] = &VarConfig.OmegaMatter;
+  addr[nt] = &VarConfigAux.OmegaMatter;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"OmegaLambda");
-  addr[nt] = &VarConfig.OmegaLambda;
+  addr[nt] = &VarConfigAux.OmegaLambda;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"Hubble");
-  addr[nt] = &VarConfig.Hubble;
+  addr[nt] = &VarConfigAux.Hubble;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"GDist");
-  addr[nt] = &VarConfig.GDist;
+  addr[nt] = &VarConfigAux.GDist;
   id[nt++] = INT;
 
   strcpy(tag[nt],"FidOmegaMatter");
-  addr[nt] = &VarConfig.FidOmegaMatter;
+  addr[nt] = &VarConfigAux.FidOmegaMatter;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"FidOmegaLambda");
-  addr[nt] = &VarConfig.FidOmegaLambda;
+  addr[nt] = &VarConfigAux.FidOmegaLambda;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"FidHubble");
-  addr[nt] = &VarConfig.FidHubble;
+  addr[nt] = &VarConfigAux.FidHubble;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"WriteProfiles");
-  addr[nt] = &VarConfig.WriteProfiles;
+  addr[nt] = &VarConfigAux.WriteProfiles;
   id[nt++] = INT;
 
   strcpy(tag[nt],"MinProfileDist");
-  addr[nt] = &VarConfig.MinProfileDist;
+  addr[nt] = &VarConfigAux.MinProfileDist;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"MaxProfileDist");
-  addr[nt] = &VarConfig.MaxProfileDist;
+  addr[nt] = &VarConfigAux.MaxProfileDist;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"NumProfileBins");
-  addr[nt] = &VarConfig.NumProfileBins;
+  addr[nt] = &VarConfigAux.NumProfileBins;
   id[nt++] = INT;
 
   strcpy(tag[nt],"PathProfiles");
-  addr[nt] = VarConfig.PathProfiles;
+  addr[nt] = VarConfigAux.PathProfiles;
   id[nt++] = STRING;
 
   strcpy(tag[nt],"InnerShellVel");
-  addr[nt] = &VarConfig.InnerShellVel;
+  addr[nt] = &VarConfigAux.InnerShellVel;
   id[nt++] = DOUBLE; 
 
   strcpy(tag[nt],"OuterShellVel");
-  addr[nt] = &VarConfig.OuterShellVel;
+  addr[nt] = &VarConfigAux.OuterShellVel;
   id[nt++] = DOUBLE; 
 
   fd = safe_open(filename,"r");
 
-  if (VarConfig.RunFlag == 0) 
-     sprintf(fname,"%s.log",filename);	  
+  if (VarConfigAux.RunFlag == 0)
+     sprintf(fname,"%s.log",filename);
   else
-     sprintf(fname,"%s_%d.log",filename,VarConfig.RunFlag);	  
+     sprintf(fname,"%s_%d.log",filename,VarConfigAux.RunFlag);
 
-  VarConfig.logfile = safe_open(fname,"w");
-  fprintf(VarConfig.logfile,"\n CONFIGURATION PARAMETERS USED \n\n");
+  VarConfigAux.logfile = safe_open(fname,"w");
+  fprintf(VarConfigAux.logfile,"\n CONFIGURATION PARAMETERS USED \n\n");
 
   while (!feof(fd)) {
 
@@ -182,26 +191,26 @@ void read_input_file(char *filename)
 
     	    case DOUBLE:
     	    *((double *) addr[j]) = atof(buf2);
-    	    fprintf(VarConfig.logfile, " %-35s%g\n", buf1, *((double *) addr[j]));
+          fprintf(VarConfigAux.logfile, " %-35s%g\n", buf1, *((double *) addr[j]));
     	    break;
 
     	    case STRING:
     	    strcpy((char *)addr[j], buf2);
-    	    fprintf(VarConfig.logfile, " %-35s%s\n", buf1, buf2);
+          fprintf(VarConfigAux.logfile, " %-35s%s\n", buf1, buf2);
     	    break;
 
     	    case INT:
-    	    *((int *) addr[j]) = atoi(buf2);
-    	    fprintf(VarConfig.logfile, " %-35s%d\n", buf1, *((int *) addr[j]));
+          *((int *) addr[j]) = atoi(buf2);
+          fprintf(VarConfigAux.logfile, " %-35s%d\n", buf1, *((int *) addr[j]));
     	    break;
 
     	 }
 
       } else {
 
-    	fprintf(stdout, "Error in file %s:  Tag '%s' not allowed or multiple defined. \n", filename, buf1);
+        fprintf(stdout, "Error in file %s:  Tag '%s' not allowed or multiple defined. \n", filename, buf1);
         fflush(stdout);
-	exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
 
       }
   }
@@ -209,47 +218,50 @@ void read_input_file(char *filename)
   fclose(fd);
 
   for (i=0; i<nt; i++) {
-      if (*tag[i]) {
-	 fprintf(stdout, "Error. Missing value for tag '%s' in parameter file '%s'.\n", tag[i], filename);
-         fflush(stdout);
-	 exit(EXIT_FAILURE);
-      }
+    if (*tag[i]) {
+      fprintf(stdout, "Error. Missing value for tag '%s' in parameter file '%s'.\n", tag[i], filename);
+      fflush(stdout);
+      exit(EXIT_FAILURE);
+    }
   }
 
-  fflush(VarConfig.logfile);
+  fflush(VarConfigAux.logfile);
 
 #undef DOUBLE
 #undef STRING
 #undef INT
 #undef MAXTAGS
+  VarConfigAux.Scale = ScaleAux;
+  return VarConfigAux;
 }
 
-void read_tracers()
+varConfiguration read_tracers(varConfiguration VarConfigAux)
 {
 
-   fprintf(VarConfig.logfile,"\n READING TRACERS \n");
+
+   fprintf(VarConfigAux.logfile,"\n READING TRACERS \n");
    clock_t t = clock();
 
-   switch (VarConfig.FormatTracers) {
+   switch (VarConfigAux.FormatTracers) {
 
       case 0: 
-      fprintf(VarConfig.logfile," | Reading ASCII format \n");	   
-      read_tracers_ascii();
+          fprintf(VarConfigAux.logfile," | Reading ASCII format \n");
+          VarConfigAux = read_tracers_ascii(VarConfigAux);
       break;
 
       case 1:
-      fprintf(VarConfig.logfile," | Reading GADGET \n");	   
-      read_tracers_gadget();
+          fprintf(VarConfigAux.logfile," | Reading GADGET \n");
+          VarConfigAux = read_tracers_gadget(VarConfigAux);
       break;
 
       case 2:
-      fprintf(VarConfig.logfile," | Reading MXXL format \n");	   
-      read_tracers_mxxl();
+          fprintf(VarConfigAux.logfile," | Reading MXXL format \n");
+          VarConfigAux = read_tracers_mxxl(VarConfigAux);
       break;
 
       case 3:
-      fprintf(VarConfig.logfile," | Reading BINARY format \n");	   
-      read_tracers_binary();
+          fprintf(VarConfigAux.logfile," | Reading BINARY format \n");
+          VarConfigAux = read_tracers_binary(VarConfigAux);
 
    }
 
@@ -257,46 +269,45 @@ void read_tracers()
    float ymax = 0.0;
    float zmax = 0.0;
    float diff = 0.999;
-   for (int i=0; i<VarConfig.NumTrac; i++) {
+   for (int i=0; i<VarConfigAux.NumTrac; i++) {
        if (Tracer[i].Pos[0] > xmax) xmax = Tracer[i].Pos[0];	   
        if (Tracer[i].Pos[1] > ymax) ymax = Tracer[i].Pos[1];	   
        if (Tracer[i].Pos[2] > zmax) zmax = Tracer[i].Pos[2];	   
    }
-   if (xmax/VarConfig.BoxSize < diff || ymax/VarConfig.BoxSize < diff || zmax/VarConfig.BoxSize < diff) {
+   if (xmax/VarConfigAux.BoxSize < diff || ymax/VarConfigAux.BoxSize < diff || zmax/VarConfigAux.BoxSize < diff) {
       fprintf(stdout,"\n Error. Wrong BoxSize? - MAX = (%f,%f,%f) \n",xmax,ymax,zmax);
       fflush(stdout);
       exit(EXIT_FAILURE);	
    } 
 
-   VarConfig.LBox[0] = VarConfig.BoxSize;
-   VarConfig.LBox[1] = VarConfig.BoxSize;
-   VarConfig.LBox[2] = VarConfig.BoxSize;
+   VarConfigAux.LBox[0] = VarConfigAux.BoxSize;
+   VarConfigAux.LBox[1] = VarConfigAux.BoxSize;
+   VarConfigAux.LBox[2] = VarConfigAux.BoxSize;
 
-   if (VarConfig.RSDist == 1) redshift_space_distortions();
-   if (VarConfig.GDist == 1) geometrical_distortions();
+   if (VarConfigAux.RSDist == 1) VarConfigAux = redshift_space_distortions(VarConfigAux);
+   if (VarConfigAux.GDist == 1) VarConfigAux = geometrical_distortions(VarConfigAux);
 
-   double Volume = VarConfig.LBox[0]*VarConfig.LBox[1]*VarConfig.LBox[2];
-   VarConfig.MeanNumTrac = (double)VarConfig.NumTrac/Volume;
-   VarConfig.MeanSeparation = cbrt(Volume/(double)VarConfig.NumTrac);
+   double Volume = VarConfigAux.LBox[0]*VarConfigAux.LBox[1]*VarConfigAux.LBox[2];
+   VarConfigAux.MeanNumTrac = (double)VarConfigAux.NumTrac/Volume;
+   VarConfigAux.MeanSeparation = cbrt(Volume/(double)VarConfigAux.NumTrac);
  
-   fprintf(VarConfig.logfile," | Number of tracers = %d \n",VarConfig.NumTrac);
-   fprintf(VarConfig.logfile," | Size of the box: x-axis = %f \n",VarConfig.LBox[0]);
-   fprintf(VarConfig.logfile," |                  y-axis = %f \n",VarConfig.LBox[1]);
-   fprintf(VarConfig.logfile," |                  z-axis = %f \n",VarConfig.LBox[2]);
-   fprintf(VarConfig.logfile," | Mean number density [h³/Mpc³] = %e \n",VarConfig.MeanNumTrac);
-   fprintf(VarConfig.logfile," | Mean separation [Mpc/h] = %e \n",VarConfig.MeanSeparation);
+   fprintf(VarConfigAux.logfile," | Number of tracers = %d \n",VarConfigAux.NumTrac);
+   fprintf(VarConfigAux.logfile," | Size of the box: x-axis = %f \n",VarConfigAux.LBox[0]);
+   fprintf(VarConfigAux.logfile," |                  y-axis = %f \n",VarConfigAux.LBox[1]);
+   fprintf(VarConfigAux.logfile," |                  z-axis = %f \n",VarConfigAux.LBox[2]);
+   fprintf(VarConfigAux.logfile," | Mean number density [h³/Mpc³] = %e \n",VarConfigAux.MeanNumTrac);
+   fprintf(VarConfigAux.logfile," | Mean separation [Mpc/h] = %e \n",VarConfigAux.MeanSeparation);
 
-   VarConfig.StepName.push_back("Reading tracers");
-   VarConfig.StepTime.push_back(get_time(t,1));
-
+   VarConfigAux.StepName.push_back("Reading tracers");
+   VarConfigAux.StepTime.push_back(get_time(t,1,VarConfigAux));
+   return VarConfigAux;
 }
 
-void read_tracers_ascii()
+varConfiguration read_tracers_ascii(varConfiguration VarConfigAux)
 {
-   
-   VarConfig.NumTrac = 0;	
-   int NumTot = count_lines(VarConfig.FileTracers);
-   FILE *fd = safe_open(VarConfig.FileTracers,"r");
+   VarConfigAux.NumTrac = 0;
+   int NumTot = count_lines(VarConfigAux.FileTracers);
+   FILE *fd = safe_open(VarConfigAux.FileTracers,"r");
    float dummy ; // agrego Seba par poder levantar archivo de 7 columnas
    for (int i=0; i<NumTot; i++) {
 
@@ -306,45 +317,46 @@ void read_tracers_ascii()
 
        fscanf(fd,"%f %f %f %f %f %f %f\n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2],	   
                                         &Tracer[i].Vel[0],&Tracer[i].Vel[1],&Tracer[i].Vel[2],&dummy);
-       Tracer[VarConfig.NumTrac].Pos[0] *= Scale.Pos;
-       Tracer[VarConfig.NumTrac].Pos[1] *= Scale.Pos;
-       Tracer[VarConfig.NumTrac].Pos[2] *= Scale.Pos;
-       Tracer[VarConfig.NumTrac].Vel[0] *= Scale.Vel;
-       Tracer[VarConfig.NumTrac].Vel[1] *= Scale.Vel;
-       Tracer[VarConfig.NumTrac].Vel[2] *= Scale.Vel;
-       VarConfig.NumTrac++;
+       Tracer[VarConfigAux.NumTrac].Pos[0] *= VarConfigAux.Scale.Pos;
+       Tracer[VarConfigAux.NumTrac].Pos[1] *= VarConfigAux.Scale.Pos;
+       Tracer[VarConfigAux.NumTrac].Pos[2] *= VarConfigAux.Scale.Pos;
+       Tracer[VarConfigAux.NumTrac].Vel[0] *= VarConfigAux.Scale.Vel;
+       Tracer[VarConfigAux.NumTrac].Vel[1] *= VarConfigAux.Scale.Vel;
+       Tracer[VarConfigAux.NumTrac].Vel[2] *= VarConfigAux.Scale.Vel;
+       VarConfigAux.NumTrac++;
    }
    fclose(fd);
-
+   return VarConfigAux;
 }
 
-void read_tracers_binary()
+varConfiguration read_tracers_binary(varConfiguration VarConfigAux)
 {
-   FILE *fd = safe_open(VarConfig.FileTracers,"r");
+   FILE *fd = safe_open(VarConfigAux.FileTracers,"r");
    int NumTot;
 
-   VarConfig.NumTrac = 0;
+   VarConfigAux.NumTrac = 0;
    fread(&NumTot,sizeof(int),1,fd);
 
    for (int i=0; i<NumTot; i++) {
        Tracer.push_back(tracers());
 
-       fread(&Tracer[VarConfig.NumTrac].Pos[0],sizeof(float),3,fd);
-       fread(&Tracer[VarConfig.NumTrac].Vel[0],sizeof(float),3,fd);
+       fread(&Tracer[VarConfigAux.NumTrac].Pos[0],sizeof(float),3,fd);
+       fread(&Tracer[VarConfigAux.NumTrac].Vel[0],sizeof(float),3,fd);
        
-       Tracer[VarConfig.NumTrac].Pos[0] *= Scale.Pos;
-       Tracer[VarConfig.NumTrac].Pos[1] *= Scale.Pos;
-       Tracer[VarConfig.NumTrac].Pos[2] *= Scale.Pos;
-       Tracer[VarConfig.NumTrac].Vel[0] *= Scale.Vel;
-       Tracer[VarConfig.NumTrac].Vel[1] *= Scale.Vel;
-       Tracer[VarConfig.NumTrac].Vel[2] *= Scale.Vel;
-       VarConfig.NumTrac++;
+       Tracer[VarConfigAux.NumTrac].Pos[0] *= VarConfigAux.Scale.Pos;
+       Tracer[VarConfigAux.NumTrac].Pos[1] *= VarConfigAux.Scale.Pos;
+       Tracer[VarConfigAux.NumTrac].Pos[2] *= VarConfigAux.Scale.Pos;
+       Tracer[VarConfigAux.NumTrac].Vel[0] *= VarConfigAux.Scale.Vel;
+       Tracer[VarConfigAux.NumTrac].Vel[1] *= VarConfigAux.Scale.Vel;
+       Tracer[VarConfigAux.NumTrac].Vel[2] *= VarConfigAux.Scale.Vel;
+       VarConfigAux.NumTrac++;
    }
    fclose(fd);
+   return VarConfigAux;
 
 }
 
-void read_tracers_gadget()
+varConfiguration read_tracers_gadget(varConfiguration VarConfigAux)
 {
 #define SKIP fread(&dummy,sizeof(int),1,f1)
 
@@ -390,14 +402,14 @@ void read_tracers_gadget()
   char snapshot[MAXCHAR];
   int    NumFilesAux;
 
-  if (VarConfig.NumFiles == 1) 
-     sprintf(snapshot,"%s",VarConfig.FileTracers);	  
+  if (VarConfigAux.NumFiles == 1)
+     sprintf(snapshot,"%s",VarConfigAux.FileTracers);
   else 
-     sprintf(snapshot,"%s.0",VarConfig.FileTracers);	  
+     sprintf(snapshot,"%s.0",VarConfigAux.FileTracers);
 
   f1 = safe_open(snapshot,"r");
 
-  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP; 
+  SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;
 
   fread(&possize,sizeof(int),1,f1);
   fseek(f1,possize+sizeof(int),SEEK_CUR);
@@ -411,17 +423,17 @@ void read_tracers_gadget()
 
   fclose(f1);
 
-  if (Header.BoxSize*Scale.Pos != VarConfig.BoxSize || Header.NumFiles != VarConfig.NumFiles) {
+  if (Header.BoxSize*VarConfigAux.Scale.Pos != VarConfigAux.BoxSize || Header.NumFiles != VarConfigAux.NumFiles) {
      fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
-     fprintf(stdout,"BoxSize = %f (%f in inputfile)\n",Header.BoxSize*Scale.Pos,VarConfig.BoxSize);
-     fprintf(stdout,"NumFiles = %d (%d in inputfile)\n",Header.NumFiles,VarConfig.NumFiles);
+     fprintf(stdout,"BoxSize = %f (%f in inputfile)\n",Header.BoxSize*VarConfigAux.Scale.Pos,VarConfigAux.BoxSize);
+     fprintf(stdout,"NumFiles = %d (%d in inputfile)\n",Header.NumFiles,VarConfigAux.NumFiles);
      fflush(stdout);
      exit(EXIT_FAILURE);
   }
 
-  if ((VarConfig.RSDist == 1 || VarConfig.GDist == 1) && Header.Redshift != VarConfig.Redshift) { 
+  if ((VarConfigAux.RSDist == 1 || VarConfigAux.GDist == 1) && Header.Redshift != VarConfigAux.Redshift) {
      fprintf(stdout,"\nError. Missmatch with Gadget header.\n");
-     fprintf(stdout,"Redshift = %f (%f in inputfile)\n",Header.Redshift,VarConfig.Redshift);
+     fprintf(stdout,"Redshift = %f (%f in inputfile)\n",Header.Redshift,VarConfigAux.Redshift);
      fflush(stdout);
      exit(EXIT_FAILURE);
   }
@@ -435,29 +447,29 @@ void read_tracers_gadget()
      exit(EXIT_FAILURE);
   } 
 
-  VarConfig.NumTrac = Header.NpartTotal[1];
-  for (int i=0; i<VarConfig.NumTrac; i++) Tracer.push_back(tracers());
+  VarConfigAux.NumTrac = Header.NpartTotal[1];
+  for (int i=0; i<VarConfigAux.NumTrac; i++) Tracer.push_back(tracers());
 
-  if (VarConfig.NumFiles < VarConfig.OMPcores)
-     NC = VarConfig.NumFiles;
+  if (VarConfigAux.NumFiles < VarConfigAux.OMPcores)
+     NC = VarConfigAux.NumFiles;
   else
-     NC = VarConfig.OMPcores;
+     NC = VarConfigAux.OMPcores;
 
-  NumFilesAux = VarConfig.NumFiles;
+  NumFilesAux = VarConfigAux.NumFiles;
   #pragma omp parallel for default(none) schedule(static) num_threads(NC) \
    private(i,snapshot,f1,Np,Header,pos,vel,id,j,k,dummy)  \
-   shared(Tracer, Scale, stdout, NumFilesAux, VarConfig)  
+   shared(Tracer, VarConfigAux, stdout, NumFilesAux)
   
   for (i=0; i<NumFilesAux; i++) {
 
-      if (NumFilesAux == 1) 
-         sprintf(snapshot,"%s",VarConfig.FileTracers);	  
+      if (NumFilesAux == 1)
+         sprintf(snapshot,"%s",VarConfigAux.FileTracers);
       else 
-         sprintf(snapshot,"%s.%d",VarConfig.FileTracers,i);	  
+         sprintf(snapshot,"%s.%d",VarConfigAux.FileTracers,i);
 
-      f1 = safe_open(snapshot,"r");     
+      f1 = safe_open(snapshot,"r");
 
-      SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;  
+      SKIP; fread(&Header,sizeof(struct GadgetHeader),1,f1); SKIP;
 
       Np = Header.Npart[1];
       pos = (postype *) malloc(3*Np*sizeof(postype));
@@ -472,8 +484,8 @@ void read_tracers_gadget()
 
       for (j=0; j<Np; j++) {
 	  for (k=0; k<3; k++) {
-	      Tracer[id[j]-1].Pos[k] = pos[3*j+k]*Scale.Pos; 
-	      Tracer[id[j]-1].Vel[k] = vel[3*j+k]*sqrt(Header.Time)*Scale.Vel;
+	      Tracer[id[j]-1].Pos[k] = pos[3*j+k]*VarConfigAux.Scale.Pos;
+	      Tracer[id[j]-1].Vel[k] = vel[3*j+k]*sqrt(Header.Time)*VarConfigAux.Scale.Vel;
 	  }
       }
 
@@ -482,9 +494,10 @@ void read_tracers_gadget()
       free(id);
   }
 #undef SKIP 
+  return VarConfigAux;
 }
 
-void read_tracers_mxxl()
+varConfiguration read_tracers_mxxl(varConfiguration VarConfigAux)
 {
 
    int     i,j,k,NumTot,N,id;
@@ -492,27 +505,27 @@ void read_tracers_mxxl()
    char    filename[MAXCHAR],basename[MAXCHAR];
    FILE    *fd;
 	
-   sprintf(basename,"%s/z%4.2f/halos_z%4.2f_part",VarConfig.FileTracers,VarConfig.Redshift,VarConfig.Redshift);
-   fprintf(VarConfig.logfile," | Files = %s (%d files) \n",basename,VarConfig.NumFiles);
+   sprintf(basename,"%s/z%4.2f/halos_z%4.2f_part",VarConfigAux.FileTracers,VarConfigAux.Redshift,VarConfigAux.Redshift);
+   fprintf(VarConfigAux.logfile," | Files = %s (%d files) \n",basename,VarConfigAux.NumFiles);
 
-   for (i=1; i<=VarConfig.NumFiles; i++) {
+   for (i=1; i<=VarConfigAux.NumFiles; i++) {
        sprintf(filename,"%s%02d",basename,i);
        fd = safe_open(filename,"r");
        fread(&N,sizeof(int),1,fd);
        fread(&NumTot,sizeof(int),1,fd);
-       VarConfig.NumTrac += N;
+       VarConfigAux.NumTrac += N;
        fclose(fd);
    }
 
-   if (VarConfig.NumTrac != NumTot) {
-      fprintf(stdout,"Error. Missing halos: NumTrac = %d, NumTot = %d\n",VarConfig.NumTrac,NumTot);
+   if (VarConfigAux.NumTrac != NumTot) {
+      fprintf(stdout,"Error. Missing halos: NumTrac = %d, NumTot = %d\n",VarConfigAux.NumTrac,NumTot);
       fflush(stdout);
       exit(EXIT_FAILURE);
    }
 
-   for (int i=0; i<VarConfig.NumTrac; i++) Tracer.push_back(tracers());
+   for (int i=0; i<VarConfigAux.NumTrac; i++) Tracer.push_back(tracers());
 
-   for (j=1; j<=VarConfig.NumFiles; j++) { 
+   for (j=1; j<=VarConfigAux.NumFiles; j++) {
        sprintf(filename,"%s%02d",basename,j);
        fd = safe_open(filename,"r");
        fread(&N,sizeof(int),1,fd);
@@ -523,48 +536,48 @@ void read_tracers_mxxl()
 	   fread(Vel,sizeof(float),3,fd);
 
 	   for (k=0; k<3; k++) {
-	       Tracer[id].Pos[k] = Pos[k]*Scale.Pos;
-	       Tracer[id].Vel[k] = Vel[k]*Scale.Vel;
+	       Tracer[id].Pos[k] = Pos[k]*VarConfigAux.Scale.Pos;
+	       Tracer[id].Vel[k] = Vel[k]*VarConfigAux.Scale.Vel;
 	   }
        }
        fclose(fd);
    }
-
+   return VarConfigAux;
 }
 
-void redshift_space_distortions()
+varConfiguration redshift_space_distortions(varConfiguration VarConfigAux)
 {
 
    int    i;
    double Hubble_z;
    double RSDFactor;	
    struct cosmoparam C = {
-      VarConfig.OmegaMatter,VarConfig.OmegaLambda,
-      (1.0 - VarConfig.OmegaMatter - VarConfig.OmegaLambda),
-      VarConfig.Hubble
+      VarConfigAux.OmegaMatter,VarConfigAux.OmegaLambda,
+      (1.0 - VarConfigAux.OmegaMatter - VarConfigAux.OmegaLambda),
+      VarConfigAux.Hubble
    };
 
-   fprintf(VarConfig.logfile," | Applying redshift-space distortions: LOS = z-axis, POS = xy-plane\n");
+   fprintf(VarConfigAux.logfile," | Applying redshift-space distortions: LOS = z-axis, POS = xy-plane\n");
 
-   if (VarConfig.Redshift == 0.0) {
+   if (VarConfigAux.Redshift == 0.0) {
      RSDFactor = 1.0/100.0;	   
    } else { 
-     Hubble_z = 100.0*evolution_param(VarConfig.Redshift,&C);
-     RSDFactor = (1.0 + VarConfig.Redshift)/Hubble_z;
+     Hubble_z = 100.0*evolution_param(VarConfigAux.Redshift,&C);
+     RSDFactor = (1.0 + VarConfigAux.Redshift)/Hubble_z;
    }
 
-   fprintf(VarConfig.logfile," | RSD factor = (1+z)/H(z) = %f [h⁻¹Mpc/(km/s)]\n",RSDFactor);
-   fflush(VarConfig.logfile);
+   fprintf(VarConfigAux.logfile," | RSD factor = (1+z)/H(z) = %f [h⁻¹Mpc/(km/s)]\n",RSDFactor);
+   fflush(VarConfigAux.logfile);
 
-   for (i=0; i<VarConfig.NumTrac; i++) { 
+   for (i=0; i<VarConfigAux.NumTrac; i++) {
        Tracer[i].Pos[2] += Tracer[i].Vel[2]*RSDFactor;
-       if (Tracer[i].Pos[2] < 0.0    ) Tracer[i].Pos[2] += VarConfig.LBox[2];
-       if (Tracer[i].Pos[2] > VarConfig.LBox[2]) Tracer[i].Pos[2] -= VarConfig.LBox[2];        
+       if (Tracer[i].Pos[2] < 0.0    ) Tracer[i].Pos[2] += VarConfigAux.LBox[2];
+       if (Tracer[i].Pos[2] > VarConfigAux.LBox[2]) Tracer[i].Pos[2] -= VarConfigAux.LBox[2];
    }	       
-
+   return VarConfigAux;
 }
 
-void geometrical_distortions()
+varConfiguration geometrical_distortions(varConfiguration VarConfigAux)
 {
 
    int    i;
@@ -572,60 +585,60 @@ void geometrical_distortions()
    double FidHubble_z,FidDistance_z;	
    double GDFactor_LOS,GDFactor_POS;
    struct cosmoparam C = {
-      VarConfig.OmegaMatter,
-      VarConfig.OmegaLambda,
-		1.0 - VarConfig.OmegaMatter - VarConfig.OmegaLambda,
-      VarConfig.Hubble
+      VarConfigAux.OmegaMatter,
+      VarConfigAux.OmegaLambda,
+		1.0 - VarConfigAux.OmegaMatter - VarConfigAux.OmegaLambda,
+      VarConfigAux.Hubble
    };
    struct cosmoparam FC = {
-      VarConfig.FidOmegaMatter,
-	   VarConfig.FidOmegaLambda,
-		1.0 - VarConfig.FidOmegaMatter - VarConfig.FidOmegaLambda,
-      VarConfig.FidHubble
+      VarConfigAux.FidOmegaMatter,
+	   VarConfigAux.FidOmegaLambda,
+		1.0 - VarConfigAux.FidOmegaMatter - VarConfigAux.FidOmegaLambda,
+      VarConfigAux.FidHubble
    };
 
-   fprintf(VarConfig.logfile," | Applying fiducial cosmology distortions: LOS = z-axis, POS = xy-plane\n");
-   fprintf(VarConfig.logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",C.OmM,C.OmL,C.OmK,C.Hub);
+   fprintf(VarConfigAux.logfile," | Applying fiducial cosmology distortions: LOS = z-axis, POS = xy-plane\n");
+   fprintf(VarConfigAux.logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",C.OmM,C.OmL,C.OmK,C.Hub);
 
-   Hubble_z = C.Hub*evolution_param(VarConfig.Redshift,&C);
-   Distance_z = angular_distance(VarConfig.Redshift,&C);
+   Hubble_z = C.Hub*evolution_param(VarConfigAux.Redshift,&C);
+   Distance_z = angular_distance(VarConfigAux.Redshift,&C);
    
-   fprintf(VarConfig.logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
+   fprintf(VarConfigAux.logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
 
-   FidHubble_z = FC.Hub*evolution_param(VarConfig.Redshift,&FC);
-   FidDistance_z = angular_distance(VarConfig.Redshift,&FC);
+   FidHubble_z = FC.Hub*evolution_param(VarConfigAux.Redshift,&FC);
+   FidDistance_z = angular_distance(VarConfigAux.Redshift,&FC);
 
    GDFactor_LOS = Hubble_z/FidHubble_z;
    GDFactor_POS = FidDistance_z/Distance_z;
 
-   fprintf(VarConfig.logfile," | GD factor: LOS = H(z)/FidH(z) = %f \n",GDFactor_LOS);
-   fprintf(VarConfig.logfile," |            POS = FidD(z)/D(z) = %f \n",GDFactor_POS);
-   fflush(VarConfig.logfile);
+   fprintf(VarConfigAux.logfile," | GD factor: LOS = H(z)/FidH(z) = %f \n",GDFactor_LOS);
+   fprintf(VarConfigAux.logfile," |            POS = FidD(z)/D(z) = %f \n",GDFactor_POS);
+   fflush(VarConfigAux.logfile);
 
-   VarConfig.LBox[0] *= GDFactor_POS;
-   VarConfig.LBox[1] *= GDFactor_POS;
-   VarConfig.LBox[2] *= GDFactor_LOS;
+   VarConfigAux.LBox[0] *= GDFactor_POS;
+   VarConfigAux.LBox[1] *= GDFactor_POS;
+   VarConfigAux.LBox[2] *= GDFactor_LOS;
 
-   for (i=0; i<VarConfig.NumTrac; i++) { 
+   for (i=0; i<VarConfigAux.NumTrac; i++) {
        Tracer[i].Pos[0] *= GDFactor_POS;
        Tracer[i].Pos[1] *= GDFactor_POS;
        Tracer[i].Pos[2] *= GDFactor_LOS;
    }	
-
+   return VarConfigAux;
 }
 
-void write_voids()
+varConfiguration write_voids(varConfiguration VarConfigAux)
 {
    int     i;
    FILE    *fd;
    clock_t t;
 
-   fprintf(VarConfig.logfile,"\n WRITTING VOID CATALOGUE \n");
+   fprintf(VarConfigAux.logfile,"\n WRITTING VOID CATALOGUE \n");
    t = clock();
    
-   fd = safe_open(VarConfig.FileVoids,"w");
+   fd = safe_open(VarConfigAux.FileVoids,"w");
 
-   for (i=0; i<VarConfig.NumVoid; i++) {
+   for (i=0; i<VarConfigAux.NumVoid; i++) {
        if (Void[i].ToF) {
 
           fprintf(fd," %8.5f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %5d\n",
@@ -635,8 +648,8 @@ void write_voids()
    }
    fclose(fd);
 
-   VarConfig.StepName.push_back("Writting void catalogue");
-   VarConfig.StepTime.push_back(get_time(t,1));
+   VarConfigAux.StepName.push_back("Writting void catalogue");
+   VarConfigAux.StepTime.push_back(get_time(t,1,VarConfigAux));
 
 }
 

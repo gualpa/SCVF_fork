@@ -1,4 +1,6 @@
 
-void find_void_candidates(void);
-void find_voids(void);
-void clean_voids(void);
+#include "allvars.h"
+
+varConfiguration find_void_candidates(varConfiguration VarConfigAux);
+varConfiguration find_voids(varConfiguration VarConfigAux);
+varConfiguration clean_voids(varConfiguration);

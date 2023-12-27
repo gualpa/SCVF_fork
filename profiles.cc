@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "profiles.h"
 
-void compute_profiles()
+varConfiguration compute_profiles(varConfiguration VarConfigAux)
 {
    int            i,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
    double         xc[3],xt[3],dx[3],vt[3],dist,GridSize[3];
@@ -12,7 +12,7 @@ void compute_profiles()
    double         VRad,Vol,DeltaMax;
    float          Radius;
    vector <int>   Indx;
-   struct profile Prof[VarConfig.NumProfileBins];  
+   struct profile Prof[VarConfigAux.NumProfileBins];
    char           TxtFile[MAXCHAR],BinFile[MAXCHAR];
    int            NumQuery;
    struct query   Query;
@@ -20,51 +20,51 @@ void compute_profiles()
    FILE           *ftxt,*fbin;
    clock_t        t;
 
-   fprintf(VarConfig.logfile,"\n COMPUTING VOID PROFILES \n");
+   fprintf(VarConfigAux.logfile,"\n COMPUTING VOID PROFILES \n");
    t = clock();
 
-   NumGrid = (int)(VarConfig.BoxSize/VarConfig.ProxyGridSize);
+   NumGrid = (int)(VarConfigAux.BoxSize/VarConfigAux.ProxyGridSize);
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfig.NumTrac,GridList,NumGrid,GridSize,false);
+   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux);
 
    // Only for true voids
 
-   for (i=0; i<VarConfig.NumVoid; i++) 
+   for (i=0; i<VarConfigAux.NumVoid; i++)
        if (Void[i].ToF) 
 	  Indx.push_back(i);       
 
-   dR = (log10(VarConfig.MaxProfileDist)-log10(VarConfig.MinProfileDist))/(double)VarConfig.NumProfileBins;
+   dR = (log10(VarConfigAux.MaxProfileDist)-log10(VarConfigAux.MinProfileDist))/(double)VarConfigAux.NumProfileBins;
    
    // Selecciono grides
 
    MinDist = 0.0;
    MaxDist = 0.0;
-   for (i=0; i<VarConfig.NumVoid; i++) {
+   for (i=0; i<VarConfigAux.NumVoid; i++) {
        if (!Void[i].ToF) continue;
        if (Void[i].Rad > MaxDist) MaxDist = Void[i].Rad;
    }
-   MaxDist *= VarConfig.MaxProfileDist;
+   MaxDist *= VarConfigAux.MaxProfileDist;
    query_grid(&Query,GridSize,MinDist,MaxDist);
    NumQuery = Query.i.size();
    GAP = 0.5*sqrt(3.0)*max_grid_size(GridSize);
    
-   fprintf(VarConfig.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
-   fflush(VarConfig.logfile);
+   fprintf(VarConfigAux.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
+   fflush(VarConfigAux.logfile);
 
-   if (VarConfig.WriteProfiles == 2) {
-      sprintf(BinFile,"%s/profiles.bin",VarConfig.PathProfiles);
+   if (VarConfigAux.WriteProfiles == 2) {
+      sprintf(BinFile,"%s/profiles.bin",VarConfigAux.PathProfiles);
       fbin = safe_open(BinFile,"w");
    }
 
    #pragma omp parallel for default(none) schedule(dynamic)                   \
-    shared(VarConfig,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
+    shared(VarConfigAux,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
            Indx,GAP,fbin,BinFile)                       \
     private(i,m,k,ii,jj,kk,l,Radius,ic,jc,kc,xc,xt,dx,vt,next,Prof,dist,VRad, \
 	    ibin,DeltaMax,Vol,ftxt,in,TxtFile)
 
    for (i=0; i<(int)Indx.size(); i++) {
        
-       for (k=0; k<VarConfig.NumProfileBins; k++) {
+       for (k=0; k<VarConfigAux.NumProfileBins; k++) {
            Prof[k].DeltaDiff = 0.0;
            Prof[k].DeltaCum = 0.0;
            Prof[k].Velocity = 0.0;
@@ -90,7 +90,7 @@ void compute_profiles()
 	        + (double)(kk*kk)*(GridSize[2]*GridSize[2]);
 	   dist = sqrt(dist);
 
-	   if (dist > VarConfig.MaxProfileDist*Radius+GAP) continue;
+	   if (dist > VarConfigAux.MaxProfileDist*Radius+GAP) continue;
 
        	   ii = periodic_grid(ii + ic, NumGrid); 
 	   jj = periodic_grid(jj + jc, NumGrid); 
@@ -107,14 +107,14 @@ void compute_profiles()
 	       for (k=0; k<3; k++) {
 	           xt[k] = (double)Tracer[next].Pos[k];	 
 	           vt[k] = (double)(Tracer[next].Vel[k] - Void[Indx[i]].Vel[k]);
-	           dx[k] = periodic_delta(xt[k] - xc[k],VarConfig.LBox[k])/Radius;
+	           dx[k] = periodic_delta(xt[k] - xc[k],VarConfigAux.LBox[k])/Radius;
 	       }
 
                dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 
-	       if (dist > VarConfig.MinProfileDist && dist < VarConfig.MaxProfileDist) {
+	       if (dist > VarConfigAux.MinProfileDist && dist < VarConfigAux.MaxProfileDist) {
            
-	          ibin = (int)((log10(dist)-log10(VarConfig.MinProfileDist))/dR);
+	          ibin = (int)((log10(dist)-log10(VarConfigAux.MinProfileDist))/dR);
 
 	          VRad = vt[0]*dx[0] + vt[1]*dx[1] + vt[2]*dx[2];
 	          VRad /= dist;
@@ -126,7 +126,7 @@ void compute_profiles()
 	   }
        }
        
-       for (k=0; k<VarConfig.NumProfileBins; k++) {
+       for (k=0; k<VarConfigAux.NumProfileBins; k++) {
 	   if (Prof[k].DeltaDiff < 3.0) {
 	       Prof[k].DeltaDiff = 0.0;
                Prof[k].Velocity = 0.0;
@@ -138,21 +138,21 @@ void compute_profiles()
        }
 
        DeltaMax = -1.0;
-       for (k=0; k<VarConfig.NumProfileBins; k++) {
+       for (k=0; k<VarConfigAux.NumProfileBins; k++) {
 
-	   Prof[k].Ri = (float)(k    )*dR + log10(VarConfig.MinProfileDist);
-	   Prof[k].Rm = (float)(k+0.5)*dR + log10(VarConfig.MinProfileDist);
-	   Prof[k].Rs = (float)(k+1.0)*dR + log10(VarConfig.MinProfileDist);
+	   Prof[k].Ri = (float)(k    )*dR + log10(VarConfigAux.MinProfileDist);
+	   Prof[k].Rm = (float)(k+0.5)*dR + log10(VarConfigAux.MinProfileDist);
+	   Prof[k].Rs = (float)(k+1.0)*dR + log10(VarConfigAux.MinProfileDist);
 
 	   Prof[k].Ri = pow(10.0,Prof[k].Ri)*Radius;
 	   Prof[k].Rm = pow(10.0,Prof[k].Rm)*Radius;
 	   Prof[k].Rs = pow(10.0,Prof[k].Rs)*Radius;
 
 	   Vol = (4.0/3.0)*PI*(pow(Prof[k].Rs,3) - pow(Prof[k].Ri,3));
-	   Prof[k].DeltaDiff = Prof[k].DeltaDiff/Vol/VarConfig.MeanNumTrac - 1.0;
+	   Prof[k].DeltaDiff = Prof[k].DeltaDiff/Vol/VarConfigAux.MeanNumTrac - 1.0;
 
 	   Vol = (4.0/3.0)*PI*pow(Prof[k].Rs,3);
-	   Prof[k].DeltaCum = Prof[k].DeltaCum/Vol/VarConfig.MeanNumTrac - 1.0;
+	   Prof[k].DeltaCum = Prof[k].DeltaCum/Vol/VarConfigAux.MeanNumTrac - 1.0;
 
 	   if (Prof[k].Rs < 2.0*Radius || Prof[k].Rs > 3.0*Radius) continue;
 
@@ -162,23 +162,23 @@ void compute_profiles()
 
        Void[Indx[i]].Dtype = DeltaMax;
        
-       if (VarConfig.WriteProfiles == 1) {
-          sprintf(TxtFile,"%s/profile_void_%d.dat",VarConfig.PathProfiles,i);
+       if (VarConfigAux.WriteProfiles == 1) {
+          sprintf(TxtFile,"%s/profile_void_%d.dat",VarConfigAux.PathProfiles,i);
           ftxt = safe_open(TxtFile,"w");
-          for (k=0; k<VarConfig.NumProfileBins; k++)
+          for (k=0; k<VarConfigAux.NumProfileBins; k++)
 	      fprintf(ftxt,"%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f \n",
 			   Prof[k].Ri,Prof[k].Rm,Prof[k].Rs,Prof[k].DeltaDiff,
 			   Prof[k].DeltaCum,Prof[k].Velocity,Radius);  
           fclose(ftxt);
        }
        
-       if (VarConfig.WriteProfiles == 2) {
+       if (VarConfigAux.WriteProfiles == 2) {
           #pragma omp critical
 	  {
 	     fwrite(&i,sizeof(int),1,fbin);
              fwrite(&Radius,sizeof(float),1,fbin);
-             fwrite(&VarConfig.NumProfileBins,sizeof(int),1,fbin);
-	     for (k=0; k<VarConfig.NumProfileBins; k++) {
+             fwrite(&VarConfigAux.NumProfileBins,sizeof(int),1,fbin);
+	     for (k=0; k<VarConfigAux.NumProfileBins; k++) {
 	         fwrite(&Prof[k].Ri,sizeof(float),1,fbin);
 	         fwrite(&Prof[k].Rm,sizeof(float),1,fbin);
 	         fwrite(&Prof[k].Rs,sizeof(float),1,fbin);
@@ -192,27 +192,27 @@ void compute_profiles()
        Void[Indx[i]].Dtype = DeltaMax;
    } 
    
-   if (VarConfig.WriteProfiles == 2) fclose(fbin);
+   if (VarConfigAux.WriteProfiles == 2) fclose(fbin);
 
    Indx.clear();
    free_query_grid(&Query);
    free_grid_list(GridList,NumGrid);
    
-   VarConfig.StepName.push_back("Computing profiles");
-   VarConfig.StepTime.push_back(get_time(t,VarConfig.OMPcores));
-
+   VarConfigAux.StepName.push_back("Computing profiles");
+   VarConfigAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,VarConfigAux));
+   return VarConfigAux;
 }
 
-void bin2ascii_profile(int voidID)
+varConfiguration bin2ascii_profile(int voidID, varConfiguration VarConfigAux)
 {
    int            SkipBlock,iv,k;
    float          Radius;  
-   struct profile Prof[VarConfig.NumProfileBins];
+   struct profile Prof[VarConfigAux.NumProfileBins];
    FILE           *fbin,*fout;
    char           filename[MAXCHAR];
    
-   SkipBlock = sizeof(float) + sizeof(int) + 6*VarConfig.NumProfileBins*sizeof(float);
-   sprintf(filename,"%s/profiles.bin",VarConfig.PathProfiles);  
+   SkipBlock = sizeof(float) + sizeof(int) + 6*VarConfigAux.NumProfileBins*sizeof(float);
+   sprintf(filename,"%s/profiles.bin",VarConfigAux.PathProfiles);
    fbin = safe_open(filename,"r");
 
    do {
@@ -223,8 +223,8 @@ void bin2ascii_profile(int voidID)
          fseek(fbin,SkipBlock,SEEK_CUR);
       else {
          fread(&Radius,sizeof(float),1,fbin);
-         fread(&VarConfig.NumProfileBins,sizeof(int),1,fbin);
-	 for (k=0; k<VarConfig.NumProfileBins; k++) {
+         fread(&VarConfigAux.NumProfileBins,sizeof(int),1,fbin);
+	 for (k=0; k<VarConfigAux.NumProfileBins; k++) {
 	     fread(&Prof[k].Ri,sizeof(float),1,fbin);
 	     fread(&Prof[k].Rm,sizeof(float),1,fbin);
 	     fread(&Prof[k].Rs,sizeof(float),1,fbin);
@@ -236,15 +236,15 @@ void bin2ascii_profile(int voidID)
    } while (iv+1 != voidID);
    fclose(fbin);
 
-   fprintf(VarConfig.logfile,"\n Writting profile for void %d, with radius %5.3f [Mpc/h] \n",voidID,Radius);
+   fprintf(VarConfigAux.logfile,"\n Writting profile for void %d, with radius %5.3f [Mpc/h] \n",voidID,Radius);
 
-   sprintf(filename,"%s/profile_void_%d.dat",VarConfig.PathProfiles,voidID);
+   sprintf(filename,"%s/profile_void_%d.dat",VarConfigAux.PathProfiles,voidID);
    fout = safe_open(filename,"w");
 
-   for (k=0; k<VarConfig.NumProfileBins; k++)
+   for (k=0; k<VarConfigAux.NumProfileBins; k++)
        fprintf(fout,"%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f \n",
 		     Prof[k].Ri,Prof[k].Rm,Prof[k].Rs,Prof[k].DeltaDiff,
 		     Prof[k].DeltaCum,Prof[k].Velocity,Radius);  
    fclose(fout);
-
+   return VarConfigAux;
 }

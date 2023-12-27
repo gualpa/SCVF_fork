@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "grid.h"
 
-void compute_voronoi()
+varConfiguration compute_voronoi(varConfiguration VarConfigAux)
 {
    int            G,i,j,k,p,N,l,id,count,NumGrid;
    struct grid    *GridList;
@@ -19,18 +19,18 @@ void compute_voronoi()
    FILE           *fd;
    clock_t        t;
 
-   fprintf(VarConfig.logfile,"\n COMPUTING VORONOI TESSELLATION \n");
+   fprintf(VarConfigAux.logfile,"\n COMPUTING VORONOI TESSELLATION \n");
   
    t = clock();
 
-   NumGrid = (int)round(cbrt((double)VarConfig.NumTrac/MeanPartPerGrid));
+   NumGrid = (int)round(cbrt((double)VarConfigAux.NumTrac/MeanPartPerGrid));
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfig.NumTrac,GridList,NumGrid,GridSize,true);
+   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,true,VarConfigAux);
 
-   Vol = VarConfig.LBox[0]*VarConfig.LBox[1]*VarConfig.LBox[2];
+   Vol = VarConfigAux.LBox[0]*VarConfigAux.LBox[1]*VarConfigAux.LBox[2];
 
    #pragma omp parallel for default(none) schedule(static)           \
-    shared(Vol,stdout,GridSize,NumGrid,VarConfig,Tracer,GridList) \
+    shared(Vol,stdout,GridSize,NumGrid,VarConfigAux,Tracer,GridList) \
     private(l,N,k,j,i,ref,min,max,xp,xc,G,count,p,id,IDs,rr,check,   \
             cell,con,clo,po,indx)                                    \
 
@@ -53,7 +53,7 @@ void compute_voronoi()
        for (k=0; k<3; k++) {
            ref[k] = (double)(indx[k]  )*GridSize[k];
            min[k] = (double)(indx[k]-1)*GridSize[k];
-           max[k] = (double)(indx[k]+2)*GridSize[k];	      
+           max[k] = (double)(indx[k]+2)*GridSize[k];
        }
 
        con = new container(min[0],max[0],min[1],max[1],min[2],max[2],G,G,G,false,false,false,8);
@@ -72,8 +72,8 @@ void compute_voronoi()
 
      	       for (k=0; k<3; k++) {
      	           xp[k] = (double)Tracer[id].Pos[k];
-                   if (xp[k] - ref[k] >  0.5*VarConfig.LBox[k]) xp[k] -= VarConfig.LBox[k];	      
-                   if (xp[k] - ref[k] < -0.5*VarConfig.LBox[k]) xp[k] += VarConfig.LBox[k];	      
+                   if (xp[k] - ref[k] >  0.5*VarConfigAux.LBox[k]) xp[k] -= VarConfigAux.LBox[k];
+                   if (xp[k] - ref[k] < -0.5*VarConfigAux.LBox[k]) xp[k] += VarConfigAux.LBox[k];
      	       }
 
      	       if (i == l) 
@@ -108,13 +108,13 @@ void compute_voronoi()
           cell.centroid(xc[0],xc[1],xc[2]);
 
           for (k=0; k<3; k++)  
-     	      Tracer[IDs[i]].Cen[k] = (float)periodic_position(xp[k] + xc[k],VarConfig.LBox[k]);
+     	      Tracer[IDs[i]].Cen[k] = (float)periodic_position(xp[k] + xc[k],VarConfigAux.LBox[k]);
          
           // Volume of the cell
           Tracer[IDs[i]].Volume = (float)cell.volume(); 
        
           // Delta
-          Tracer[IDs[i]].Delta = (float)((Vol/Tracer[IDs[i]].Volume)/(double)(VarConfig.NumTrac) - 1.0);
+          Tracer[IDs[i]].Delta = (float)((Vol/Tracer[IDs[i]].Volume)/(double)(VarConfigAux.NumTrac) - 1.0);
 
        } while ((*clo).inc());
 
@@ -127,7 +127,7 @@ void compute_voronoi()
 
    free_grid_list(GridList,NumGrid);
 
-   VarConfig.StepName.push_back("Computing Voronoi tessellation");
-   VarConfig.StepTime.push_back(get_time(t,VarConfig.OMPcores));
-
+   VarConfigAux.StepName.push_back("Computing Voronoi tessellation");
+   VarConfigAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,VarConfigAux));
+   return VarConfigAux;
 }

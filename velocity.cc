@@ -4,7 +4,7 @@
 #include "grid.h"
 #include "tools.h"
 
-void compute_velocity()
+varConfiguration compute_velocity(varConfiguration VarConfigAux)
 {
    int          i,k,ic,jc,kc,in,m,NumGrid;
    int          ii,jj,kk,l,next,Counter;
@@ -15,19 +15,19 @@ void compute_velocity()
    struct query Query;
    clock_t      t;
 
-   fprintf(VarConfig.logfile,"\n COMPUTING VOID BULK VELOCITIES \n");
+   fprintf(VarConfigAux.logfile,"\n COMPUTING VOID BULK VELOCITIES \n");
    t = clock();
 
-   NumGrid = (int)round(cbrt((double)VarConfig.NumTrac/100.0));
+   NumGrid = (int)round(cbrt((double)VarConfigAux.NumTrac/100.0));
    if (NumGrid < 50) NumGrid = 50;
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfig.NumTrac,GridList,NumGrid,GridSize,false);
+   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux);
 
    // Selecciono grides
 
    MinDist = 0.0;
    MaxDist = 0.0;
-   for (i=0; i<VarConfig.NumVoid; i++) {
+   for (i=0; i<VarConfigAux.NumVoid; i++) {
        if (!Void[i].ToF) continue;
        if (Void[i].Rad > MaxDist) MaxDist = Void[i].Rad;
    }
@@ -36,16 +36,16 @@ void compute_velocity()
    NumQuery = Query.i.size();
    GAP = 0.5*sqrt(3.0)*max_grid_size(GridSize);
   
-   fprintf(VarConfig.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
-   fflush(VarConfig.logfile);
+   fprintf(VarConfigAux.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
+   fflush(VarConfigAux.logfile);
 
    #pragma omp parallel for default(none) schedule(dynamic)      \
-    shared(VarConfig,Void,Tracer,NumQuery,Query,\
+    shared(VarConfigAux,Void,Tracer,NumQuery,Query,\
            NumGrid,GridSize,GridList,GAP)          \
    private(i,l,k,m,Radius,xc,ic,jc,kc,ii,jj,kk,next,dx,xt,dist,  \
            Counter,vt,PLUS,in)
 
-   for (i=0; i<VarConfig.NumVoid; i++) {
+   for (i=0; i<VarConfigAux.NumVoid; i++) {
        
        if (!Void[i].ToF) continue;
 
@@ -91,13 +91,13 @@ void compute_velocity()
                   for (k=0; k<3; k++) {
                       xt[k] = (double)Tracer[next].Pos[k];	 
                       vt[k] = (double)Tracer[next].Vel[k];
-                      dx[k] = periodic_delta(xc[k] - xt[k],VarConfig.LBox[k]);
+                      dx[k] = periodic_delta(xc[k] - xt[k],VarConfigAux.LBox[k]);
                   }
 
                   dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
                   dist /= Radius;
 
-                  if (dist > VarConfig.InnerShellVel-PLUS && dist < VarConfig.OuterShellVel+PLUS) {
+                  if (dist > VarConfigAux.InnerShellVel-PLUS && dist < VarConfigAux.OuterShellVel+PLUS) {
                      Void[i].Vel[0] += vt[0];
                      Void[i].Vel[1] += vt[1];
                      Void[i].Vel[2] += vt[2];
@@ -118,6 +118,7 @@ void compute_velocity()
    free_grid_list(GridList,NumGrid);
    free_query_grid(&Query);
 
-   VarConfig.StepName.push_back("Computing velocities");
-   VarConfig.StepTime.push_back(get_time(t,VarConfig.OMPcores));
+   VarConfigAux.StepName.push_back("Computing velocities");
+   VarConfigAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,VarConfigAux));
+   return VarConfigAux;
 }

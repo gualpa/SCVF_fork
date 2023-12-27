@@ -1,3 +1,7 @@
+// allvars.h
+#ifndef ALLVARS_H
+#define ALLVARS_H
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +74,7 @@ struct scale_struct {
   double Pos;
   double Vel;
 }; 
-extern  scale_struct Scale;
+//extern  scale_struct Scale;
 
  //double ScalePos;
  //double ScaleVel;
@@ -120,9 +124,9 @@ struct varConfiguration {
   int    NumVoid;
   double LBox[3];
   FILE   *logfile;
-
+  scale_struct Scale;
 }; 
-extern  varConfiguration VarConfig;
+//extern  varConfiguration VarConfig;
 
 
 
@@ -156,3 +160,8 @@ struct voids {
 };
 extern vector <voids> Void;
 
+
+void print_varConfigurtion(varConfiguration VarConfigAux);
+
+
+#endif // ALLVARS_H

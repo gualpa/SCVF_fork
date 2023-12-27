@@ -5,7 +5,7 @@
 
 OMPcores           8        % Number of cores for OpenMP sections
 
-BoxSize          500       % Boxsize in Mpc/h      Lo ambio el seba para utilizar el archivo de entrada del polaco
+BoxSize          500       % Boxsize in Mpc/h      Lo cambio el seba para utilizar el archivo de entrada del polaco
 MaxRadiusSearch  40.0       % Maximum void radius in Mpc/h
 ProxyGridSize     5.0       % Proxy for the size of the grid in Mpc/h   
 DeltaThreshold   -0.9       % Integrated density contrast threshold

@@ -1,10 +1,9 @@
-
-void read_input_file(char *);
-void read_tracers(void);
-void read_tracers_ascii(void);
-void read_tracers_binary(void);
-void read_tracers_mxxl(void);
-void read_tracers_gadget(void);
-void write_voids(void);
-void geometrical_distortions(void);
-void redshift_space_distortions(void);
+varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux);
+varConfiguration read_tracers(varConfiguration VarConfigAux);
+varConfiguration read_tracers_ascii(varConfiguration VarConfigAux);
+varConfiguration read_tracers_binary(varConfiguration VarConfigAux);
+varConfiguration read_tracers_gadget(varConfiguration VarConfigAux);
+varConfiguration read_tracers_mxxl(varConfiguration VarConfigAux);
+varConfiguration redshift_space_distortions(varConfiguration VarConfigAux);
+varConfiguration geometrical_distortions(varConfiguration VarConfigAux);
+varConfiguration write_voids(varConfiguration VarConfigAux);
