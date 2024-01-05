@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "profiles.h"
 
-varConfiguration compute_profiles(varConfiguration VarConfigAux)
+void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux)
 {
    int            i,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
    double         xc[3],xt[3],dx[3],vt[3],dist,GridSize[3];
@@ -20,12 +20,12 @@ varConfiguration compute_profiles(varConfiguration VarConfigAux)
    FILE           *ftxt,*fbin;
    clock_t        t;
 
-   fprintf(VarConfigAux.logfile,"\n COMPUTING VOID PROFILES \n");
+   fprintf(LogAux.logfile,"\n COMPUTING VOID PROFILES \n");
    t = clock();
 
    NumGrid = (int)(VarConfigAux.BoxSize/VarConfigAux.ProxyGridSize);
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux);
+   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
 
    // Only for true voids
 
@@ -48,8 +48,8 @@ varConfiguration compute_profiles(varConfiguration VarConfigAux)
    NumQuery = Query.i.size();
    GAP = 0.5*sqrt(3.0)*max_grid_size(GridSize);
    
-   fprintf(VarConfigAux.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
-   fflush(VarConfigAux.logfile);
+   fprintf(LogAux.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
+   fflush(LogAux.logfile);
 
    if (VarConfigAux.WriteProfiles == 2) {
       sprintf(BinFile,"%s/profiles.bin",VarConfigAux.PathProfiles);
@@ -198,12 +198,12 @@ varConfiguration compute_profiles(varConfiguration VarConfigAux)
    free_query_grid(&Query);
    free_grid_list(GridList,NumGrid);
    
-   VarConfigAux.StepName.push_back("Computing profiles");
-   VarConfigAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,VarConfigAux));
-   return VarConfigAux;
+   LogAux.StepName.push_back("Computing profiles");
+   LogAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,LogAux));
+   return;
 }
 
-varConfiguration bin2ascii_profile(int voidID, varConfiguration VarConfigAux)
+varConfiguration bin2ascii_profile(int voidID, varConfiguration VarConfigAux, logs &LogAux)
 {
    int            SkipBlock,iv,k;
    float          Radius;  
@@ -236,7 +236,7 @@ varConfiguration bin2ascii_profile(int voidID, varConfiguration VarConfigAux)
    } while (iv+1 != voidID);
    fclose(fbin);
 
-   fprintf(VarConfigAux.logfile,"\n Writting profile for void %d, with radius %5.3f [Mpc/h] \n",voidID,Radius);
+   fprintf(LogAux.logfile,"\n Writting profile for void %d, with radius %5.3f [Mpc/h] \n",voidID,Radius);
 
    sprintf(filename,"%s/profile_void_%d.dat",VarConfigAux.PathProfiles,voidID);
    fout = safe_open(filename,"w");

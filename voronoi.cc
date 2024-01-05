@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "grid.h"
 
-varConfiguration compute_voronoi(varConfiguration VarConfigAux)
+void compute_voronoi(varConfiguration VarConfigAux, logs &LogAux)
 {
    int            G,i,j,k,p,N,l,id,count,NumGrid;
    struct grid    *GridList;
@@ -19,13 +19,13 @@ varConfiguration compute_voronoi(varConfiguration VarConfigAux)
    FILE           *fd;
    clock_t        t;
 
-   fprintf(VarConfigAux.logfile,"\n COMPUTING VORONOI TESSELLATION \n");
+   fprintf(LogAux.logfile,"\n COMPUTING VORONOI TESSELLATION \n");
   
    t = clock();
 
    NumGrid = (int)round(cbrt((double)VarConfigAux.NumTrac/MeanPartPerGrid));
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,true,VarConfigAux);
+   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,true,VarConfigAux,LogAux);
 
    Vol = VarConfigAux.LBox[0]*VarConfigAux.LBox[1]*VarConfigAux.LBox[2];
 
@@ -127,7 +127,7 @@ varConfiguration compute_voronoi(varConfiguration VarConfigAux)
 
    free_grid_list(GridList,NumGrid);
 
-   VarConfigAux.StepName.push_back("Computing Voronoi tessellation");
-   VarConfigAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,VarConfigAux));
-   return VarConfigAux;
+   LogAux.StepName.push_back("Computing Voronoi tessellation");
+   LogAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,LogAux));
+   return;
 }

@@ -4,7 +4,7 @@
 #include "grid.h"
 #include "tools.h"
 
-varConfiguration compute_velocity(varConfiguration VarConfigAux)
+void compute_velocity(varConfiguration VarConfigAux, logs &LogAux)
 {
    int          i,k,ic,jc,kc,in,m,NumGrid;
    int          ii,jj,kk,l,next,Counter;
@@ -15,13 +15,13 @@ varConfiguration compute_velocity(varConfiguration VarConfigAux)
    struct query Query;
    clock_t      t;
 
-   fprintf(VarConfigAux.logfile,"\n COMPUTING VOID BULK VELOCITIES \n");
+   fprintf(LogAux.logfile,"\n COMPUTING VOID BULK VELOCITIES \n");
    t = clock();
 
    NumGrid = (int)round(cbrt((double)VarConfigAux.NumTrac/100.0));
    if (NumGrid < 50) NumGrid = 50;
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux);
+   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
 
    // Selecciono grides
 
@@ -36,8 +36,8 @@ varConfiguration compute_velocity(varConfiguration VarConfigAux)
    NumQuery = Query.i.size();
    GAP = 0.5*sqrt(3.0)*max_grid_size(GridSize);
   
-   fprintf(VarConfigAux.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
-   fflush(VarConfigAux.logfile);
+   fprintf(LogAux.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
+   fflush(LogAux.logfile);
 
    #pragma omp parallel for default(none) schedule(dynamic)      \
     shared(VarConfigAux,Void,Tracer,NumQuery,Query,\
@@ -118,7 +118,7 @@ varConfiguration compute_velocity(varConfiguration VarConfigAux)
    free_grid_list(GridList,NumGrid);
    free_query_grid(&Query);
 
-   VarConfigAux.StepName.push_back("Computing velocities");
-   VarConfigAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,VarConfigAux));
-   return VarConfigAux;
+   LogAux.StepName.push_back("Computing velocities");
+   LogAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,LogAux));
+   return;
 }

@@ -4,19 +4,20 @@
 #include "grid.h"
 
 template <class T>
-void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize, bool compute_neigh, varConfiguration VarConfigAux)
+void build_grid_list(T Points, int NumPoints, struct grid *GridList, int NumGrid, double *GridSize,
+                     bool compute_neigh, varConfiguration VarConfigAux,logs &LogAux)
 {
 
-  fprintf(VarConfigAux.logfile," | Creating grid-list \n");
+  fprintf(LogAux.logfile," | Creating grid-list \n");
 
   for (int k=0; k<3; k++) 
       GridSize[k] = VarConfigAux.LBox[k]/(double)NumGrid;
 
-  fprintf(VarConfigAux.logfile," | Number of grids = %d \n",NumGrid);
-  fprintf(VarConfigAux.logfile," | Grid sizes: x = %f [Mpc/h] \n",GridSize[0]);
-  fprintf(VarConfigAux.logfile," |             y = %f [Mpc/h] \n",GridSize[1]);
-  fprintf(VarConfigAux.logfile," |             z = %f [Mpc/h] \n",GridSize[2]);
-  fflush(VarConfigAux.logfile);
+  fprintf(LogAux.logfile," | Number of grids = %d \n",NumGrid);
+  fprintf(LogAux.logfile," | Grid sizes: x = %f [Mpc/h] \n",GridSize[0]);
+  fprintf(LogAux.logfile," |             y = %f [Mpc/h] \n",GridSize[1]);
+  fprintf(LogAux.logfile," |             z = %f [Mpc/h] \n",GridSize[2]);
+  fflush(LogAux.logfile);
 
   for (int l=0; l<NumGrid*NumGrid*NumGrid; l++)
       GridList[l].NumMem = 0;
@@ -175,6 +176,6 @@ double max_grid_size(double *GridSize)
 }
 
 template void build_grid_list<vector <tracers>>(vector <tracers> Points, int NumPoints, struct grid *GridList, 
-		                             int NumGrid, double *GridSize, bool compute_neigh,varConfiguration VarConfigAux);
+		                             int NumGrid, double *GridSize, bool compute_neigh,varConfiguration VarConfigAux,logs &LogAux);
 template void build_grid_list<vector <voids>>(vector <voids> Points, int NumPoints, struct grid *GridList, 
-		                            int NumGrid, double *GridSize, bool compute_neigh,varConfiguration VarConfigAux);
+		                            int NumGrid, double *GridSize, bool compute_neigh,varConfiguration VarConfigAux,logs &LogAux);

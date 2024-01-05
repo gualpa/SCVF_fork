@@ -14,12 +14,12 @@
  *        valores guardados VarConfig.logfile, VarConfig.StepName,VarConfig.StepTime
  * @return
  */
-varConfiguration find_void_candidates(varConfiguration VarConfigAux)
+void find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux)
 {
   int     i;
   clock_t t;
    
-  fprintf(VarConfigAux.logfile,"\n SELECTING UNDERDENSE REGIONS \n");
+  fprintf(LogAux.logfile,"\n SELECTING UNDERDENSE REGIONS \n");
   t = clock();
 
   VarConfigAux.NumVoid = 0;
@@ -40,11 +40,11 @@ varConfiguration find_void_candidates(varConfiguration VarConfigAux)
       }
   }
 
-  fprintf(VarConfigAux.logfile," | Void candidates = %d \n",VarConfigAux.NumVoid);
+  fprintf(LogAux.logfile," | Void candidates = %d \n",VarConfigAux.NumVoid);
   
-  VarConfigAux.StepName.push_back("Finding centers");
-  VarConfigAux.StepTime.push_back(get_time(t,1,VarConfigAux));
-  return VarConfigAux;
+  LogAux.StepName.push_back("Finding centers");
+  LogAux.StepTime.push_back(get_time(t,1,LogAux));
+  return;
 }
 
 /**
@@ -56,7 +56,7 @@ varConfiguration find_void_candidates(varConfiguration VarConfigAux)
  *
  * @return
  */
-varConfiguration find_voids(varConfiguration VarConfigAux) 
+void find_voids(varConfiguration VarConfigAux, logs &LogAux)
 {
   struct grid    *GridList;
   int            NumCores,NumGrid;
@@ -70,13 +70,13 @@ varConfiguration find_voids(varConfiguration VarConfigAux)
   bool           done;
   clock_t        t;
 
-  fprintf(VarConfigAux.logfile,"\n VOID IDENTIFICATION \n");
+  fprintf(LogAux.logfile,"\n VOID IDENTIFICATION \n");
   t = clock();
   srand(time(NULL));
 
   NumGrid = (int)(VarConfigAux.BoxSize/VarConfigAux.ProxyGridSize);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-  build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux);
+  build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
 // int          NumShell = (int)round(0.5*MaxRadiusSearch/max_grid_size(GridSize));
   int          NumShell = (int)round(VarConfigAux.MaxRadiusSearch/max_grid_size(GridSize));
   int          NumQuery[NumShell];
@@ -99,10 +99,10 @@ varConfiguration find_voids(varConfiguration VarConfigAux)
   for (p=0; p<NumShell; p++) {
       MinDist = VarConfigAux.MaxRadiusSearch/(double)NumShell*(double)p;
       MaxDist = VarConfigAux.MaxRadiusSearch/(double)NumShell*(double)(p+1);
-      fprintf(VarConfigAux.logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids (Overlap = %f) \n",
+      fprintf(LogAux.logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids (Overlap = %f) \n",
 		      p,MinDist,MaxDist,NumQuery[p],0.5*sqrt(3.0)*max_grid_size(GridSize));
   }
-  fflush(VarConfigAux.logfile);
+  fflush(LogAux.logfile);
 
 
   #pragma omp parallel for default(none) schedule(static)                     \
@@ -266,10 +266,10 @@ varConfiguration find_voids(varConfiguration VarConfigAux)
       free_query_grid(&Query[p]);	  
   free_grid_list(GridList,NumGrid);
 
-  VarConfigAux.StepName.push_back("Finding voids");
-  VarConfigAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,VarConfigAux));
+  LogAux.StepName.push_back("Finding voids");
+  LogAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,LogAux));
 
-  return VarConfigAux;
+  return;
 }
 /**
  * @brief .
@@ -280,7 +280,7 @@ varConfiguration find_voids(varConfiguration VarConfigAux)
  *
  * @return
  */
-varConfiguration clean_voids(varConfiguration VarConfigAux)
+void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
 {
   int          i,k,l,m,indx,next,in,it;
   int          ii,jj,kk,ic,jc,kc,NumTrueVoid;
@@ -292,21 +292,21 @@ varConfiguration clean_voids(varConfiguration VarConfigAux)
   struct grid  *GridList;
   clock_t      t;
 
-  fprintf(VarConfigAux.logfile,"\n CLEANING VOID CATALOGUE BY OVERLAP (TOL = %4.2f) \n",VarConfigAux.OverlapTol);
+  fprintf(LogAux.logfile,"\n CLEANING VOID CATALOGUE BY OVERLAP (TOL = %4.2f) \n",VarConfigAux.OverlapTol);
   t = clock();
 
   NumGrid = (int)cbrt((double)VarConfigAux.NumVoid/10.0);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid)); 
-  build_grid_list(Void,VarConfigAux.NumVoid,GridList,NumGrid,GridSize,false,VarConfigAux);
+  build_grid_list(Void,VarConfigAux.NumVoid,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
   
   NumTrueVoid = 0;
   for (i=0; i<VarConfigAux.NumVoid; i++)
       if (Void[i].ToF) 
 	 NumTrueVoid++;	  
   
-  fprintf(VarConfigAux.logfile," | Number of true voids before cleaning = %d (%4.2f %)\n",
+  fprintf(LogAux.logfile," | Number of true voids before cleaning = %d (%4.2f %)\n",
 		  NumTrueVoid,(double)NumTrueVoid/(double)VarConfigAux.NumVoid*100.0);
-  fflush(VarConfigAux.logfile);
+  fflush(LogAux.logfile);
 
   SortArr = (struct sort *) malloc(NumTrueVoid*sizeof(struct sort));
 
@@ -329,8 +329,8 @@ varConfiguration clean_voids(varConfiguration VarConfigAux)
   query_grid(&Query,GridSize,MinDist,MaxDist);
   NumQuery = Query.i.size();
   
-  fprintf(VarConfigAux.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
-  fflush(VarConfigAux.logfile);
+  fprintf(LogAux.logfile," | MinDist - MaxDist = %5.3f - %5.3f [Mpc/h], %d grids \n",MinDist,MaxDist,NumQuery);
+  fflush(LogAux.logfile);
 
   for (i=NumTrueVoid-1; i>=0; i--) {
 
@@ -396,15 +396,15 @@ varConfiguration clean_voids(varConfiguration VarConfigAux)
       if (Void[i].ToF) 
 	 NumTrueVoid++;	  
   
-  fprintf(VarConfigAux.logfile," | Number of true void after cleaning = %d (%4.2f %)\n",
+  fprintf(LogAux.logfile," | Number of true void after cleaning = %d (%4.2f %)\n",
 		  NumTrueVoid,(double)NumTrueVoid/(double)VarConfigAux.NumVoid*100.0);
 
   free(SortArr);
   free_grid_list(GridList,NumGrid);
   free_query_grid(&Query);
 
-  VarConfigAux.StepName.push_back("Cleaning voids");
-  VarConfigAux.StepTime.push_back(get_time(t,1,VarConfigAux));
-  return VarConfigAux;
+  LogAux.StepName.push_back("Cleaning voids");
+  LogAux.StepTime.push_back(get_time(t,1,LogAux));
+  return;
 }
 

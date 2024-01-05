@@ -13,7 +13,7 @@
  * @param VarConfigAux estructura donde estan almacenados valores de configuración del programa.
  * @return Una estructura con los valores de configuración.
  */
-varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux)
+varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux, logs &LogAux)
 {
 #define DOUBLE  1
 #define STRING  2
@@ -166,8 +166,8 @@ varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux)
   else
      sprintf(fname,"%s_%d.log",filename,VarConfigAux.RunFlag);
 
-  VarConfigAux.logfile = safe_open(fname,"w");
-  fprintf(VarConfigAux.logfile,"\n CONFIGURATION PARAMETERS USED \n\n");
+  LogAux.logfile = safe_open(fname,"w");
+  fprintf(LogAux.logfile,"\n CONFIGURATION PARAMETERS USED \n\n");
 
   while (!feof(fd)) {
 
@@ -191,17 +191,17 @@ varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux)
 
     	    case DOUBLE:
     	    *((double *) addr[j]) = atof(buf2);
-          fprintf(VarConfigAux.logfile, " %-35s%g\n", buf1, *((double *) addr[j]));
+          fprintf(LogAux.logfile, " %-35s%g\n", buf1, *((double *) addr[j]));
     	    break;
 
     	    case STRING:
     	    strcpy((char *)addr[j], buf2);
-          fprintf(VarConfigAux.logfile, " %-35s%s\n", buf1, buf2);
+          fprintf(LogAux.logfile, " %-35s%s\n", buf1, buf2);
     	    break;
 
     	    case INT:
           *((int *) addr[j]) = atoi(buf2);
-          fprintf(VarConfigAux.logfile, " %-35s%d\n", buf1, *((int *) addr[j]));
+          fprintf(LogAux.logfile, " %-35s%d\n", buf1, *((int *) addr[j]));
     	    break;
 
     	 }
@@ -225,7 +225,7 @@ varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux)
     }
   }
 
-  fflush(VarConfigAux.logfile);
+  fflush(LogAux.logfile);
 
 #undef DOUBLE
 #undef STRING
@@ -235,33 +235,31 @@ varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux)
   return VarConfigAux;
 }
 
-varConfiguration read_tracers(varConfiguration VarConfigAux)
+void read_tracers(varConfiguration &VarConfigAux, logs &LogAux)
 {
-
-
-   fprintf(VarConfigAux.logfile,"\n READING TRACERS \n");
    clock_t t = clock();
+   fprintf(LogAux.logfile,"\n READING TRACERS \n");
 
    switch (VarConfigAux.FormatTracers) {
 
       case 0: 
-          fprintf(VarConfigAux.logfile," | Reading ASCII format \n");
-          VarConfigAux = read_tracers_ascii(VarConfigAux);
+          fprintf(LogAux.logfile," | Reading ASCII format \n");
+          read_tracers_ascii(VarConfigAux);
       break;
 
       case 1:
-          fprintf(VarConfigAux.logfile," | Reading GADGET \n");
-          VarConfigAux = read_tracers_gadget(VarConfigAux);
+          fprintf(LogAux.logfile," | Reading GADGET \n");
+          read_tracers_gadget(VarConfigAux);
       break;
 
       case 2:
-          fprintf(VarConfigAux.logfile," | Reading MXXL format \n");
-          VarConfigAux = read_tracers_mxxl(VarConfigAux);
+          fprintf(LogAux.logfile," | Reading MXXL format \n");
+          read_tracers_mxxl(VarConfigAux, LogAux);
       break;
 
       case 3:
-          fprintf(VarConfigAux.logfile," | Reading BINARY format \n");
-          VarConfigAux = read_tracers_binary(VarConfigAux);
+          fprintf(LogAux.logfile," | Reading BINARY format \n");
+          read_tracers_binary(VarConfigAux);
 
    }
 
@@ -284,27 +282,29 @@ varConfiguration read_tracers(varConfiguration VarConfigAux)
    VarConfigAux.LBox[1] = VarConfigAux.BoxSize;
    VarConfigAux.LBox[2] = VarConfigAux.BoxSize;
 
-   if (VarConfigAux.RSDist == 1) VarConfigAux = redshift_space_distortions(VarConfigAux);
-   if (VarConfigAux.GDist == 1) VarConfigAux = geometrical_distortions(VarConfigAux);
+   if (VarConfigAux.RSDist == 1) redshift_space_distortions(VarConfigAux, LogAux);
+   if (VarConfigAux.GDist == 1) geometrical_distortions(VarConfigAux, LogAux);
 
    double Volume = VarConfigAux.LBox[0]*VarConfigAux.LBox[1]*VarConfigAux.LBox[2];
    VarConfigAux.MeanNumTrac = (double)VarConfigAux.NumTrac/Volume;
    VarConfigAux.MeanSeparation = cbrt(Volume/(double)VarConfigAux.NumTrac);
  
-   fprintf(VarConfigAux.logfile," | Number of tracers = %d \n",VarConfigAux.NumTrac);
-   fprintf(VarConfigAux.logfile," | Size of the box: x-axis = %f \n",VarConfigAux.LBox[0]);
-   fprintf(VarConfigAux.logfile," |                  y-axis = %f \n",VarConfigAux.LBox[1]);
-   fprintf(VarConfigAux.logfile," |                  z-axis = %f \n",VarConfigAux.LBox[2]);
-   fprintf(VarConfigAux.logfile," | Mean number density [h³/Mpc³] = %e \n",VarConfigAux.MeanNumTrac);
-   fprintf(VarConfigAux.logfile," | Mean separation [Mpc/h] = %e \n",VarConfigAux.MeanSeparation);
+   fprintf(LogAux.logfile," | Number of tracers = %d \n",VarConfigAux.NumTrac);
+   fprintf(LogAux.logfile," | Size of the box: x-axis = %f \n",VarConfigAux.LBox[0]);
+   fprintf(LogAux.logfile," |                  y-axis = %f \n",VarConfigAux.LBox[1]);
+   fprintf(LogAux.logfile," |                  z-axis = %f \n",VarConfigAux.LBox[2]);
+   fprintf(LogAux.logfile," | Mean number density [h³/Mpc³] = %e \n",VarConfigAux.MeanNumTrac);
+   fprintf(LogAux.logfile," | Mean separation [Mpc/h] = %e \n",VarConfigAux.MeanSeparation);
 
-   VarConfigAux.StepName.push_back("Reading tracers");
-   VarConfigAux.StepTime.push_back(get_time(t,1,VarConfigAux));
-   return VarConfigAux;
+   LogAux.StepName.push_back("Reading tracers");
+   LogAux.StepTime.push_back(get_time(t,1,LogAux));
+   return ;
 }
 
-varConfiguration read_tracers_ascii(varConfiguration VarConfigAux)
+void read_tracers_ascii(varConfiguration &VarConfigAux)
 {
+      fprintf(stdout,"\nread_tracers_ascii\n");
+
    VarConfigAux.NumTrac = 0;
    int NumTot = count_lines(VarConfigAux.FileTracers);
    FILE *fd = safe_open(VarConfigAux.FileTracers,"r");
@@ -312,6 +312,7 @@ varConfiguration read_tracers_ascii(varConfiguration VarConfigAux)
    for (int i=0; i<NumTot; i++) {
 
        //if (NumTrac > 250000) break	   
+      fprintf(stdout,"\n Tracer   eliminaer fila\n");
 
        Tracer.push_back(tracers());
 
@@ -326,10 +327,10 @@ varConfiguration read_tracers_ascii(varConfiguration VarConfigAux)
        VarConfigAux.NumTrac++;
    }
    fclose(fd);
-   return VarConfigAux;
+   return ;
 }
 
-varConfiguration read_tracers_binary(varConfiguration VarConfigAux)
+void read_tracers_binary(varConfiguration &VarConfigAux)
 {
    FILE *fd = safe_open(VarConfigAux.FileTracers,"r");
    int NumTot;
@@ -352,11 +353,11 @@ varConfiguration read_tracers_binary(varConfiguration VarConfigAux)
        VarConfigAux.NumTrac++;
    }
    fclose(fd);
-   return VarConfigAux;
+   return ;
 
 }
 
-varConfiguration read_tracers_gadget(varConfiguration VarConfigAux)
+void read_tracers_gadget(varConfiguration &VarConfigAux)
 {
 #define SKIP fread(&dummy,sizeof(int),1,f1)
 
@@ -494,10 +495,10 @@ varConfiguration read_tracers_gadget(varConfiguration VarConfigAux)
       free(id);
   }
 #undef SKIP 
-  return VarConfigAux;
+  return ;
 }
 
-varConfiguration read_tracers_mxxl(varConfiguration VarConfigAux)
+void read_tracers_mxxl(varConfiguration &VarConfigAux, logs &LogAux)
 {
 
    int     i,j,k,NumTot,N,id;
@@ -506,7 +507,7 @@ varConfiguration read_tracers_mxxl(varConfiguration VarConfigAux)
    FILE    *fd;
 	
    sprintf(basename,"%s/z%4.2f/halos_z%4.2f_part",VarConfigAux.FileTracers,VarConfigAux.Redshift,VarConfigAux.Redshift);
-   fprintf(VarConfigAux.logfile," | Files = %s (%d files) \n",basename,VarConfigAux.NumFiles);
+   fprintf(LogAux.logfile," | Files = %s (%d files) \n",basename,VarConfigAux.NumFiles);
 
    for (i=1; i<=VarConfigAux.NumFiles; i++) {
        sprintf(filename,"%s%02d",basename,i);
@@ -542,10 +543,10 @@ varConfiguration read_tracers_mxxl(varConfiguration VarConfigAux)
        }
        fclose(fd);
    }
-   return VarConfigAux;
+   return ;
 }
 
-varConfiguration redshift_space_distortions(varConfiguration VarConfigAux)
+void redshift_space_distortions(varConfiguration VarConfigAux, logs &LogAux)
 {
 
    int    i;
@@ -557,7 +558,7 @@ varConfiguration redshift_space_distortions(varConfiguration VarConfigAux)
       VarConfigAux.Hubble
    };
 
-   fprintf(VarConfigAux.logfile," | Applying redshift-space distortions: LOS = z-axis, POS = xy-plane\n");
+   fprintf(LogAux.logfile," | Applying redshift-space distortions: LOS = z-axis, POS = xy-plane\n");
 
    if (VarConfigAux.Redshift == 0.0) {
      RSDFactor = 1.0/100.0;	   
@@ -566,18 +567,18 @@ varConfiguration redshift_space_distortions(varConfiguration VarConfigAux)
      RSDFactor = (1.0 + VarConfigAux.Redshift)/Hubble_z;
    }
 
-   fprintf(VarConfigAux.logfile," | RSD factor = (1+z)/H(z) = %f [h⁻¹Mpc/(km/s)]\n",RSDFactor);
-   fflush(VarConfigAux.logfile);
+   fprintf(LogAux.logfile," | RSD factor = (1+z)/H(z) = %f [h⁻¹Mpc/(km/s)]\n",RSDFactor);
+   fflush(LogAux.logfile);
 
    for (i=0; i<VarConfigAux.NumTrac; i++) {
        Tracer[i].Pos[2] += Tracer[i].Vel[2]*RSDFactor;
        if (Tracer[i].Pos[2] < 0.0    ) Tracer[i].Pos[2] += VarConfigAux.LBox[2];
        if (Tracer[i].Pos[2] > VarConfigAux.LBox[2]) Tracer[i].Pos[2] -= VarConfigAux.LBox[2];
    }	       
-   return VarConfigAux;
+   return ;
 }
 
-varConfiguration geometrical_distortions(varConfiguration VarConfigAux)
+void geometrical_distortions(varConfiguration &VarConfigAux, logs &LogAux)
 {
 
    int    i;
@@ -597,13 +598,13 @@ varConfiguration geometrical_distortions(varConfiguration VarConfigAux)
       VarConfigAux.FidHubble
    };
 
-   fprintf(VarConfigAux.logfile," | Applying fiducial cosmology distortions: LOS = z-axis, POS = xy-plane\n");
-   fprintf(VarConfigAux.logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",C.OmM,C.OmL,C.OmK,C.Hub);
+   fprintf(LogAux.logfile," | Applying fiducial cosmology distortions: LOS = z-axis, POS = xy-plane\n");
+   fprintf(LogAux.logfile," | True cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",C.OmM,C.OmL,C.OmK,C.Hub);
 
    Hubble_z = C.Hub*evolution_param(VarConfigAux.Redshift,&C);
    Distance_z = angular_distance(VarConfigAux.Redshift,&C);
    
-   fprintf(VarConfigAux.logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
+   fprintf(LogAux.logfile," | Fiducial cosmology: (OmM,OmL,OmK,H0) = (%4.2f,%4.2f,%4.2f,%4.2f)\n",FC.OmM,FC.OmL,FC.OmK,FC.Hub);
 
    FidHubble_z = FC.Hub*evolution_param(VarConfigAux.Redshift,&FC);
    FidDistance_z = angular_distance(VarConfigAux.Redshift,&FC);
@@ -611,9 +612,9 @@ varConfiguration geometrical_distortions(varConfiguration VarConfigAux)
    GDFactor_LOS = Hubble_z/FidHubble_z;
    GDFactor_POS = FidDistance_z/Distance_z;
 
-   fprintf(VarConfigAux.logfile," | GD factor: LOS = H(z)/FidH(z) = %f \n",GDFactor_LOS);
-   fprintf(VarConfigAux.logfile," |            POS = FidD(z)/D(z) = %f \n",GDFactor_POS);
-   fflush(VarConfigAux.logfile);
+   fprintf(LogAux.logfile," | GD factor: LOS = H(z)/FidH(z) = %f \n",GDFactor_LOS);
+   fprintf(LogAux.logfile," |            POS = FidD(z)/D(z) = %f \n",GDFactor_POS);
+   fflush(LogAux.logfile);
 
    VarConfigAux.LBox[0] *= GDFactor_POS;
    VarConfigAux.LBox[1] *= GDFactor_POS;
@@ -624,16 +625,16 @@ varConfiguration geometrical_distortions(varConfiguration VarConfigAux)
        Tracer[i].Pos[1] *= GDFactor_POS;
        Tracer[i].Pos[2] *= GDFactor_LOS;
    }	
-   return VarConfigAux;
+   return ;
 }
 
-varConfiguration write_voids(varConfiguration VarConfigAux)
+void write_voids(varConfiguration VarConfigAux, logs &LogAux)
 {
    int     i;
    FILE    *fd;
    clock_t t;
 
-   fprintf(VarConfigAux.logfile,"\n WRITTING VOID CATALOGUE \n");
+   fprintf(LogAux.logfile,"\n WRITTING VOID CATALOGUE \n");
    t = clock();
    
    fd = safe_open(VarConfigAux.FileVoids,"w");
@@ -648,8 +649,8 @@ varConfiguration write_voids(varConfiguration VarConfigAux)
    }
    fclose(fd);
 
-   VarConfigAux.StepName.push_back("Writting void catalogue");
-   VarConfigAux.StepTime.push_back(get_time(t,1,VarConfigAux));
+   LogAux.StepName.push_back("Writting void catalogue");
+   LogAux.StepTime.push_back(get_time(t,1,LogAux));
 
 }
 

@@ -51,7 +51,7 @@
 vector <tracers> Tracer;
 vector <voids> Void;
 
-void print_varConfigurtion(varConfiguration VarConfigAux){
+void print_varConfigurtion(varConfiguration VarConfigAux, logs LogAux){
     fprintf(stdout,"\n Print varConfigurtion  \n" );
     fprintf(stdout,"RadIncrement= (%f) \n",VarConfigAux.RadIncrement);
     fflush(stdout);
@@ -125,7 +125,7 @@ void print_varConfigurtion(varConfiguration VarConfigAux){
     fflush(stdout);
     fprintf(stdout,"LBox = (%f) (%f) (%f)\n",VarConfigAux.LBox[0],VarConfigAux.LBox[1],VarConfigAux.LBox[2]);
     fflush(stdout);
-    fprintf(stdout,"logfile = (%s) \n",VarConfigAux.logfile);
+    fprintf(stdout,"logfile = (%s) \n",LogAux.logfile);
     fflush(stdout);
     fprintf(stdout,"ScalePos Pos= (%f) \n",VarConfigAux.Scale.Pos);
     fflush(stdout);

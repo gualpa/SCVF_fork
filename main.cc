@@ -10,6 +10,7 @@
 int main(int argc, char **argv) 
 {
    varConfiguration VarConfigAux;
+   logs LogAux;
    if (argc < 2) {
        fprintf(stdout, "\n Error. Missing input file and flags.\n");
        fprintf(stdout, "./main.x <input_param> [<run flag>] [...] \n\n");
@@ -20,7 +21,10 @@ int main(int argc, char **argv)
        sscanf(argv[2], "%d", &VarConfigAux.RunFlag);
    }
 
-   VarConfigAux = read_input_file(argv[1],VarConfigAux);
+   VarConfigAux = read_input_file(argv[1],VarConfigAux,LogAux);
+   LogAux.logfile = VarConfigAux.logfile;
+   LogAux.StepName = VarConfigAux.StepName;
+   LogAux.StepTime = VarConfigAux.StepTime;
 
    if (VarConfigAux.RunFlag == 1) {
       if (argc < 4) {
@@ -30,7 +34,7 @@ int main(int argc, char **argv)
       }	      
       int voidID; 
       sscanf(argv[3], "%d", &voidID);
-      VarConfigAux = bin2ascii_profile(voidID, VarConfigAux);
+      VarConfigAux = bin2ascii_profile(voidID, VarConfigAux, LogAux);
       exit(EXIT_SUCCESS);
    } 
 
@@ -43,39 +47,39 @@ int main(int argc, char **argv)
    fprintf(stdout,"\n ====>>>> Void finder runnning in %d core(s) <<<<==== \n",VarConfigAux.OMPcores);
 
    fprintf(stdout,"\nReading tracers... ");fflush(stdout);
-   VarConfigAux = read_tracers(VarConfigAux);
+   read_tracers(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
- fprintf(stdout,"3  VarConfigAux.NumTrac %i  \n",VarConfigAux.NumTrac);    fflush(stdout);
+   fprintf(stdout,"3  VarConfigAux.NumTrac %i  \n",VarConfigAux.NumTrac);    fflush(stdout);
    fprintf(stdout,"\nComputing Voronoi tessellation... ");fflush(stdout);
-   VarConfigAux = compute_voronoi(VarConfigAux);
+   compute_voronoi(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nSearching candidates... ");fflush(stdout);
-   VarConfigAux = find_void_candidates(VarConfigAux);
+   find_void_candidates(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nPerforming void identification... ");fflush(stdout);
-   VarConfigAux = find_voids(VarConfigAux);
+   find_voids(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nCleaning void catalogue... ");fflush(stdout);
-   VarConfigAux = clean_voids(VarConfigAux);
+   clean_voids(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void velocities... ");fflush(stdout);
-   VarConfigAux = compute_velocity(VarConfigAux);
+   compute_velocity(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void profiles... ");fflush(stdout);
-   VarConfigAux = compute_profiles(VarConfigAux);
+   compute_profiles(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nWrinting void catalogue... ");fflush(stdout);
-   write_voids(VarConfigAux);
+   write_voids(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n\n");fflush(stdout);
 
-   time_resume(VarConfigAux);
+   time_resume(VarConfigAux, LogAux);
    
    Tracer.clear();
    Void.clear();

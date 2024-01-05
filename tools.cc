@@ -85,7 +85,7 @@ int count_lines(char *filename)
   return count; 
 }
     
-double get_time(clock_t ti, int N, varConfiguration VarConfigAux)
+double get_time(clock_t ti, int N, logs &LogAux)
 {
   clock_t tf;
   double  tseg,tmin;
@@ -95,30 +95,30 @@ double get_time(clock_t ti, int N, varConfiguration VarConfigAux)
   tseg = (double)(tf - ti)/(double)CLOCKS_PER_SEC/(double)N;
   tmin = tseg/60.0;
 
-  fprintf(VarConfigAux.logfile," | -> time taken: %f seg (%f min) \n",tseg,tmin);
+  fprintf(LogAux.logfile," | -> time taken: %f seg (%f min) \n",tseg,tmin);
  
-  fflush(VarConfigAux.logfile);
+  fflush(LogAux.logfile);
 
   return tseg;
 }
 
-void time_resume(varConfiguration VarConfigAux)
+void time_resume(varConfiguration VarConfigAux, logs &LogAux)
 {
   int     i;	
   double  total;
 
-  fprintf(VarConfigAux.logfile,"\n TIME STATISTICS\n");
+  fprintf(LogAux.logfile,"\n TIME STATISTICS\n");
 
   total = 0.0;
-  for (i=0; i<VarConfigAux.StepTime.size(); i++)
-      total += VarConfigAux.StepTime[i];
+  for (i=0; i<LogAux.StepTime.size(); i++)
+      total += LogAux.StepTime[i];
   
-  fprintf(VarConfigAux.logfile," | Total time taken: %f seg (%f min) \n",total,total/60.);
+  fprintf(LogAux.logfile," | Total time taken: %f seg (%f min) \n",total,total/60.);
   
-  for (i=0; i<VarConfigAux.StepTime.size(); i++)
-      fprintf(VarConfigAux.logfile," | %30s: %5.2f %s \n",VarConfigAux.StepName[i].c_str(),VarConfigAux.StepTime[i]/total*100.,"%");
+  for (i=0; i<LogAux.StepTime.size(); i++)
+      fprintf(LogAux.logfile," | %30s: %5.2f %s \n",LogAux.StepName[i].c_str(),LogAux.StepTime[i]/total*100.,"%");
  
-  fflush(VarConfigAux.logfile);
+  fflush(LogAux.logfile);
 
 }
 

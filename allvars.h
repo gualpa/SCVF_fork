@@ -160,8 +160,14 @@ struct voids {
 };
 extern vector <voids> Void;
 
+struct  logs{
+  FILE   *logfile;
+  vector <double> StepTime;
+  vector <string> StepName;
+};
 
-void print_varConfigurtion(varConfiguration VarConfigAux);
+
+void print_varConfigurtion(varConfiguration VarConfigAux, logs LogAux);
 
 
 #endif // ALLVARS_H
