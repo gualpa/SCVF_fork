@@ -22,9 +22,6 @@ int main(int argc, char **argv)
    }
 
    VarConfigAux = read_input_file(argv[1],VarConfigAux,LogAux);
-   LogAux.logfile = VarConfigAux.logfile;
-   LogAux.StepName = VarConfigAux.StepName;
-   LogAux.StepTime = VarConfigAux.StepTime;
 
    if (VarConfigAux.RunFlag == 1) {
       if (argc < 4) {
@@ -50,7 +47,6 @@ int main(int argc, char **argv)
    read_tracers(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
-   fprintf(stdout,"3  VarConfigAux.NumTrac %i  \n",VarConfigAux.NumTrac);    fflush(stdout);
    fprintf(stdout,"\nComputing Voronoi tessellation... ");fflush(stdout);
    compute_voronoi(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
@@ -83,7 +79,7 @@ int main(int argc, char **argv)
    
    Tracer.clear();
    Void.clear();
-   fclose(VarConfigAux.logfile);
+   fclose(LogAux.logfile);
 
    return(0);
 }

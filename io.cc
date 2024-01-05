@@ -303,8 +303,6 @@ void read_tracers(varConfiguration &VarConfigAux, logs &LogAux)
 
 void read_tracers_ascii(varConfiguration &VarConfigAux)
 {
-      fprintf(stdout,"\nread_tracers_ascii\n");
-
    VarConfigAux.NumTrac = 0;
    int NumTot = count_lines(VarConfigAux.FileTracers);
    FILE *fd = safe_open(VarConfigAux.FileTracers,"r");
@@ -312,8 +310,6 @@ void read_tracers_ascii(varConfiguration &VarConfigAux)
    for (int i=0; i<NumTot; i++) {
 
        //if (NumTrac > 250000) break	   
-      fprintf(stdout,"\n Tracer   eliminaer fila\n");
-
        Tracer.push_back(tracers());
 
        fscanf(fd,"%f %f %f %f %f %f %f\n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2],	   

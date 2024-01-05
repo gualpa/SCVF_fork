@@ -114,16 +114,11 @@ struct varConfiguration {
   double ScalePos;
   double ScaleVel;
   int    RunFlag;
-
-  vector <double> StepTime;
-  vector <string> StepName;   
-
   int    NumTrac;
   double MeanNumTrac;
   double MeanSeparation;
   int    NumVoid;
   double LBox[3];
-  FILE   *logfile;
   scale_struct Scale;
 }; 
 //extern  varConfiguration VarConfig;
