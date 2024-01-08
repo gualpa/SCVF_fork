@@ -48,7 +48,7 @@
 
 //scale_struct Scale;
 //varConfiguration VarConfig;
-vector <tracers> Tracer;
+//vector <tracers> Tracer;
 vector <voids> Void;
 
 void print_varConfigurtion(varConfiguration VarConfigAux, logs LogAux){

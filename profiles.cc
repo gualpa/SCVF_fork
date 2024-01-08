@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "profiles.h"
 
-void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux)
+void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
 {
    int            i,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
    double         xc[3],xt[3],dx[3],vt[3],dist,GridSize[3];
@@ -25,7 +25,7 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux)
 
    NumGrid = (int)(VarConfigAux.BoxSize/VarConfigAux.ProxyGridSize);
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
+   build_grid_list(TracerAux,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
 
    // Only for true voids
 
@@ -57,7 +57,7 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux)
    }
 
    #pragma omp parallel for default(none) schedule(dynamic)                   \
-    shared(VarConfigAux,Void,Tracer,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
+    shared(VarConfigAux,Void,TracerAux,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
            Indx,GAP,fbin,BinFile)                       \
     private(i,m,k,ii,jj,kk,l,Radius,ic,jc,kc,xc,xt,dx,vt,next,Prof,dist,VRad, \
 	    ibin,DeltaMax,Vol,ftxt,in,TxtFile)
@@ -105,8 +105,8 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux)
 	       next = GridList[l].Member[m];	
 
 	       for (k=0; k<3; k++) {
-	           xt[k] = (double)Tracer[next].Pos[k];	 
-	           vt[k] = (double)(Tracer[next].Vel[k] - Void[Indx[i]].Vel[k]);
+	           xt[k] = (double)TracerAux[next].Pos[k];
+	           vt[k] = (double)(TracerAux[next].Vel[k] - Void[Indx[i]].Vel[k]);
 	           dx[k] = periodic_delta(xt[k] - xc[k],VarConfigAux.LBox[k])/Radius;
 	       }
 

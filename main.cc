@@ -11,6 +11,8 @@ int main(int argc, char **argv)
 {
    varConfiguration VarConfigAux;
    logs LogAux;
+   vector <tracers> TracerAux;
+
    if (argc < 2) {
        fprintf(stdout, "\n Error. Missing input file and flags.\n");
        fprintf(stdout, "./main.x <input_param> [<run flag>] [...] \n\n");
@@ -44,19 +46,19 @@ int main(int argc, char **argv)
    fprintf(stdout,"\n ====>>>> Void finder runnning in %d core(s) <<<<==== \n",VarConfigAux.OMPcores);
 
    fprintf(stdout,"\nReading tracers... ");fflush(stdout);
-   read_tracers(VarConfigAux, LogAux);
+   TracerAux = read_tracers(VarConfigAux, LogAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing Voronoi tessellation... ");fflush(stdout);
-   compute_voronoi(VarConfigAux, LogAux);
+   compute_voronoi(VarConfigAux, LogAux, TracerAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nSearching candidates... ");fflush(stdout);
-   find_void_candidates(VarConfigAux, LogAux);
+   find_void_candidates(VarConfigAux, LogAux, TracerAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nPerforming void identification... ");fflush(stdout);
-   find_voids(VarConfigAux, LogAux);
+   find_voids(VarConfigAux, LogAux, TracerAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nCleaning void catalogue... ");fflush(stdout);
@@ -64,11 +66,11 @@ int main(int argc, char **argv)
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void velocities... ");fflush(stdout);
-   compute_velocity(VarConfigAux, LogAux);
+   compute_velocity(VarConfigAux, LogAux, TracerAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void profiles... ");fflush(stdout);
-   compute_profiles(VarConfigAux, LogAux);
+   compute_profiles(VarConfigAux, LogAux, TracerAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nWrinting void catalogue... ");fflush(stdout);
@@ -77,7 +79,7 @@ int main(int argc, char **argv)
 
    time_resume(VarConfigAux, LogAux);
    
-   Tracer.clear();
+   TracerAux.clear();
    Void.clear();
    fclose(LogAux.logfile);
 

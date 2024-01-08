@@ -14,25 +14,27 @@
  *        valores guardados VarConfig.logfile, VarConfig.StepName,VarConfig.StepTime
  * @return
  */
-void find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux)
+void find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
 {
   int     i;
   clock_t t;
-   
+
   fprintf(LogAux.logfile,"\n SELECTING UNDERDENSE REGIONS \n");
   t = clock();
 
   VarConfigAux.NumVoid = 0;
   for (i=0; i<VarConfigAux.NumTrac; i++) {
-      if (Tracer[i].Delta <= VarConfigAux.DeltaSeed) {
+
+      if (TracerAux[i].Delta <= VarConfigAux.DeltaSeed) {
+
          Void.push_back(voids());
-         Void[VarConfigAux.NumVoid].Pos[0] = Tracer[i].Cen[0];
-         Void[VarConfigAux.NumVoid].Pos[1] = Tracer[i].Cen[1];
-         Void[VarConfigAux.NumVoid].Pos[2] = Tracer[i].Cen[2];
-	       Void[VarConfigAux.NumVoid].Ini[0] = Tracer[i].Cen[0];
-         Void[VarConfigAux.NumVoid].Ini[1] = Tracer[i].Cen[1];
-         Void[VarConfigAux.NumVoid].Ini[2] = Tracer[i].Cen[2];
-         Void[VarConfigAux.NumVoid].Rini = 1.5*cbrt(0.75*(double)Tracer[i].Volume/PI);
+         Void[VarConfigAux.NumVoid].Pos[0] = TracerAux[i].Cen[0];
+         Void[VarConfigAux.NumVoid].Pos[1] = TracerAux[i].Cen[1];
+         Void[VarConfigAux.NumVoid].Pos[2] = TracerAux[i].Cen[2];
+	       Void[VarConfigAux.NumVoid].Ini[0] = TracerAux[i].Cen[0];
+         Void[VarConfigAux.NumVoid].Ini[1] = TracerAux[i].Cen[1];
+         Void[VarConfigAux.NumVoid].Ini[2] = TracerAux[i].Cen[2];
+         Void[VarConfigAux.NumVoid].Rini = 1.5*cbrt(0.75*(double)TracerAux[i].Volume/PI);
          Void[VarConfigAux.NumVoid].Rad = 0.0;
          Void[VarConfigAux.NumVoid].ToF = false;
 	       Void[VarConfigAux.NumVoid].Nran = 0;
@@ -56,7 +58,7 @@ void find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux)
  *
  * @return
  */
-void find_voids(varConfiguration VarConfigAux, logs &LogAux)
+void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
 {
   struct grid    *GridList;
   int            NumCores,NumGrid;
@@ -76,7 +78,7 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux)
 
   NumGrid = (int)(VarConfigAux.BoxSize/VarConfigAux.ProxyGridSize);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-  build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
+  build_grid_list(TracerAux,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
 // int          NumShell = (int)round(0.5*MaxRadiusSearch/max_grid_size(GridSize));
   int          NumShell = (int)round(VarConfigAux.MaxRadiusSearch/max_grid_size(GridSize));
   int          NumQuery[NumShell];
@@ -106,7 +108,7 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux)
 
 
   #pragma omp parallel for default(none) schedule(static)                     \
-   shared(VarConfigAux,Void,Tracer,Query,NumQuery,NumShell,stdout,\
+   shared(VarConfigAux,Void,TracerAux,Query,NumQuery,NumShell,stdout,\
           NumGrid,GridSize,GridList)                                   \
    private(iv,ir,ic,jc,kc,ii,jj,kk,xc,xr,dx,l,Radius,BiggestRadius,next,k,    \
            dist,val,kappa,SortArr,Nsort,the,phi,rad,Volume,Delta,lambda,p,m,  \
@@ -188,7 +190,7 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux)
 	             next = GridList[l].Member[m];		 
 
 		     for (k=0; k<3; k++) 
-	                 dx[k] = periodic_delta(xc[k] - (double)Tracer[next].Pos[k],VarConfigAux.LBox[k]);
+	                 dx[k] = periodic_delta(xc[k] - (double)TracerAux[next].Pos[k],VarConfigAux.LBox[k]);
 
                      dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
 
@@ -233,24 +235,24 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux)
    	      Volume = (4.0/3.0)*PI*Radius*Radius*Radius;
 	      Delta = (double)(ir+1)/Volume/VarConfigAux.MeanNumTrac - 1.0;
 
-              if (Delta < VarConfigAux.DeltaThreshold && Radius > BiggestRadius) {
+        if (Delta < VarConfigAux.DeltaThreshold && Radius > BiggestRadius) {
 		 
-		 if (Radius/BiggestRadius - 1.0 >= VarConfigAux.RadIncrement) CheckRan = 0;
+		      if (Radius/BiggestRadius - 1.0 >= VarConfigAux.RadIncrement) CheckRan = 0;
 		
-	         Void[iv].Rad = (float)Radius;
-		 Void[iv].Delta = (float)Delta;
-	         Void[iv].Pos[0] = (float)xc[0];	       
-	         Void[iv].Pos[1] = (float)xc[1];	       
-	         Void[iv].Pos[2] = (float)xc[2];
-	         Void[iv].ToF = true;
-		 kappa = ir + 1; 
-	         BiggestRadius = Radius;
+          Void[iv].Rad = (float)Radius;
+          Void[iv].Delta = (float)Delta;
+	        Void[iv].Pos[0] = (float)xc[0];
+	        Void[iv].Pos[1] = (float)xc[1];
+	        Void[iv].Pos[2] = (float)xc[2];
+	        Void[iv].ToF = true;
+		      kappa = ir + 1;
+	        BiggestRadius = Radius;
 	      
 	      } /* Fin lazo Dcum < VarConfigAux.DeltaThreshold */
 
-	  } /* Fin lazo bines */
+	    } /* Fin lazo bines */
 	 
-	  free(SortArr);
+	      free(SortArr);
  
       } while (CheckRan < VarConfigAux.NumRanWalk); /* Fin lazo random */
 

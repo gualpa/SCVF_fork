@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "grid.h"
 
-void compute_voronoi(varConfiguration VarConfigAux, logs &LogAux)
+void compute_voronoi(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> &TracerAux)
 {
    int            G,i,j,k,p,N,l,id,count,NumGrid;
    struct grid    *GridList;
@@ -25,12 +25,12 @@ void compute_voronoi(varConfiguration VarConfigAux, logs &LogAux)
 
    NumGrid = (int)round(cbrt((double)VarConfigAux.NumTrac/MeanPartPerGrid));
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,true,VarConfigAux,LogAux);
+   build_grid_list(TracerAux,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,true,VarConfigAux,LogAux);
 
    Vol = VarConfigAux.LBox[0]*VarConfigAux.LBox[1]*VarConfigAux.LBox[2];
 
    #pragma omp parallel for default(none) schedule(static)           \
-    shared(Vol,stdout,GridSize,NumGrid,VarConfigAux,Tracer,GridList) \
+    shared(Vol,stdout,GridSize,NumGrid,VarConfigAux,TracerAux,GridList) \
     private(l,N,k,j,i,ref,min,max,xp,xc,G,count,p,id,IDs,rr,check,   \
             cell,con,clo,po,indx)                                    \
 
@@ -71,7 +71,7 @@ void compute_voronoi(varConfiguration VarConfigAux, logs &LogAux)
                id = GridList[i].Member[p];
 
      	       for (k=0; k<3; k++) {
-     	           xp[k] = (double)Tracer[id].Pos[k];
+                   xp[k] = (double)TracerAux[id].Pos[k];
                    if (xp[k] - ref[k] >  0.5*VarConfigAux.LBox[k]) xp[k] -= VarConfigAux.LBox[k];
                    if (xp[k] - ref[k] < -0.5*VarConfigAux.LBox[k]) xp[k] += VarConfigAux.LBox[k];
      	       }
@@ -108,13 +108,13 @@ void compute_voronoi(varConfiguration VarConfigAux, logs &LogAux)
           cell.centroid(xc[0],xc[1],xc[2]);
 
           for (k=0; k<3; k++)  
-     	      Tracer[IDs[i]].Cen[k] = (float)periodic_position(xp[k] + xc[k],VarConfigAux.LBox[k]);
+     	      TracerAux[IDs[i]].Cen[k] = (float)periodic_position(xp[k] + xc[k],VarConfigAux.LBox[k]);
          
           // Volume of the cell
-          Tracer[IDs[i]].Volume = (float)cell.volume(); 
+          TracerAux[IDs[i]].Volume = (float)cell.volume();
        
           // Delta
-          Tracer[IDs[i]].Delta = (float)((Vol/Tracer[IDs[i]].Volume)/(double)(VarConfigAux.NumTrac) - 1.0);
+          TracerAux[IDs[i]].Delta = (float)((Vol/TracerAux[IDs[i]].Volume)/(double)(VarConfigAux.NumTrac) - 1.0);
 
        } while ((*clo).inc());
 

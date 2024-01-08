@@ -4,7 +4,7 @@
 #include "grid.h"
 #include "tools.h"
 
-void compute_velocity(varConfiguration VarConfigAux, logs &LogAux)
+void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
 {
    int          i,k,ic,jc,kc,in,m,NumGrid;
    int          ii,jj,kk,l,next,Counter;
@@ -21,7 +21,7 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux)
    NumGrid = (int)round(cbrt((double)VarConfigAux.NumTrac/100.0));
    if (NumGrid < 50) NumGrid = 50;
    GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid));
-   build_grid_list(Tracer,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
+   build_grid_list(TracerAux,VarConfigAux.NumTrac,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
 
    // Selecciono grides
 
@@ -40,7 +40,7 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux)
    fflush(LogAux.logfile);
 
    #pragma omp parallel for default(none) schedule(dynamic)      \
-    shared(VarConfigAux,Void,Tracer,NumQuery,Query,\
+    shared(VarConfigAux,Void,TracerAux,NumQuery,Query,\
            NumGrid,GridSize,GridList,GAP)          \
    private(i,l,k,m,Radius,xc,ic,jc,kc,ii,jj,kk,next,dx,xt,dist,  \
            Counter,vt,PLUS,in)
@@ -89,8 +89,8 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux)
 	          next = GridList[l].Member[m];	
 
                   for (k=0; k<3; k++) {
-                      xt[k] = (double)Tracer[next].Pos[k];	 
-                      vt[k] = (double)Tracer[next].Vel[k];
+                      xt[k] = (double)TracerAux[next].Pos[k];
+                      vt[k] = (double)TracerAux[next].Vel[k];
                       dx[k] = periodic_delta(xc[k] - xt[k],VarConfigAux.LBox[k]);
                   }
 

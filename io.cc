@@ -235,8 +235,9 @@ varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux, 
   return VarConfigAux;
 }
 
-void read_tracers(varConfiguration &VarConfigAux, logs &LogAux)
+vector <tracers> read_tracers(varConfiguration &VarConfigAux, logs &LogAux)
 {
+   vector <tracers> TracerAux;
    clock_t t = clock();
    fprintf(LogAux.logfile,"\n READING TRACERS \n");
 
@@ -244,22 +245,22 @@ void read_tracers(varConfiguration &VarConfigAux, logs &LogAux)
 
       case 0: 
           fprintf(LogAux.logfile," | Reading ASCII format \n");
-          read_tracers_ascii(VarConfigAux);
+          TracerAux = read_tracers_ascii(VarConfigAux);
       break;
 
       case 1:
           fprintf(LogAux.logfile," | Reading GADGET \n");
-          read_tracers_gadget(VarConfigAux);
+          TracerAux = read_tracers_gadget(VarConfigAux);
       break;
 
       case 2:
           fprintf(LogAux.logfile," | Reading MXXL format \n");
-          read_tracers_mxxl(VarConfigAux, LogAux);
+          TracerAux = read_tracers_mxxl(VarConfigAux, LogAux);
       break;
 
       case 3:
           fprintf(LogAux.logfile," | Reading BINARY format \n");
-          read_tracers_binary(VarConfigAux);
+          TracerAux = read_tracers_binary(VarConfigAux);
 
    }
 
@@ -268,9 +269,9 @@ void read_tracers(varConfiguration &VarConfigAux, logs &LogAux)
    float zmax = 0.0;
    float diff = 0.999;
    for (int i=0; i<VarConfigAux.NumTrac; i++) {
-       if (Tracer[i].Pos[0] > xmax) xmax = Tracer[i].Pos[0];	   
-       if (Tracer[i].Pos[1] > ymax) ymax = Tracer[i].Pos[1];	   
-       if (Tracer[i].Pos[2] > zmax) zmax = Tracer[i].Pos[2];	   
+       if (TracerAux[i].Pos[0] > xmax) xmax = TracerAux[i].Pos[0];
+       if (TracerAux[i].Pos[1] > ymax) ymax = TracerAux[i].Pos[1];
+       if (TracerAux[i].Pos[2] > zmax) zmax = TracerAux[i].Pos[2];
    }
    if (xmax/VarConfigAux.BoxSize < diff || ymax/VarConfigAux.BoxSize < diff || zmax/VarConfigAux.BoxSize < diff) {
       fprintf(stdout,"\n Error. Wrong BoxSize? - MAX = (%f,%f,%f) \n",xmax,ymax,zmax);
@@ -282,8 +283,8 @@ void read_tracers(varConfiguration &VarConfigAux, logs &LogAux)
    VarConfigAux.LBox[1] = VarConfigAux.BoxSize;
    VarConfigAux.LBox[2] = VarConfigAux.BoxSize;
 
-   if (VarConfigAux.RSDist == 1) redshift_space_distortions(VarConfigAux, LogAux);
-   if (VarConfigAux.GDist == 1) geometrical_distortions(VarConfigAux, LogAux);
+   if (VarConfigAux.RSDist == 1) redshift_space_distortions(VarConfigAux, LogAux, TracerAux);
+   if (VarConfigAux.GDist == 1) geometrical_distortions(VarConfigAux, LogAux, TracerAux);
 
    double Volume = VarConfigAux.LBox[0]*VarConfigAux.LBox[1]*VarConfigAux.LBox[2];
    VarConfigAux.MeanNumTrac = (double)VarConfigAux.NumTrac/Volume;
@@ -298,11 +299,12 @@ void read_tracers(varConfiguration &VarConfigAux, logs &LogAux)
 
    LogAux.StepName.push_back("Reading tracers");
    LogAux.StepTime.push_back(get_time(t,1,LogAux));
-   return ;
+   return TracerAux;
 }
 
-void read_tracers_ascii(varConfiguration &VarConfigAux)
+vector<tracers> read_tracers_ascii(varConfiguration &VarConfigAux)
 {
+   vector <tracers> TracerAux;
    VarConfigAux.NumTrac = 0;
    int NumTot = count_lines(VarConfigAux.FileTracers);
    FILE *fd = safe_open(VarConfigAux.FileTracers,"r");
@@ -310,24 +312,25 @@ void read_tracers_ascii(varConfiguration &VarConfigAux)
    for (int i=0; i<NumTot; i++) {
 
        //if (NumTrac > 250000) break	   
-       Tracer.push_back(tracers());
+       TracerAux.push_back(tracers());
 
-       fscanf(fd,"%f %f %f %f %f %f %f\n",&Tracer[i].Pos[0],&Tracer[i].Pos[1],&Tracer[i].Pos[2],	   
-                                        &Tracer[i].Vel[0],&Tracer[i].Vel[1],&Tracer[i].Vel[2],&dummy);
-       Tracer[VarConfigAux.NumTrac].Pos[0] *= VarConfigAux.Scale.Pos;
-       Tracer[VarConfigAux.NumTrac].Pos[1] *= VarConfigAux.Scale.Pos;
-       Tracer[VarConfigAux.NumTrac].Pos[2] *= VarConfigAux.Scale.Pos;
-       Tracer[VarConfigAux.NumTrac].Vel[0] *= VarConfigAux.Scale.Vel;
-       Tracer[VarConfigAux.NumTrac].Vel[1] *= VarConfigAux.Scale.Vel;
-       Tracer[VarConfigAux.NumTrac].Vel[2] *= VarConfigAux.Scale.Vel;
+       fscanf(fd,"%f %f %f %f %f %f %f\n",&TracerAux[i].Pos[0],&TracerAux[i].Pos[1],&TracerAux[i].Pos[2],
+                                        &TracerAux[i].Vel[0],&TracerAux[i].Vel[1],&TracerAux[i].Vel[2],&dummy);
+       TracerAux[VarConfigAux.NumTrac].Pos[0] *= VarConfigAux.Scale.Pos;
+       TracerAux[VarConfigAux.NumTrac].Pos[1] *= VarConfigAux.Scale.Pos;
+       TracerAux[VarConfigAux.NumTrac].Pos[2] *= VarConfigAux.Scale.Pos;
+       TracerAux[VarConfigAux.NumTrac].Vel[0] *= VarConfigAux.Scale.Vel;
+       TracerAux[VarConfigAux.NumTrac].Vel[1] *= VarConfigAux.Scale.Vel;
+       TracerAux[VarConfigAux.NumTrac].Vel[2] *= VarConfigAux.Scale.Vel;
        VarConfigAux.NumTrac++;
    }
    fclose(fd);
-   return ;
+   return TracerAux;
 }
 
-void read_tracers_binary(varConfiguration &VarConfigAux)
+vector<tracers> read_tracers_binary(varConfiguration &VarConfigAux)
 {
+   vector <tracers> TracerAux;
    FILE *fd = safe_open(VarConfigAux.FileTracers,"r");
    int NumTot;
 
@@ -335,25 +338,25 @@ void read_tracers_binary(varConfiguration &VarConfigAux)
    fread(&NumTot,sizeof(int),1,fd);
 
    for (int i=0; i<NumTot; i++) {
-       Tracer.push_back(tracers());
+       TracerAux.push_back(tracers());
 
-       fread(&Tracer[VarConfigAux.NumTrac].Pos[0],sizeof(float),3,fd);
-       fread(&Tracer[VarConfigAux.NumTrac].Vel[0],sizeof(float),3,fd);
+       fread(&TracerAux[VarConfigAux.NumTrac].Pos[0],sizeof(float),3,fd);
+       fread(&TracerAux[VarConfigAux.NumTrac].Vel[0],sizeof(float),3,fd);
        
-       Tracer[VarConfigAux.NumTrac].Pos[0] *= VarConfigAux.Scale.Pos;
-       Tracer[VarConfigAux.NumTrac].Pos[1] *= VarConfigAux.Scale.Pos;
-       Tracer[VarConfigAux.NumTrac].Pos[2] *= VarConfigAux.Scale.Pos;
-       Tracer[VarConfigAux.NumTrac].Vel[0] *= VarConfigAux.Scale.Vel;
-       Tracer[VarConfigAux.NumTrac].Vel[1] *= VarConfigAux.Scale.Vel;
-       Tracer[VarConfigAux.NumTrac].Vel[2] *= VarConfigAux.Scale.Vel;
+       TracerAux[VarConfigAux.NumTrac].Pos[0] *= VarConfigAux.Scale.Pos;
+       TracerAux[VarConfigAux.NumTrac].Pos[1] *= VarConfigAux.Scale.Pos;
+       TracerAux[VarConfigAux.NumTrac].Pos[2] *= VarConfigAux.Scale.Pos;
+       TracerAux[VarConfigAux.NumTrac].Vel[0] *= VarConfigAux.Scale.Vel;
+       TracerAux[VarConfigAux.NumTrac].Vel[1] *= VarConfigAux.Scale.Vel;
+       TracerAux[VarConfigAux.NumTrac].Vel[2] *= VarConfigAux.Scale.Vel;
        VarConfigAux.NumTrac++;
    }
    fclose(fd);
-   return ;
+   return TracerAux;
 
 }
 
-void read_tracers_gadget(varConfiguration &VarConfigAux)
+vector<tracers> read_tracers_gadget(varConfiguration &VarConfigAux)
 {
 #define SKIP fread(&dummy,sizeof(int),1,f1)
 
@@ -391,6 +394,7 @@ void read_tracers_gadget(varConfiguration &VarConfigAux)
   typedef float postype;
   typedef int idtype;
 
+  vector <tracers> TracerAux;
   int  i,j,k,dummy,Np,NC,jump;
   int  possize,velsize,idsize;
   FILE *f1;
@@ -445,7 +449,7 @@ void read_tracers_gadget(varConfiguration &VarConfigAux)
   } 
 
   VarConfigAux.NumTrac = Header.NpartTotal[1];
-  for (int i=0; i<VarConfigAux.NumTrac; i++) Tracer.push_back(tracers());
+  for (int i=0; i<VarConfigAux.NumTrac; i++) TracerAux.push_back(tracers());
 
   if (VarConfigAux.NumFiles < VarConfigAux.OMPcores)
      NC = VarConfigAux.NumFiles;
@@ -455,7 +459,7 @@ void read_tracers_gadget(varConfiguration &VarConfigAux)
   NumFilesAux = VarConfigAux.NumFiles;
   #pragma omp parallel for default(none) schedule(static) num_threads(NC) \
    private(i,snapshot,f1,Np,Header,pos,vel,id,j,k,dummy)  \
-   shared(Tracer, VarConfigAux, stdout, NumFilesAux)
+   shared(TracerAux, VarConfigAux, stdout, NumFilesAux)
   
   for (i=0; i<NumFilesAux; i++) {
 
@@ -481,8 +485,8 @@ void read_tracers_gadget(varConfiguration &VarConfigAux)
 
       for (j=0; j<Np; j++) {
 	  for (k=0; k<3; k++) {
-	      Tracer[id[j]-1].Pos[k] = pos[3*j+k]*VarConfigAux.Scale.Pos;
-	      Tracer[id[j]-1].Vel[k] = vel[3*j+k]*sqrt(Header.Time)*VarConfigAux.Scale.Vel;
+	      TracerAux[id[j]-1].Pos[k] = pos[3*j+k]*VarConfigAux.Scale.Pos;
+	      TracerAux[id[j]-1].Vel[k] = vel[3*j+k]*sqrt(Header.Time)*VarConfigAux.Scale.Vel;
 	  }
       }
 
@@ -491,16 +495,17 @@ void read_tracers_gadget(varConfiguration &VarConfigAux)
       free(id);
   }
 #undef SKIP 
-  return ;
+  return TracerAux;
 }
 
-void read_tracers_mxxl(varConfiguration &VarConfigAux, logs &LogAux)
+vector <tracers> read_tracers_mxxl(varConfiguration &VarConfigAux, logs &LogAux)
 {
 
    int     i,j,k,NumTot,N,id;
    float   Pos[3],Vel[3];
    char    filename[MAXCHAR],basename[MAXCHAR];
    FILE    *fd;
+   vector <tracers> TracerAux;
 	
    sprintf(basename,"%s/z%4.2f/halos_z%4.2f_part",VarConfigAux.FileTracers,VarConfigAux.Redshift,VarConfigAux.Redshift);
    fprintf(LogAux.logfile," | Files = %s (%d files) \n",basename,VarConfigAux.NumFiles);
@@ -520,7 +525,7 @@ void read_tracers_mxxl(varConfiguration &VarConfigAux, logs &LogAux)
       exit(EXIT_FAILURE);
    }
 
-   for (int i=0; i<VarConfigAux.NumTrac; i++) Tracer.push_back(tracers());
+   for (int i=0; i<VarConfigAux.NumTrac; i++) TracerAux.push_back(tracers());
 
    for (j=1; j<=VarConfigAux.NumFiles; j++) {
        sprintf(filename,"%s%02d",basename,j);
@@ -533,16 +538,16 @@ void read_tracers_mxxl(varConfiguration &VarConfigAux, logs &LogAux)
 	   fread(Vel,sizeof(float),3,fd);
 
 	   for (k=0; k<3; k++) {
-	       Tracer[id].Pos[k] = Pos[k]*VarConfigAux.Scale.Pos;
-	       Tracer[id].Vel[k] = Vel[k]*VarConfigAux.Scale.Vel;
+	       TracerAux[id].Pos[k] = Pos[k]*VarConfigAux.Scale.Pos;
+	       TracerAux[id].Vel[k] = Vel[k]*VarConfigAux.Scale.Vel;
 	   }
        }
        fclose(fd);
    }
-   return ;
+   return TracerAux;
 }
 
-void redshift_space_distortions(varConfiguration VarConfigAux, logs &LogAux)
+void redshift_space_distortions(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
 {
 
    int    i;
@@ -567,14 +572,14 @@ void redshift_space_distortions(varConfiguration VarConfigAux, logs &LogAux)
    fflush(LogAux.logfile);
 
    for (i=0; i<VarConfigAux.NumTrac; i++) {
-       Tracer[i].Pos[2] += Tracer[i].Vel[2]*RSDFactor;
-       if (Tracer[i].Pos[2] < 0.0    ) Tracer[i].Pos[2] += VarConfigAux.LBox[2];
-       if (Tracer[i].Pos[2] > VarConfigAux.LBox[2]) Tracer[i].Pos[2] -= VarConfigAux.LBox[2];
+       TracerAux[i].Pos[2] += TracerAux[i].Vel[2]*RSDFactor;
+       if (TracerAux[i].Pos[2] < 0.0    ) TracerAux[i].Pos[2] += VarConfigAux.LBox[2];
+       if (TracerAux[i].Pos[2] > VarConfigAux.LBox[2]) TracerAux[i].Pos[2] -= VarConfigAux.LBox[2];
    }	       
    return ;
 }
 
-void geometrical_distortions(varConfiguration &VarConfigAux, logs &LogAux)
+void geometrical_distortions(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
 {
 
    int    i;
@@ -617,9 +622,9 @@ void geometrical_distortions(varConfiguration &VarConfigAux, logs &LogAux)
    VarConfigAux.LBox[2] *= GDFactor_LOS;
 
    for (i=0; i<VarConfigAux.NumTrac; i++) {
-       Tracer[i].Pos[0] *= GDFactor_POS;
-       Tracer[i].Pos[1] *= GDFactor_POS;
-       Tracer[i].Pos[2] *= GDFactor_LOS;
+       TracerAux[i].Pos[0] *= GDFactor_POS;
+       TracerAux[i].Pos[1] *= GDFactor_POS;
+       TracerAux[i].Pos[2] *= GDFactor_LOS;
    }	
    return ;
 }

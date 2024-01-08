@@ -137,7 +137,7 @@ struct tracers {
   float Delta;
   float Volume;
 }; 
-extern vector <tracers> Tracer;
+//extern vector <tracers> Tracer;
 
 // Voids
 
