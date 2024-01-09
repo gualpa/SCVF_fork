@@ -3,16 +3,13 @@
 #include "io.h"
 #include "tools.h"
 #include "cosmology.h"
+void geometrical_distortions(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux);
+void redshift_space_distortions(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux);
+vector<tracers> read_tracers_ascii(varConfiguration &VarConfigAux);
+vector<tracers> read_tracers_binary(varConfiguration &VarConfigAux);
+vector<tracers> read_tracers_gadget(varConfiguration &VarConfigAux);
+vector<tracers> read_tracers_mxxl(varConfiguration &VarConfigAux, logs &LogAux);
 
-/**
- * @brief Carga los valores del archivo de configuración.
- *
- * Esta función lee el archivo de configuración y lo carga en la variable que devuelve.
- *
- * @param filename nombre del archivo de configuración
- * @param VarConfigAux estructura donde estan almacenados valores de configuración del programa.
- * @return Una estructura con los valores de configuración.
- */
 varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux, logs &LogAux)
 {
 #define DOUBLE  1

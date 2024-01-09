@@ -4,6 +4,9 @@
 #include "gsl_integration.h"
 #include "gsl_math.h"
 
+double comoving_distance_integ(double, void *);
+double comoving_distance(double, struct cosmoparam *);
+
 double evolution_param(double z, struct cosmoparam *C)
 {
   double q = C->OmM*(1.0 + z)*(1.0 + z)*(1.0 + z)

@@ -7,6 +7,18 @@
 #include "profiles.h"
 #include "tools.h"
 
+/**
+ * @brief Punto de entrada principal del programa astronómico para identificar y analizar voids.
+ *
+ * Esta función principal ejecuta un programa para identificar voids astronómicos basado en ciertos parámetros
+ * de entrada. Lee un archivo de parámetros de entrada, procesa los trazadores astronómicos, realiza cálculos
+ * de Voronoi, encuentra candidatos a voids, identifica voids, limpia el catálogo de voids, calcula velocidades
+ * de voids, calcula perfiles de voids y escribe un catálogo de voids en un archivo.
+ *
+ * @param argc Cantidad de argumentos de línea de comandos.
+ * @param argv Nombre del archivo de configuración con los parámetros astronómicos. Ejemplo "VF.param".
+ * @return Entero que indica el estado de salida del programa (0 para éxito, otro valor para error).
+ */
 int main(int argc, char **argv) 
 {
    varConfiguration VarConfigAux;
