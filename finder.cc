@@ -14,10 +14,11 @@
  *        valores guardados VarConfig.logfile, VarConfig.StepName,VarConfig.StepTime
  * @return
  */
-void find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
+vector <voids> find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
 {
   int     i;
   clock_t t;
+  vector <voids> VoidAux;
 
   fprintf(LogAux.logfile,"\n SELECTING UNDERDENSE REGIONS \n");
   t = clock();
@@ -27,17 +28,17 @@ void find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux, vector <
 
       if (TracerAux[i].Delta <= VarConfigAux.DeltaSeed) {
 
-         Void.push_back(voids());
-         Void[VarConfigAux.NumVoid].Pos[0] = TracerAux[i].Cen[0];
-         Void[VarConfigAux.NumVoid].Pos[1] = TracerAux[i].Cen[1];
-         Void[VarConfigAux.NumVoid].Pos[2] = TracerAux[i].Cen[2];
-	       Void[VarConfigAux.NumVoid].Ini[0] = TracerAux[i].Cen[0];
-         Void[VarConfigAux.NumVoid].Ini[1] = TracerAux[i].Cen[1];
-         Void[VarConfigAux.NumVoid].Ini[2] = TracerAux[i].Cen[2];
-         Void[VarConfigAux.NumVoid].Rini = 1.5*cbrt(0.75*(double)TracerAux[i].Volume/PI);
-         Void[VarConfigAux.NumVoid].Rad = 0.0;
-         Void[VarConfigAux.NumVoid].ToF = false;
-	       Void[VarConfigAux.NumVoid].Nran = 0;
+         VoidAux.push_back(voids());
+         VoidAux[VarConfigAux.NumVoid].Pos[0] = TracerAux[i].Cen[0];
+         VoidAux[VarConfigAux.NumVoid].Pos[1] = TracerAux[i].Cen[1];
+         VoidAux[VarConfigAux.NumVoid].Pos[2] = TracerAux[i].Cen[2];
+	       VoidAux[VarConfigAux.NumVoid].Ini[0] = TracerAux[i].Cen[0];
+         VoidAux[VarConfigAux.NumVoid].Ini[1] = TracerAux[i].Cen[1];
+         VoidAux[VarConfigAux.NumVoid].Ini[2] = TracerAux[i].Cen[2];
+         VoidAux[VarConfigAux.NumVoid].Rini = 1.5*cbrt(0.75*(double)TracerAux[i].Volume/PI);
+         VoidAux[VarConfigAux.NumVoid].Rad = 0.0;
+         VoidAux[VarConfigAux.NumVoid].ToF = false;
+	       VoidAux[VarConfigAux.NumVoid].Nran = 0;
          VarConfigAux.NumVoid++;
       }
   }
@@ -46,7 +47,7 @@ void find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux, vector <
   
   LogAux.StepName.push_back("Finding centers");
   LogAux.StepTime.push_back(get_time(t,1,LogAux));
-  return;
+  return VoidAux;
 }
 
 /**
@@ -58,7 +59,7 @@ void find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux, vector <
  *
  * @return
  */
-void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
+vector <voids> find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux, vector <voids> VoidAux)
 {
   struct grid    *GridList;
   int            NumCores,NumGrid;
@@ -108,7 +109,7 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> Tr
 
 
   #pragma omp parallel for default(none) schedule(static)                     \
-   shared(VarConfigAux,Void,TracerAux,Query,NumQuery,NumShell,stdout,\
+   shared(VarConfigAux,VoidAux,TracerAux,Query,NumQuery,NumShell,stdout,\
           NumGrid,GridSize,GridList)                                   \
    private(iv,ir,ic,jc,kc,ii,jj,kk,xc,xr,dx,l,Radius,BiggestRadius,next,k,    \
            dist,val,kappa,SortArr,Nsort,the,phi,rad,Volume,Delta,lambda,p,m,  \
@@ -134,10 +135,10 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> Tr
 
 	     the = acos(2.0*random_number() - 1.0);
 	     phi = 2.0*PI*random_number();
-	     rad = (double)Void[iv].Rad;
+	     rad = (double)VoidAux[iv].Rad;
 
 	     if (rad == 0.0) 
-	        rad = (double)Void[iv].Rini*random_number();
+	        rad = (double)VoidAux[iv].Rini*random_number();
 	     else  
 	        rad *= VarConfigAux.FracRadius*random_number();
 
@@ -146,21 +147,21 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> Tr
 	     xr[2] = rad*cos(the);
 	  }
 
-	  if (Void[iv].Rad == 0.0) {
+	  if (VoidAux[iv].Rad == 0.0) {
 
              for (k=0; k<3; k++) 
-		 xc[k] = periodic_position((double)Void[iv].Ini[k] + xr[k],VarConfigAux.LBox[k]);
+		 xc[k] = periodic_position((double)VoidAux[iv].Ini[k] + xr[k],VarConfigAux.LBox[k]);
 
 	  } else {
 
              for (k=0; k<3; k++) {
-	         xc[k] = periodic_position((double)Void[iv].Pos[k] + xr[k],VarConfigAux.LBox[k]);
-	         dx[k] = periodic_delta(xc[k] - (double)Void[iv].Ini[k],VarConfigAux.LBox[k]);
+	         xc[k] = periodic_position((double)VoidAux[iv].Pos[k] + xr[k],VarConfigAux.LBox[k]);
+	         dx[k] = periodic_delta(xc[k] - (double)VoidAux[iv].Ini[k],VarConfigAux.LBox[k]);
 	     }
 	     dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
-	     if (dist > Void[iv].Rad) // avoid big migration 
+	     if (dist > VoidAux[iv].Rad) // avoid big migration
 	        for (k=0; k<3; k++) 
-	            xc[k] = periodic_position((double)Void[iv].Ini[k] + xr[k],VarConfigAux.LBox[k]); 	  
+	            xc[k] = periodic_position((double)VoidAux[iv].Ini[k] + xr[k],VarConfigAux.LBox[k]);
 	  }
 
 	  ic = (int)(xc[0]/GridSize[0]);
@@ -239,12 +240,12 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> Tr
 		 
 		      if (Radius/BiggestRadius - 1.0 >= VarConfigAux.RadIncrement) CheckRan = 0;
 		
-          Void[iv].Rad = (float)Radius;
-          Void[iv].Delta = (float)Delta;
-	        Void[iv].Pos[0] = (float)xc[0];
-	        Void[iv].Pos[1] = (float)xc[1];
-	        Void[iv].Pos[2] = (float)xc[2];
-	        Void[iv].ToF = true;
+          VoidAux[iv].Rad = (float)Radius;
+          VoidAux[iv].Delta = (float)Delta;
+	        VoidAux[iv].Pos[0] = (float)xc[0];
+	        VoidAux[iv].Pos[1] = (float)xc[1];
+	        VoidAux[iv].Pos[2] = (float)xc[2];
+	        VoidAux[iv].ToF = true;
 		      kappa = ir + 1;
 	        BiggestRadius = Radius;
 	      
@@ -256,10 +257,10 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> Tr
  
       } while (CheckRan < VarConfigAux.NumRanWalk); /* Fin lazo random */
 
-      if (Void[iv].ToF) {
-	 lambda = (4.0/3.0)*PI*pow((double)Void[iv].Rad,3)*VarConfigAux.MeanNumTrac;
-         Void[iv].Poisson = (double)kappa*log(lambda) - lambda - ln_factorial(kappa); 	 
-	 Void[iv].Nran = TotRan;
+      if (VoidAux[iv].ToF) {
+	 lambda = (4.0/3.0)*PI*pow((double)VoidAux[iv].Rad,3)*VarConfigAux.MeanNumTrac;
+         VoidAux[iv].Poisson = (double)kappa*log(lambda) - lambda - ln_factorial(kappa);
+	 VoidAux[iv].Nran = TotRan;
       }    
 
   } /* Fin lazo voids */
@@ -271,7 +272,7 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> Tr
   LogAux.StepName.push_back("Finding voids");
   LogAux.StepTime.push_back(get_time(t,VarConfigAux.OMPcores,LogAux));
 
-  return;
+  return VoidAux;
 }
 /**
  * @brief .
@@ -282,7 +283,7 @@ void find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> Tr
  *
  * @return
  */
-void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
+vector <voids> clean_voids(varConfiguration VarConfigAux, logs &LogAux, vector <voids> &VoidAux)
 {
   int          i,k,l,m,indx,next,in,it;
   int          ii,jj,kk,ic,jc,kc,NumTrueVoid;
@@ -299,11 +300,11 @@ void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
 
   NumGrid = (int)cbrt((double)VarConfigAux.NumVoid/10.0);
   GridList = (struct grid *) malloc(NumGrid*NumGrid*NumGrid*sizeof(struct grid)); 
-  build_grid_list(Void,VarConfigAux.NumVoid,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
+  build_grid_list(VoidAux,VarConfigAux.NumVoid,GridList,NumGrid,GridSize,false,VarConfigAux,LogAux);
   
   NumTrueVoid = 0;
   for (i=0; i<VarConfigAux.NumVoid; i++)
-      if (Void[i].ToF) 
+      if (VoidAux[i].ToF)
 	 NumTrueVoid++;	  
   
   fprintf(LogAux.logfile," | Number of true voids before cleaning = %d (%4.2f %)\n",
@@ -314,8 +315,8 @@ void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
 
   it = 0;
   for (i=0; i<VarConfigAux.NumVoid; i++) {
-      if (Void[i].ToF) {	      
-         SortArr[it].val = Void[i].Rad;
+      if (VoidAux[i].ToF) {
+         SortArr[it].val = VoidAux[i].Rad;
          SortArr[it].ord = i;
 	 it++;
       }     
@@ -337,12 +338,12 @@ void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
   for (i=NumTrueVoid-1; i>=0; i--) {
 
       indx = SortArr[i].ord;
-      if (!Void[indx].ToF) continue;
+      if (!VoidAux[indx].ToF) continue;
 
-      xi[0] = (double)Void[indx].Pos[0];      
-      xi[1] = (double)Void[indx].Pos[1];      
-      xi[2] = (double)Void[indx].Pos[2];
-      Ri = (double)Void[indx].Rad;
+      xi[0] = (double)VoidAux[indx].Pos[0];
+      xi[1] = (double)VoidAux[indx].Pos[1];
+      xi[2] = (double)VoidAux[indx].Pos[2];
+      Ri = (double)VoidAux[indx].Rad;
       Vi = (4.0/3.0)*PI*Ri*Ri*Ri;
 
       ic = (int)(xi[0]/GridSize[0]);
@@ -363,12 +364,12 @@ void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
 		
 	      next = GridList[l].Member[m];		
 
-	      if (Void[next].ToF && next != indx) {
+	      if (VoidAux[next].ToF && next != indx) {
 
-                 xj[0] = (double)Void[next].Pos[0];      
-                 xj[1] = (double)Void[next].Pos[1];      
-                 xj[2] = (double)Void[next].Pos[2];
-                 Rj = (double)Void[next].Rad;
+                 xj[0] = (double)VoidAux[next].Pos[0];
+                 xj[1] = (double)VoidAux[next].Pos[1];
+                 xj[2] = (double)VoidAux[next].Pos[2];
+                 Rj = (double)VoidAux[next].Rad;
 	         Vj = (4.0/3.0)*PI*Rj*Rj*Rj;
     
 	         for (k=0; k<3; k++) 
@@ -386,7 +387,7 @@ void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
 	         Vij *= (pow(dist,2) + 2.0*dist*(Ri + Rj) - 3.0*pow(Ri - Rj,2));
 	         Vij /= Vj;
 
-	         if (Vij > VarConfigAux.OverlapTol) Void[next].ToF = false;
+	         if (Vij > VarConfigAux.OverlapTol) VoidAux[next].ToF = false;
     
 	      } 
     	  }
@@ -395,7 +396,7 @@ void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
 
   NumTrueVoid = 0;
   for (i=0; i<VarConfigAux.NumVoid; i++)
-      if (Void[i].ToF) 
+      if (VoidAux[i].ToF)
 	 NumTrueVoid++;	  
   
   fprintf(LogAux.logfile," | Number of true void after cleaning = %d (%4.2f %)\n",
@@ -407,6 +408,6 @@ void clean_voids(varConfiguration VarConfigAux, logs &LogAux)
 
   LogAux.StepName.push_back("Cleaning voids");
   LogAux.StepTime.push_back(get_time(t,1,LogAux));
-  return;
+  return VoidAux;
 }
 

@@ -4,7 +4,7 @@
 #include "grid.h"
 #include "tools.h"
 
-void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
+void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux, vector <voids> &VoidAux)
 {
    int          i,k,ic,jc,kc,in,m,NumGrid;
    int          ii,jj,kk,l,next,Counter;
@@ -28,8 +28,8 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <trace
    MinDist = 0.0;
    MaxDist = 0.0;
    for (i=0; i<VarConfigAux.NumVoid; i++) {
-       if (!Void[i].ToF) continue;
-       if (Void[i].Rad > MaxDist) MaxDist = Void[i].Rad;
+       if (!VoidAux[i].ToF) continue;
+       if (VoidAux[i].Rad > MaxDist) MaxDist = VoidAux[i].Rad;
    }
    MaxDist *= 1.5;
    query_grid(&Query,GridSize,MinDist,MaxDist);
@@ -40,21 +40,21 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <trace
    fflush(LogAux.logfile);
 
    #pragma omp parallel for default(none) schedule(dynamic)      \
-    shared(VarConfigAux,Void,TracerAux,NumQuery,Query,\
+    shared(VarConfigAux,VoidAux,TracerAux,NumQuery,Query,\
            NumGrid,GridSize,GridList,GAP)          \
    private(i,l,k,m,Radius,xc,ic,jc,kc,ii,jj,kk,next,dx,xt,dist,  \
            Counter,vt,PLUS,in)
 
    for (i=0; i<VarConfigAux.NumVoid; i++) {
        
-       if (!Void[i].ToF) continue;
+       if (!VoidAux[i].ToF) continue;
 
        Counter = 0;
        PLUS = 0.0;
-       Radius = Void[i].Rad;
+       Radius = VoidAux[i].Rad;
        for (k=0; k<3; k++) {
-           xc[k] = (double)Void[i].Pos[k];
-           Void[i].Vel[k] = 0.0;
+           xc[k] = (double)VoidAux[i].Pos[k];
+           VoidAux[i].Vel[k] = 0.0;
        }
 
        ic = (int)(xc[0]/GridSize[0]);
@@ -98,9 +98,9 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <trace
                   dist /= Radius;
 
                   if (dist > VarConfigAux.InnerShellVel-PLUS && dist < VarConfigAux.OuterShellVel+PLUS) {
-                     Void[i].Vel[0] += vt[0];
-                     Void[i].Vel[1] += vt[1];
-                     Void[i].Vel[2] += vt[2];
+                     VoidAux[i].Vel[0] += vt[0];
+                     VoidAux[i].Vel[1] += vt[1];
+                     VoidAux[i].Vel[2] += vt[2];
                      Counter++;	 
                   }
               } 
@@ -110,9 +110,9 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <trace
 
        } while (Counter == 0);
 
-       Void[i].Vel[0] /= (double)Counter;
-       Void[i].Vel[1] /= (double)Counter;
-       Void[i].Vel[2] /= (double)Counter; 
+       VoidAux[i].Vel[0] /= (double)Counter;
+       VoidAux[i].Vel[1] /= (double)Counter;
+       VoidAux[i].Vel[2] /= (double)Counter;
    }
   
    free_grid_list(GridList,NumGrid);

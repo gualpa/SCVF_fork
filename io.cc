@@ -629,7 +629,7 @@ void geometrical_distortions(varConfiguration &VarConfigAux, logs &LogAux, vecto
    return ;
 }
 
-void write_voids(varConfiguration VarConfigAux, logs &LogAux)
+void write_voids(varConfiguration VarConfigAux, logs &LogAux, vector <voids> VoidAux)
 {
    int     i;
    FILE    *fd;
@@ -641,11 +641,11 @@ void write_voids(varConfiguration VarConfigAux, logs &LogAux)
    fd = safe_open(VarConfigAux.FileVoids,"w");
 
    for (i=0; i<VarConfigAux.NumVoid; i++) {
-       if (Void[i].ToF) {
+       if (VoidAux[i].ToF) {
 
           fprintf(fd," %8.5f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %5d\n",
-	  	       Void[i].Rad,Void[i].Pos[0],Void[i].Pos[1],Void[i].Pos[2],Void[i].Vel[0],Void[i].Vel[1],
-	  	       Void[i].Vel[2],Void[i].Delta,Void[i].Dtype,Void[i].Poisson,Void[i].Nran);   
+            VoidAux[i].Rad,VoidAux[i].Pos[0],VoidAux[i].Pos[1],VoidAux[i].Pos[2],VoidAux[i].Vel[0],VoidAux[i].Vel[1],
+            VoidAux[i].Vel[2],VoidAux[i].Delta,VoidAux[i].Dtype,VoidAux[i].Poisson,VoidAux[i].Nran);
        }
    }
    fclose(fd);

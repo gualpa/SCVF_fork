@@ -7,4 +7,4 @@ vector<tracers> read_tracers_gadget(varConfiguration &VarConfigAux);
 vector<tracers> read_tracers_mxxl(varConfiguration &VarConfigAux, logs &LogAux);
 void redshift_space_distortions(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux);
 void geometrical_distortions(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux);
-void write_voids(varConfiguration VarConfigAux, logs &LogAux);
+void write_voids(varConfiguration VarConfigAux, logs &LogAux, vector <voids> VoidAux);

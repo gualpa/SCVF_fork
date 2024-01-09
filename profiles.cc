@@ -4,7 +4,7 @@
 #include "tools.h"
 #include "profiles.h"
 
-void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux)
+void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <tracers> TracerAux, vector <voids> &VoidAux)
 {
    int            i,k,ic,jc,kc,l,ii,jj,kk,next,ibin,in,m,NumGrid;
    double         xc[3],xt[3],dx[3],vt[3],dist,GridSize[3];
@@ -30,7 +30,7 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <trac
    // Only for true voids
 
    for (i=0; i<VarConfigAux.NumVoid; i++)
-       if (Void[i].ToF) 
+       if (VoidAux[i].ToF)
 	  Indx.push_back(i);       
 
    dR = (log10(VarConfigAux.MaxProfileDist)-log10(VarConfigAux.MinProfileDist))/(double)VarConfigAux.NumProfileBins;
@@ -40,8 +40,8 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <trac
    MinDist = 0.0;
    MaxDist = 0.0;
    for (i=0; i<VarConfigAux.NumVoid; i++) {
-       if (!Void[i].ToF) continue;
-       if (Void[i].Rad > MaxDist) MaxDist = Void[i].Rad;
+       if (!VoidAux[i].ToF) continue;
+       if (VoidAux[i].Rad > MaxDist) MaxDist = VoidAux[i].Rad;
    }
    MaxDist *= VarConfigAux.MaxProfileDist;
    query_grid(&Query,GridSize,MinDist,MaxDist);
@@ -57,7 +57,7 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <trac
    }
 
    #pragma omp parallel for default(none) schedule(dynamic)                   \
-    shared(VarConfigAux,Void,TracerAux,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
+    shared(VarConfigAux,VoidAux,TracerAux,NumQuery,Query,dR,NumGrid,GridSize,GridList,   \
            Indx,GAP,fbin,BinFile)                       \
     private(i,m,k,ii,jj,kk,l,Radius,ic,jc,kc,xc,xt,dx,vt,next,Prof,dist,VRad, \
 	    ibin,DeltaMax,Vol,ftxt,in,TxtFile)
@@ -70,10 +70,10 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <trac
            Prof[k].Velocity = 0.0;
        }
        
-       Radius = Void[Indx[i]].Rad;
+       Radius = VoidAux[Indx[i]].Rad;
        for (k=0; k<3; k++) 
-	   xc[k] = Void[Indx[i]].Pos[k];
-       Void[Indx[i]].Dtype = 0.0;
+	   xc[k] = VoidAux[Indx[i]].Pos[k];
+       VoidAux[Indx[i]].Dtype = 0.0;
       
        ic = (int)(xc[0]/GridSize[0]);
        jc = (int)(xc[1]/GridSize[1]);
@@ -106,7 +106,7 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <trac
 
 	       for (k=0; k<3; k++) {
 	           xt[k] = (double)TracerAux[next].Pos[k];
-	           vt[k] = (double)(TracerAux[next].Vel[k] - Void[Indx[i]].Vel[k]);
+	           vt[k] = (double)(TracerAux[next].Vel[k] - VoidAux[Indx[i]].Vel[k]);
 	           dx[k] = periodic_delta(xt[k] - xc[k],VarConfigAux.LBox[k])/Radius;
 	       }
 
@@ -160,7 +160,7 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <trac
 
        }
 
-       Void[Indx[i]].Dtype = DeltaMax;
+       VoidAux[Indx[i]].Dtype = DeltaMax;
        
        if (VarConfigAux.WriteProfiles == 1) {
           sprintf(TxtFile,"%s/profile_void_%d.dat",VarConfigAux.PathProfiles,i);
@@ -189,7 +189,7 @@ void compute_profiles(varConfiguration &VarConfigAux, logs &LogAux, vector <trac
 	  }
        }
 
-       Void[Indx[i]].Dtype = DeltaMax;
+       VoidAux[Indx[i]].Dtype = DeltaMax;
    } 
    
    if (VarConfigAux.WriteProfiles == 2) fclose(fbin);

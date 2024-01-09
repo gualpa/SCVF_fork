@@ -49,7 +49,7 @@
 //scale_struct Scale;
 //varConfiguration VarConfig;
 //vector <tracers> Tracer;
-vector <voids> Void;
+//vector <voids> Void;
 
 void print_varConfigurtion(varConfiguration VarConfigAux, logs LogAux){
     fprintf(stdout,"\n Print varConfigurtion  \n" );

@@ -12,6 +12,7 @@ int main(int argc, char **argv)
    varConfiguration VarConfigAux;
    logs LogAux;
    vector <tracers> TracerAux;
+   vector <voids> VoidAux;
 
    if (argc < 2) {
        fprintf(stdout, "\n Error. Missing input file and flags.\n");
@@ -54,33 +55,33 @@ int main(int argc, char **argv)
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nSearching candidates... ");fflush(stdout);
-   find_void_candidates(VarConfigAux, LogAux, TracerAux);
+   VoidAux = find_void_candidates(VarConfigAux, LogAux, TracerAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nPerforming void identification... ");fflush(stdout);
-   find_voids(VarConfigAux, LogAux, TracerAux);
+   VoidAux = find_voids(VarConfigAux, LogAux, TracerAux, VoidAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nCleaning void catalogue... ");fflush(stdout);
-   clean_voids(VarConfigAux, LogAux);
+   VoidAux = clean_voids(VarConfigAux, LogAux, VoidAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void velocities... ");fflush(stdout);
-   compute_velocity(VarConfigAux, LogAux, TracerAux);
+   compute_velocity(VarConfigAux, LogAux, TracerAux, VoidAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nComputing void profiles... ");fflush(stdout);
-   compute_profiles(VarConfigAux, LogAux, TracerAux);
+   compute_profiles(VarConfigAux, LogAux, TracerAux, VoidAux);
    fprintf(stdout,"Done.\n");fflush(stdout);
 
    fprintf(stdout,"\nWrinting void catalogue... ");fflush(stdout);
-   write_voids(VarConfigAux, LogAux);
+   write_voids(VarConfigAux, LogAux, VoidAux);
    fprintf(stdout,"Done.\n\n");fflush(stdout);
 
    time_resume(VarConfigAux, LogAux);
    
    TracerAux.clear();
-   Void.clear();
+   VoidAux.clear();
    fclose(LogAux.logfile);
 
    return(0);

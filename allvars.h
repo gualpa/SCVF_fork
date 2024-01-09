@@ -153,7 +153,7 @@ struct voids {
   bool  ToF;  
   int   Nran;
 };
-extern vector <voids> Void;
+//extern vector <voids> Void;
 
 struct  logs{
   FILE   *logfile;
