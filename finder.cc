@@ -90,21 +90,23 @@ vector <voids> find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <t
   else
      NumCores = VarConfigAux.OMPcores;
   #pragma omp parallel for default(none) num_threads(NumCores)    \
-   shared(NumShell,NumQuery,Query,GridSize,stdout,VarConfigAux)\
+   shared(NumShell,NumQuery,Query,GridSize,stdout,VarConfigAux,LogAux)\
    private(p,MinDist,MaxDist)
   for (p=0; p<NumShell; p++) {
       MinDist = VarConfigAux.MaxRadiusSearch/(double)NumShell*(double)p;
       MaxDist = VarConfigAux.MaxRadiusSearch/(double)NumShell*(double)(p+1);
       query_grid(&Query[p],GridSize,MinDist,MaxDist);
       NumQuery[p] = Query[p].i.size();
+      fprintf(LogAux.logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids (Overlap = %f) \n",
+              p,MinDist,MaxDist,NumQuery[p],0.5*sqrt(3.0)*max_grid_size(GridSize));
   } 
 
-  for (p=0; p<NumShell; p++) {
+  /*for (p=0; p<NumShell; p++) {
       MinDist = VarConfigAux.MaxRadiusSearch/(double)NumShell*(double)p;
       MaxDist = VarConfigAux.MaxRadiusSearch/(double)NumShell*(double)(p+1);
       fprintf(LogAux.logfile," | Shell N° %2d: MinDist - MaxDist = %5.2f - %5.2f [Mpc/h], %5d grids (Overlap = %f) \n",
 		      p,MinDist,MaxDist,NumQuery[p],0.5*sqrt(3.0)*max_grid_size(GridSize));
-  }
+  }*/
   fflush(LogAux.logfile);
 
 
