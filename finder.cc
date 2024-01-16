@@ -417,4 +417,3 @@ vector <voids> clean_voids(varConfiguration VarConfigAux, logs &LogAux, vector <
   LogAux.StepTime.push_back(get_time(t,1,LogAux));
   return VoidAux;
 }
-

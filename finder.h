@@ -67,4 +67,18 @@ vector <voids> find_void_candidates(varConfiguration &VarConfigAux, logs &LogAux
  *         Devuelve un vector que contiene objetos de tipo 'voids' con sus propiedades actualizadas o nuevas.
  */
 vector <voids> find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <tracers> TracerAux, vector <voids> VoidAux);
+/**
+ * @brief Limpia y refina un catálogo de 'voids' astronómicos por superposición.
+ *
+ * Esta función realiza la limpieza y refinamiento de un catálogo de 'voids' astronómicos,
+ * identificando y marcando aquellos 'voids' que se superponen significativamente.
+ * Utiliza un algoritmo eficiente basado en cuadrículas para mejorar el rendimiento.
+ *
+ * @param VarConfigAux Configuración de variables del programa, incluyendo parámetros como tamaños de caja, umbrales, etc.
+ * @param LogAux Registro de eventos del programa, incluyendo registros de paso y archivos de registro.
+ * @param VoidAux Vector de 'voids' a limpiar y refinar.
+ *
+ * @return Vector actualizado de 'voids' después de la limpieza y refinamiento.
+ *         Devuelve un vector que contiene objetos 'voids' con propiedades actualizadas.
+ */
 vector <voids> clean_voids(varConfiguration VarConfigAux, logs &LogAux, vector <voids> &VoidAux);
