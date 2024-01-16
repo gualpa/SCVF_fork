@@ -1,3 +1,34 @@
+/**
+ * @file allvars.h
+ * @brief Archivo con definición tipos de datos especiales para el programa
+ *
+ * Copyright 2023 Andrés Nicolás Ruiz, Sebastián Rogelio Gualpa
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may
+ * be used to endorse or promote products derived from this software without specific
+ * prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS”
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 // allvars.h
 #ifndef ALLVARS_H
 #define ALLVARS_H
@@ -24,61 +55,10 @@ using namespace voro;
 #define PI   3.141592653589793238
 #define CVEL  299792.469 
 
-//extern double RadIncrement;
-//extern int    NumRanWalk;
-//extern double BoxSize;          
-//extern double MaxRadiusSearch;  
-//extern double ProxyGridSize;  
-//extern double FracRadius;       
-//extern double DeltaThreshold;   
-//extern double DeltaSeed;        
-//extern double OverlapTol;   
-//extern int    FormatTracers;
-//extern int    NumFiles;
-//extern char   FileTracers[MAXCHAR];      
-//extern char   FileVoids[MAXCHAR];        
-//extern int    OMPcores;         
-//extern int    RSDist;           
-//extern double Redshift;         
-//extern double OmegaMatter;
-//extern double OmegaLambda;
-//extern double Hubble;           
-//extern int    GDist;           
-//extern double FidOmegaMatter;        
-//extern double FidOmegaLambda;        
-//extern double FidHubble;        
-//extern int    WriteProfiles;    
-//extern double MinProfileDist;   
-//extern double MaxProfileDist;   
-//extern int    NumProfileBins;   
-//extern char   PathProfiles[MAXCHAR];     
-//extern double InnerShellVel;  
-//extern double OuterShellVel;  
-//extern double ScalePos;
-//extern double ScaleVel;
-//extern int    RunFlag;
-
-//extern vector <double> StepTime;
-//extern vector <string> StepName;   
-
-//extern int    NumTrac;
-//extern double MeanNumTrac;
-//extern double MeanSeparation;
-//extern int    NumVoid;
-//extern double LBox[3];
-//extern FILE   *logfile;
-
-
-
 struct scale_struct {
   double Pos;
   double Vel;
-}; 
-//extern  scale_struct Scale;
-
- //double ScalePos;
- //double ScaleVel;
-
+};
 
 struct varConfiguration {
   double RadIncrement;
@@ -121,12 +101,6 @@ struct varConfiguration {
   double LBox[3];
   scale_struct Scale;
 }; 
-//extern  varConfiguration VarConfig;
-
-
-
-
-
 
 // Tracers
 
@@ -137,7 +111,6 @@ struct tracers {
   float Delta;
   float Volume;
 }; 
-//extern vector <tracers> Tracer;
 
 // Voids
 
@@ -153,14 +126,12 @@ struct voids {
   bool  ToF;  
   int   Nran;
 };
-//extern vector <voids> Void;
 
 struct  logs{
   FILE   *logfile;
   vector <double> StepTime;
   vector <string> StepName;
 };
-
 
 void print_varConfigurtion(varConfiguration VarConfigAux, logs LogAux);
 
