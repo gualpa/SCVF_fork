@@ -122,13 +122,6 @@ void time_resume(varConfiguration VarConfigAux, logs &LogAux)
 
 }
 
-double random_number()
-{
-   double x;
-   x = (double)rand()/RAND_MAX;
-   return x;
-}
-
 double ln_factorial(int n)
 {
   int    i;

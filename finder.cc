@@ -78,9 +78,10 @@ vector <voids> find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <t
   int            NumCores,NumGrid;
   int            iv,CheckRan,TotRan,ir,next,l,kappa,p,in;
   int            ic,jc,kc,ii,jj,kk,k,Nsort,m;
+  unsigned int   seed;
   double         Radius,BiggestRadius,lambda,MinDist,MaxDist;
   double         dx[3],xr[3],xc[3],dist,GridSize[3];
-  double         the,phi,rad,Volume,Delta;
+  double         the,phi,rad,Volume,Delta,rnum;
   vector <float> val;
   struct sort    *SortArr;
   bool           done;
@@ -128,13 +129,14 @@ vector <voids> find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <t
           NumGrid,GridSize,GridList)                                   \
    private(iv,ir,ic,jc,kc,ii,jj,kk,xc,xr,dx,l,Radius,BiggestRadius,next,k,    \
            dist,val,kappa,SortArr,Nsort,the,phi,rad,Volume,Delta,lambda,p,m,  \
-	   MinDist,MaxDist,done,in,CheckRan,TotRan)
+	   MinDist,MaxDist,done,in,CheckRan,TotRan,seed,rnum)
 
   for (iv=0; iv<VarConfigAux.NumVoid; iv++) {
 
       BiggestRadius = 0.1; 
       TotRan = 0;
       CheckRan = 0;
+      seed = (unsigned int)(iv + VarConfigAux.RandomSeed);
 
       do {
 
@@ -148,14 +150,17 @@ vector <voids> find_voids(varConfiguration VarConfigAux, logs &LogAux, vector <t
 
 	  } else {
 
-	     the = acos(2.0*random_number() - 1.0);
-	     phi = 2.0*PI*random_number();
+             rnum = (double)rand_r(&seed)/RAND_MAX;		  
+	     the = acos(2.0*rnum - 1.0);
+             rnum = (double)rand_r(&seed)/RAND_MAX;		  
+	     phi = 2.0*PI*rnum;
 	     rad = (double)VoidAux[iv].Rad;
 
+             rnum = (double)rand_r(&seed)/RAND_MAX;		  
 	     if (rad == 0.0) 
-	        rad = (double)VoidAux[iv].Rini*random_number();
+	        rad = (double)VoidAux[iv].Rini*rnum;
 	     else  
-	        rad *= VarConfigAux.FracRadius*random_number();
+	        rad *= VarConfigAux.FracRadius*rnum;
 
 	     xr[0] = rad*sin(the)*cos(phi);
 	     xr[1] = rad*sin(the)*sin(phi);

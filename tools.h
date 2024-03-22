@@ -148,15 +148,6 @@ int          count_lines(char *);
 double       ln_factorial(int);
 
 /**
- * @brief Genera un número aleatorio en el rango [0, 1).
- *
- * Esta función genera un número pseudoaleatorio en punto flotante en el rango [0, 1).
- *
- * @return Un número pseudoaleatorio en punto flotante en el rango [0, 1).
- */
-double       random_number(void);
-
-/**
  * @brief Abre un archivo de manera segura.
  *
  * Esta función abre un archivo en el modo especificado de manera segura.

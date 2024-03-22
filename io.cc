@@ -122,6 +122,10 @@ varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux, 
   addr[nt] = &VarConfigAux.FracRadius;
   id[nt++] = DOUBLE;
 
+  strcpy(tag[nt],"RandomSeed");
+  addr[nt] = &VarConfigAux.RandomSeed;
+  id[nt++] = INT;
+
   strcpy(tag[nt],"RSDist");
   addr[nt] = &VarConfigAux.RSDist;
   id[nt++] = INT;
@@ -178,12 +182,12 @@ varConfiguration read_input_file(char *filename, varConfiguration VarConfigAux, 
   addr[nt] = VarConfigAux.PathProfiles;
   id[nt++] = STRING;
 
-  strcpy(tag[nt],"InnerShellVel");
-  addr[nt] = &VarConfigAux.InnerShellVel;
+  strcpy(tag[nt],"InnerShell");
+  addr[nt] = &VarConfigAux.InnerShell;
   id[nt++] = DOUBLE; 
 
-  strcpy(tag[nt],"OuterShellVel");
-  addr[nt] = &VarConfigAux.OuterShellVel;
+  strcpy(tag[nt],"OuterShell");
+  addr[nt] = &VarConfigAux.OuterShell;
   id[nt++] = DOUBLE; 
 
   fd = safe_open(filename,"r");
@@ -341,8 +345,8 @@ vector<tracers> read_tracers_ascii(varConfiguration &VarConfigAux)
        //if (NumTrac > 250000) break	   
        TracerAux.push_back(tracers());
 
-       fscanf(fd,"%f %f %f %f %f %f %f\n",&TracerAux[i].Pos[0],&TracerAux[i].Pos[1],&TracerAux[i].Pos[2],
-                                        &TracerAux[i].Vel[0],&TracerAux[i].Vel[1],&TracerAux[i].Vel[2],&dummy);
+       fscanf(fd,"%f %f %f %f %f %f \n",&TracerAux[i].Pos[0],&TracerAux[i].Pos[1],&TracerAux[i].Pos[2],
+                                        &TracerAux[i].Vel[0],&TracerAux[i].Vel[1],&TracerAux[i].Vel[2]);
        TracerAux[VarConfigAux.NumTrac].Pos[0] *= VarConfigAux.Scale.Pos;
        TracerAux[VarConfigAux.NumTrac].Pos[1] *= VarConfigAux.Scale.Pos;
        TracerAux[VarConfigAux.NumTrac].Pos[2] *= VarConfigAux.Scale.Pos;
@@ -658,8 +662,9 @@ void geometrical_distortions(varConfiguration &VarConfigAux, logs &LogAux, vecto
 
 void write_voids(varConfiguration VarConfigAux, logs &LogAux, vector <voids> VoidAux)
 {
-   int     i;
+   int     i,k;
    FILE    *fd;
+   float   offset;
    clock_t t;
 
    fprintf(LogAux.logfile,"\n WRITTING VOID CATALOGUE \n");
@@ -670,9 +675,14 @@ void write_voids(varConfiguration VarConfigAux, logs &LogAux, vector <voids> Voi
    for (i=0; i<VarConfigAux.NumVoid; i++) {
        if (VoidAux[i].ToF) {
 
-          fprintf(fd," %8.5f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %5d\n",
+	  offset = 0.0;
+          for (k=0; k<3; k++) 
+	      offset += pow(VoidAux[i].CM[k],2);
+	  offset = sqrt(offset);
+
+          fprintf(fd," %8.5f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f\n",
             VoidAux[i].Rad,VoidAux[i].Pos[0],VoidAux[i].Pos[1],VoidAux[i].Pos[2],VoidAux[i].Vel[0],VoidAux[i].Vel[1],
-            VoidAux[i].Vel[2],VoidAux[i].Delta,VoidAux[i].Dtype,VoidAux[i].Poisson,VoidAux[i].Nran);
+            VoidAux[i].Vel[2],VoidAux[i].Delta,VoidAux[i].Dtype,VoidAux[i].Poisson,offset);
        }
    }
    fclose(fd);

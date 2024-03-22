@@ -86,6 +86,7 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <trace
        for (k=0; k<3; k++) {
            xc[k] = (double)VoidAux[i].Pos[k];
            VoidAux[i].Vel[k] = 0.0;
+           VoidAux[i].CM[k] = 0.0;
        }
 
        ic = (int)(xc[0]/GridSize[0]);
@@ -128,10 +129,13 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <trace
                   dist = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
                   dist /= Radius;
 
-                  if (dist > VarConfigAux.InnerShellVel-PLUS && dist < VarConfigAux.OuterShellVel+PLUS) {
+                  if (dist > VarConfigAux.InnerShell-PLUS && dist < VarConfigAux.OuterShell+PLUS) {
                      VoidAux[i].Vel[0] += vt[0];
                      VoidAux[i].Vel[1] += vt[1];
                      VoidAux[i].Vel[2] += vt[2];
+		     VoidAux[i].CM[0] += dx[0];
+                     VoidAux[i].CM[1] += dx[1];
+                     VoidAux[i].CM[2] += dx[2];
                      Counter++;	 
                   }
               } 
@@ -144,6 +148,9 @@ void compute_velocity(varConfiguration VarConfigAux, logs &LogAux, vector <trace
        VoidAux[i].Vel[0] /= (double)Counter;
        VoidAux[i].Vel[1] /= (double)Counter;
        VoidAux[i].Vel[2] /= (double)Counter;
+       VoidAux[i].CM[0] /= (double)Counter;
+       VoidAux[i].CM[1] /= (double)Counter;
+       VoidAux[i].CM[2] /= (double)Counter;
    }
   
    free_grid_list(GridList,NumGrid);

@@ -66,7 +66,8 @@ struct varConfiguration {
   double BoxSize;          
   double MaxRadiusSearch;  
   double ProxyGridSize;  
-  double FracRadius;       
+  double FracRadius;     
+  int    RandomSeed;  
   double DeltaThreshold;   
   double DeltaSeed;        
   double OverlapTol;   
@@ -89,8 +90,8 @@ struct varConfiguration {
   double MaxProfileDist;   
   int    NumProfileBins;   
   char   PathProfiles[MAXCHAR];     
-  double InnerShellVel;  
-  double OuterShellVel;  
+  double InnerShell;  
+  double OuterShell;  
   double ScalePos;
   double ScaleVel;
   int    RunFlag;
@@ -120,6 +121,7 @@ struct voids {
   float Ini[3];
   float Pos[3];
   float Vel[3];
+  float CM[3];
   float Dtype;
   float Delta;
   float Poisson;
