@@ -57,6 +57,7 @@ ScaleVel          1.0        % Convert velocities to km/s
 FracRadius       0.5        % Radius fraction for random sampling 
 NumRanWalk        75        % Number of steps without any increment bigger than RadIncrement
 RadIncrement     0.0        % Relative increment of Radius in random walk
+RandomSeed      1234
 
 %_________________________________________________________________________________________
 %                                                               REDSHIFT-SPACE DISTORTIONS
